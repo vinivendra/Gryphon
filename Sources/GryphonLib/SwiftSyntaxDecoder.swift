@@ -5,7 +5,7 @@
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// https://firstdonoharm.dev/version/2/1/license.md
+// https://firstdonoharm.dev/version/2/1/license
 //
 // To the full extent allowed by law, this software comes "AS IS,"
 // WITHOUT ANY WARRANTY, EXPRESS OR IMPLIED, and licensor and any other
@@ -513,18 +513,13 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		}
 	}
 
-	func convertBlock<Block>(
-		_ block: Block)
-		throws -> MutableList<Statement>
-		where Block: SyntaxListContainer
+	func processComments(
+		_ comments: List<Comment>)
+		-> (statements: MutableList<Statement>, shouldIgnoreNextStatement: Bool)
 	{
-		let statements = try convertStatements(block.syntaxElements)
-
-		// Parse the ending comments
-		let triviaPieces = SwiftSyntaxDecoder.getLeadingComments(
-			forSyntax: block.endSyntax,
-			sourceFile: self.sourceFile)
-		for comment in triviaPieces {
+		let result: MutableList<Statement> = []
+		var shouldIgnoreNextStatement = false
+		for comment in comments {
 			switch comment {
 			case let .translationComment(
 					syntax: syntax,
@@ -532,35 +527,36 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 					comment: translationComment):
 				if let commentValue = translationComment.value {
 					if translationComment.key == .insertInMain {
-						statements.append(ExpressionStatement(
-							syntax: syntax,
-							range: range,
-							expression: LiteralCodeExpression(
-								syntax: syntax,
-								range: range,
-								string: commentValue,
-								shouldGoToMainFunction: true,
-								typeName: nil)))
+						result.append(ExpressionStatement(
+											syntax: syntax,
+											range: range,
+											expression: LiteralCodeExpression(
+												syntax: syntax,
+												range: range,
+												string: commentValue,
+												shouldGoToMainFunction: true,
+												typeName: nil)))
 					}
 					else if translationComment.key == .insert {
-						statements.append(ExpressionStatement(
-							syntax: syntax,
-							range: range,
-							expression: LiteralCodeExpression(
-								syntax: syntax,
-								range: range,
-								string: commentValue,
-								shouldGoToMainFunction: false,
-								typeName: nil)))
+						result.append(ExpressionStatement(
+											syntax: syntax,
+											range: range,
+											expression: LiteralCodeExpression(
+												syntax: syntax,
+												range: range,
+												string: commentValue,
+												shouldGoToMainFunction: false,
+												typeName: nil)))
 					}
 					else if translationComment.key == .output {
 						if let fileExtension = Utilities.getExtension(of: commentValue),
-							(fileExtension == .swiftAST ||
-							 fileExtension == .gryphonASTRaw ||
-							 fileExtension == .gryphonAST ||
-							 fileExtension == .kt)
+						   (fileExtension == .swiftAST ||
+								fileExtension == .gryphonASTRaw ||
+								fileExtension == .gryphonAST ||
+								fileExtension == .kt)
 						{
-							outputFileMap[fileExtension] = translationComment.value
+							let path = context.replacePathConfigurations(in: commentValue)
+							outputFileMap[fileExtension] = path
 						}
 						else {
 							Compiler.handleWarning(
@@ -572,10 +568,30 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 						}
 					}
 				}
+				else if translationComment.key == .ignore {
+					shouldIgnoreNextStatement = true
+				}
 			case let .normalComment(comment: normalComment):
-				statements.append(normalComment)
+				result.append(normalComment)
 			}
 		}
+
+		return (result, shouldIgnoreNextStatement)
+	}
+
+	func convertBlock<Block>(
+		_ block: Block)
+		throws -> MutableList<Statement>
+		where Block: SyntaxListContainer
+	{
+		let statements = try convertStatements(block.syntaxElements)
+
+		// Parse the ending comments
+		let endingComments = SwiftSyntaxDecoder.getLeadingComments(
+			forSyntax: block.endSyntax,
+			sourceFile: self.sourceFile)
+		let extraStatements = processComments(endingComments).statements
+		statements.append(contentsOf: extraStatements)
 
 		return statements
 	}
@@ -632,67 +648,13 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			}
 
 			// Parse the statement's leading comments
-			var shouldIgnoreStatement = false
 			let leadingComments = SwiftSyntaxDecoder.getLeadingComments(
 				forSyntax: Syntax(statement),
 				sourceFile: self.sourceFile)
-			for comment in leadingComments {
-				switch comment {
-				case let .translationComment(
-						syntax: syntax,
-						range: range,
-						comment: translationComment):
-					if let commentValue = translationComment.value {
-						if translationComment.key == .insertInMain {
-							result.append(ExpressionStatement(
-								syntax: syntax,
-								range: range,
-								expression: LiteralCodeExpression(
-									syntax: syntax,
-									range: range,
-									string: commentValue,
-									shouldGoToMainFunction: true,
-									typeName: nil)))
-						}
-						else if translationComment.key == .insert {
-							result.append(ExpressionStatement(
-								syntax: syntax,
-								range: range,
-								expression: LiteralCodeExpression(
-									syntax: syntax,
-									range: range,
-									string: commentValue,
-									shouldGoToMainFunction: false,
-									typeName: nil)))
-						}
-						else if translationComment.key == .output {
-							if let fileExtension = Utilities.getExtension(of: commentValue),
-								(fileExtension == .swiftAST ||
-								 fileExtension == .gryphonASTRaw ||
-								 fileExtension == .gryphonAST ||
-								 fileExtension == .kt)
-							{
-								outputFileMap[fileExtension] = translationComment.value
-							}
-							else {
-								Compiler.handleWarning(
-									message: "Unsupported output file extension in " +
-										"\"\(commentValue)\". Did you mean to use \".kt\"?",
-									syntax: nil,
-									sourceFile: sourceFile,
-									sourceFileRange: range)
-							}
-						}
-					}
-					else if translationComment.key == .ignore {
-						shouldIgnoreStatement = true
-					}
-				case let .normalComment(comment: normalComment):
-					result.append(normalComment)
-				}
-			}
+			let (extraStatements, shouldIgnoreNextStatement) = processComments(leadingComments)
+			result.append(contentsOf: extraStatements)
 
-			if shouldIgnoreStatement {
+			if shouldIgnoreNextStatement {
 				continue
 			}
 

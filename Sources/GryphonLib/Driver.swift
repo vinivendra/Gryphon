@@ -5,7 +5,7 @@
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// https://firstdonoharm.dev/version/2/1/license.md
+// https://firstdonoharm.dev/version/2/1/license
 //
 // To the full extent allowed by law, this software comes "AS IS,"
 // WITHOUT ANY WARRANTY, EXPRESS OR IMPLIED, and licensor and any other
@@ -17,7 +17,7 @@
 //
 
 public class Driver {
-	public static let gryphonVersion = "0.14"
+	public static let gryphonVersion = "0.15"
 
 	public static let supportedArguments: List = [
 		"help", "-help", "--help",
@@ -29,6 +29,7 @@ public class Driver {
 		"--no-main-file",
 		"--default-final",
 		"--continue-on-error",
+		"--create-folders",
 		"--write-to-console",
 		"--verbose",
 		"--quiet",
@@ -63,11 +64,13 @@ public class Driver {
 		let shouldGenerateRawAST: Bool
 		let shouldGenerateSwiftAST: Bool
 
+		let shouldCreateFolders: Bool
 		let forcePrintingToConsole: Bool
 		let quietModeIsOn: Bool
 
 		let mainFilePath: String?
 		let xcodeProjectPath: String?
+		let pathConfigurations: Map<String, String>
 	}
 
 	public struct KotlinTranslation {
@@ -252,7 +255,10 @@ public class Driver {
 				!settings.forcePrintingToConsole
 			{
 				Compiler.log("📝  Writing Swift AST to file for \(inputFileRelativePath)")
-				try Utilities.createFile(atPath: outputFilePath, containing: output)
+				try Utilities.createFile(
+					atPath: outputFilePath,
+					containing: output,
+					createIntermediateFolders: settings.shouldCreateFolders)
 			}
 			else if !settings.quietModeIsOn {
 				Compiler.log("📝  Printing Swift AST for \(inputFileRelativePath):")
@@ -266,7 +272,10 @@ public class Driver {
 				!settings.forcePrintingToConsole
 			{
 				Compiler.log("📝  Writing raw AST to file for \(inputFileRelativePath)")
-				try Utilities.createFile(atPath: outputFilePath, containing: output)
+				try Utilities.createFile(
+					atPath: outputFilePath,
+					containing: output,
+					createIntermediateFolders: settings.shouldCreateFolders)
 			}
 			else if !settings.quietModeIsOn {
 				Compiler.log("📝  Printing raw AST for \(inputFileRelativePath):")
@@ -307,7 +316,10 @@ public class Driver {
 				!settings.forcePrintingToConsole
 			{
 				Compiler.log("📝  Writing AST to file for \(inputFileRelativePath)")
-				try Utilities.createFile(atPath: outputFilePath, containing: output)
+				try Utilities.createFile(
+					atPath: outputFilePath,
+					containing: output,
+					createIntermediateFolders: settings.shouldCreateFolders)
 			}
 			else if !settings.quietModeIsOn {
 				Compiler.log("📝  Printing AST for \(inputFileRelativePath):")
@@ -335,7 +347,10 @@ public class Driver {
 			else {
 				if let outputFilePath = gryphonAST.outputFileMap[.kt] {
 					Compiler.log("📝  Writing Kotlin to file for \(inputFileRelativePath)")
-					try Utilities.createFile(atPath: outputFilePath, containing: kotlinCode)
+					try Utilities.createFile(
+						atPath: outputFilePath,
+						containing: kotlinCode,
+						createIntermediateFolders: settings.shouldCreateFolders)
 				}
 				else {
 					if settings.xcodeProjectPath != nil {
@@ -431,6 +446,7 @@ public class Driver {
 		let shouldEmitKotlin = !hasChosenTask || arguments.contains("-emit-kotlin")
 
 		//
+		let shouldCreateFolders = arguments.contains("--create-folders")
 		let forcePrintingToConsole = arguments.contains("--write-to-console")
 		let quietModeIsOn = arguments.contains("--quiet")
 
@@ -465,6 +481,10 @@ public class Driver {
 		let maybeTarget = getValue(of: "--target", inArguments: arguments)
 
 		//
+		let pathConfigurationFiles = getPathConfigurationFiles(inArguments: arguments)
+		let pathConfigurations = try getPathConfigurations(from: pathConfigurationFiles)
+
+		//
 		let settings = Settings(
 			shouldEmitSwiftAST: shouldEmitSwiftAST,
 			shouldEmitRawAST: shouldEmitRawAST,
@@ -474,10 +494,12 @@ public class Driver {
 			shouldGenerateAST: shouldGenerateAST,
 			shouldGenerateRawAST: shouldGenerateRawAST,
 			shouldGenerateSwiftAST: shouldGenerateSwiftAST,
+			shouldCreateFolders: shouldCreateFolders,
 			forcePrintingToConsole: forcePrintingToConsole,
 			quietModeIsOn: quietModeIsOn,
 			mainFilePath: mainFilePath,
-			xcodeProjectPath: maybeXcodeProject)
+			xcodeProjectPath: maybeXcodeProject,
+			pathConfigurations: pathConfigurations)
 
 		Compiler.logStart("🔧  Using settings:")
 		Compiler.log("ℹ️  shouldEmitSwiftAST: \(shouldEmitSwiftAST)")
@@ -492,6 +514,7 @@ public class Driver {
 		Compiler.log("ℹ️  quietModeIsOn: \(quietModeIsOn)")
 		Compiler.log("ℹ️  mainFilePath: \(mainFilePath ?? "no main file")")
 		Compiler.log("ℹ️  xcodeProjectPath: \(maybeXcodeProject ?? "no Xcode project")")
+		Compiler.log("ℹ️  pathConfigurations: \(pathConfigurations)")
 		Compiler.logEnd("🔧  Settings done.")
 
 		//
@@ -544,6 +567,7 @@ public class Driver {
 				indentationString: indentationString,
 				defaultsToFinal: defaultsToFinal,
 				xcodeProjectPath: maybeXcodeProject,
+				pathConfigurations: pathConfigurations,
 				target: maybeTarget,
 				swiftCompilationArguments: otherSwiftArguments,
 				absolutePathToSDK: sdkPath)
@@ -676,6 +700,12 @@ public class Driver {
 			result.append(contentsOf: uncommentedFiles)
 		}
 
+		let missingFiles = result.filter({ !Utilities.fileExists(at: $0) })
+		if !missingFiles.isEmpty {
+			throw GryphonError(
+				errorMessage: "Unable to open files: \(missingFiles.joined(separator: ", "))")
+		}
+
 		return result
 	}
 
@@ -705,7 +735,8 @@ public class Driver {
 				}
 				try Utilities.createFile(
 					atPath: file.relativePath,
-					containing: contents)
+					containing: contents,
+					createIntermediateFolders: false)
 			}
 		}
 	}
@@ -717,10 +748,12 @@ public class Driver {
 	static func generateLibraries() throws {
 		try Utilities.createFile(
 			atPath: SupportingFile.gryphonSwiftLibrary.relativePath,
-			containing: SupportingFile.gryphonSwiftLibrary.contents!)
+			containing: SupportingFile.gryphonSwiftLibrary.contents!,
+			createIntermediateFolders: false)
 		try Utilities.createFile(
 			atPath: SupportingFile.gryphonKotlinLibrary.relativePath,
-			containing: SupportingFile.gryphonKotlinLibrary.contents!)
+			containing: SupportingFile.gryphonKotlinLibrary.contents!,
+			createIntermediateFolders: false)
 	}
 
 	/// Calls xcodebuild with the given arguments
@@ -955,6 +988,7 @@ public class Driver {
 		badArguments = badArguments.filter { !debugArguments.contains($0) }
 		badArguments = badArguments.filter { !isSupportedArgumentWithParameters($0) }
 		badArguments = badArguments.filter { !isXcodeProject($0) }
+		badArguments = badArguments.filter { !isPathConfigurationFile($0) }
 		badArguments = badArguments.filter { !isSupportedInputFilePath($0) }
 		return badArguments
 	}
@@ -993,6 +1027,41 @@ public class Driver {
 			return cleanPath
 		}
 		return nil
+	}
+
+	static func isPathConfigurationFile(_ filePath: String) -> Bool {
+		let cleanPath = filePath.hasSuffix("/") ? String(filePath.dropLast()) : filePath
+		return Utilities.fileHasExtension(cleanPath, .config)
+	}
+
+	static func getPathConfigurationFiles(inArguments arguments: List<String>) -> List<String> {
+		return arguments
+			.filter { isPathConfigurationFile($0) }
+			.map { $0.hasSuffix("/") ? String($0.dropLast()) : $0 }
+	}
+
+	static func getPathConfigurations(
+		from configFileLists: List<String>)
+	throws -> Map<String, String>
+	{
+		let result = MutableMap<String, String>()
+
+		for file in configFileLists {
+			let contents = try Utilities.readFile(file)
+			for line in contents.split(separator: "\n") {
+				let components = line.split(separator: "=")
+				guard components.count >= 2 else {
+					continue
+				}
+				let key = String(components[0])
+					.trimmingWhitespaces()
+				let value = String(components.dropFirst().joined(separator: "="))
+					.trimmingWhitespaces()
+				result[key] = value
+			}
+		}
+
+		return result
 	}
 
 	/// Looks for an argument of the format "<argument>=<value>" and returns the value. For example,
@@ -1074,6 +1143,10 @@ Main usage:
 
       ↪️  --continue-on-error
             Continue translating even if errors are found.
+
+	  ↪️  --create-folders
+			Create intermediate folders (if needed) before writing the output
+			files.
 
       ↪️  --write-to-console
             Write the output of any translations to the console (instead of

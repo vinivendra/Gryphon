@@ -5,7 +5,7 @@
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// https://firstdonoharm.dev/version/2/1/license.md
+// https://firstdonoharm.dev/version/2/1/license
 //
 // To the full extent allowed by law, this software comes "AS IS,"
 // WITHOUT ANY WARRANTY, EXPRESS OR IMPLIED, and licensor and any other
@@ -38,6 +38,7 @@ class SwiftSyntaxDecoderTest: XCTestCase {
 					indentationString: "\t",
 					defaultsToFinal: false,
 					xcodeProjectPath: nil,
+					pathConfigurations: [:],
 					target: nil,
 					swiftCompilationArguments: [testCasePath.withExtension(.swift)],
 					absolutePathToSDK: nil))
@@ -111,7 +112,7 @@ class SwiftSyntaxDecoderTest: XCTestCase {
 				let tupleExpression =
 					multiplicationExpression.rightExpression as? TupleExpression,
 				tupleExpression.pairs.count == 1,
-				let onlyPair = tupleExpression.pairs.first,
+ 				let onlyPair = tupleExpression.pairs.first,
 				onlyPair.label == nil,
 				let additionExpression =
 					onlyPair.expression as? BinaryOperatorExpression,

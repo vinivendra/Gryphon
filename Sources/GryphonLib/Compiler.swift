@@ -5,7 +5,7 @@
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// https://firstdonoharm.dev/version/2/1/license.md
+// https://firstdonoharm.dev/version/2/1/license
 //
 // To the full extent allowed by law, this software comes "AS IS,"
 // WITHOUT ANY WARRANTY, EXPRESS OR IMPLIED, and licensor and any other
@@ -348,7 +348,10 @@ public class Compiler {
 				errorMapFilePath.split(withStringSeparator: "/").dropLast().joined(separator: "/")
 			let errorMapFileContents = swiftFilePath + "\n" + errorMap
 			Utilities.createFolderIfNeeded(at: errorMapFolder)
-			try Utilities.createFile(atPath: errorMapFilePath, containing: errorMapFileContents)
+			try Utilities.createFile(
+				atPath: errorMapFilePath,
+				containing: errorMapFileContents,
+				createIntermediateFolders: false)
 		}
 
 		return translationResult.translation

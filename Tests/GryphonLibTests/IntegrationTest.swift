@@ -5,7 +5,7 @@
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// https://firstdonoharm.dev/version/2/1/license.md
+// https://firstdonoharm.dev/version/2/1/license
 //
 // To the full extent allowed by law, this software comes "AS IS,"
 // WITHOUT ANY WARRANTY, EXPRESS OR IMPLIED, and licensor and any other
@@ -44,6 +44,7 @@ class IntegrationTest: XCTestCase {
 						indentationString: "\t",
 						defaultsToFinal: defaultsToFinal,
 						xcodeProjectPath: nil,
+						pathConfigurations: [:],
 						target: nil,
 						swiftCompilationArguments: [testCasePath.withExtension(.swift)],
 						absolutePathToSDK: nil))
@@ -93,6 +94,7 @@ class IntegrationTest: XCTestCase {
 					indentationString: "\t",
 					defaultsToFinal: false,
 					xcodeProjectPath: nil,
+					pathConfigurations: [:],
 					target: nil,
 					swiftCompilationArguments: [testCasePath],
 					absolutePathToSDK: nil))
