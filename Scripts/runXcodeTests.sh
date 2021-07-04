@@ -31,6 +31,7 @@ echo "sdk.dir=/Users/$USER/Library/Android/sdk" > \
 cd "Test Files/XcodeTests/iOS"
 gryphon clean
 rm -f "gryphonInputFiles.xcfilelist"
+rm -f "local.config"
 
 # Remove the old Xcodeproj, replace it with a clean copy of the backup
 rm -rf "GryphoniOSTest.xcodeproj"
@@ -108,6 +109,7 @@ echo "➡️ [4/8] Resetting the Xcode project..."
 # Remove Gryphon-generated files
 gryphon clean
 rm -f "gryphonInputFiles.xcfilelist"
+rm -f "local.config"
 
 # Remove the old Xcodeproj, replace it with a clean copy of the (target) backup
 rm -rf "GryphoniOSTest.xcodeproj"
