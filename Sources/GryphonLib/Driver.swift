@@ -168,7 +168,7 @@ public class Driver {
 				   !Utilities.fileExists(at: SupportingFile.configFile.absolutePath)
 				{
 					try initialize(file: SupportingFile.configFile)
-					recursiveArguments.append(SupportingFile.configFile.absolutePath)
+					recursiveArguments.append(SupportingFile.configFile.relativePath)
 				}
 
 				let setupArguments: MutableList = ["setup-xcode", xcodeProject]
