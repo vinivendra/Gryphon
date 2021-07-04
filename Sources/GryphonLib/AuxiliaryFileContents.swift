@@ -2246,9 +2246,13 @@ kotlinTarget.build_configurations.each do |config|
 	config.build_settings["SUPPORTED_PLATFORMS"] = "macosx"
 	config.build_settings["SUPPORTS_MACCATALYST"] = "FALSE"
 
-	# Don't overwrite the Android root folder the user if the user sets it manually
-	if config.build_settings["ANDROID_ROOT"] == nil
-		config.build_settings["ANDROID_ROOT"] = "../Android"
+	# Don't overwrite the path of the config files if the user sets them manually
+	if config.build_settings["CONFIG_FILES"] == nil
+		arguments = Array.new(ARGV) # Copy the arguments array
+		configFiles = arguments.select do |elem| # Get only the config files
+			elem.end_with?(".config")
+		end
+		config.build_settings["CONFIG_FILES"] = configFiles.join(" ")
 	end
 end
 
@@ -2293,8 +2297,46 @@ rm -f "$SRCROOT/\(SupportingFile.gryphonBuildFolder)/gradleErrors.txt"
 rm -f "$SRCROOT/\(SupportingFile.gryphonBuildFolder)/swiftOutput.txt"
 rm -f "$SRCROOT/\(SupportingFile.gryphonBuildFolder)/swiftErrors.txt"
 
+# TODO: remove this after a migration period
+if [ -z ${ANDROID_ROOT+x} ]
+then
+	echo ""
+else
+	1>&2 echo "The ANDROID_ROOT folder should now be set using a config file."
+	1>&2 echo "Please delete the ANDROID_ROOT variable from your Xcode build settings."
+	1>&2 echo "If you need to, run \"gryphon init \\<xcodeproj\\>\" again to create"
+	1>&2 echo "a new config file where you can set your ANDROID_ROOT."
+	1>&2 echo "For more information, read the tutorial at"
+	1>&2 echo "https://vinivendra.github.io/Gryphon/gettingStarted.html"
+	exit -1
+fi
+
+# Analyze the config files
+regex="ANDROID_ROOT[ ]*=[ ]*(.+)"
+androidRootPath="null"
+for file in $CONFIG_FILES
+do
+	# Read each line of the file in the path
+	while read line
+	do
+		if [[ $line =~ $regex ]]
+		then
+			androidRootPath="${BASH_REMATCH[1]}"
+		fi
+	done < $file
+done
+
+if [ "$androidRootPath" == "null" ]
+then
+	1>&2 echo "Error: no ANDROID_ROOT configuration found in the given config files:"
+	1>&2 echo "$CONFIG_FILES"
+	1>&2 echo "Try adjusting the contents of your config files"
+	1>&2 echo "or adjusting the CONFIG_FILES build setting in Xcode."
+	exit -1
+fi
+
 # Switch to the Android folder so we can use pre-built gradle info to speed up the compilation.
-cd "$ANDROID_ROOT"
+cd "$androidRootPath"
 
 # Compile the Android sources and save the logs gack to the iOS folder
 set +e

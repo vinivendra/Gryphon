@@ -163,6 +163,14 @@ public class Driver {
 			if let xcodeProject = maybeXcodeProject {
 				let recursiveArguments = getRecursiveArguments(from: arguments)
 
+				let configFiles = getPathConfigurationFiles(inArguments: arguments)
+				if configFiles.isEmpty,
+				   !Utilities.fileExists(at: SupportingFile.configFile.absolutePath)
+				{
+					try initialize(file: SupportingFile.configFile)
+					recursiveArguments.append(SupportingFile.configFile.absolutePath)
+				}
+
 				let setupArguments: MutableList = ["setup-xcode", xcodeProject]
 				setupArguments.append(contentsOf: recursiveArguments)
 				_ = try Driver.run(withArguments: setupArguments)
@@ -170,13 +178,6 @@ public class Driver {
 				let makeTargetArguments: MutableList = ["make-gryphon-targets", xcodeProject]
 				makeTargetArguments.append(contentsOf: recursiveArguments)
 				_ = try Driver.run(withArguments: makeTargetArguments)
-
-				let configFiles = getPathConfigurationFiles(inArguments: arguments)
-				if configFiles.isEmpty,
-				   !Utilities.fileExists(at: SupportingFile.configFile.absolutePath)
-				{
-					try initialize(file: SupportingFile.configFile)
-				}
 			}
 
 			Compiler.logEnd("✅  Done initializing.")
@@ -205,7 +206,12 @@ public class Driver {
 
 			Compiler.logStart("🧑‍💻  Adding Gryphon targets to Xcode...")
 
-			try makeGryphonTargets(forXcodeProject: xcodeProject, forTarget: target)
+			let configFiles = getPathConfigurationFiles(inArguments: arguments)
+
+			try makeGryphonTargets(
+				forXcodeProject: xcodeProject,
+				forTarget: target,
+				configFiles: configFiles)
 
 			Compiler.logEnd("✅  Done adding Gryphon targets.")
 
@@ -949,7 +955,8 @@ public class Driver {
 
 	static func makeGryphonTargets(
 		forXcodeProject xcodeProjectPath: String,
-		forTarget target: String?)
+		forTarget target: String?,
+		configFiles: List<String>)
 		throws
 	{
 		// Run the ruby script
@@ -963,6 +970,7 @@ public class Driver {
 		if let userTarget = target {
 			arguments.append("--target=\"\(userTarget)\"")
 		}
+		arguments.append(contentsOf: configFiles)
 
 		Compiler.logStart("🧑‍💻  Calling ruby to create the Gryphon targets...\n")
 		let commandResult = Shell.runShellCommand(arguments)
@@ -1088,7 +1096,7 @@ public class Driver {
 	}
 
 	/// Fetches the arguments that should be included in recursive driver calls, which are
-	/// `--target=` and `--verbose`.
+	/// `--target=`, `--verbose`, and the config files.
 	static func getRecursiveArguments(from arguments: List<String>) -> MutableList<String> {
 		let result: MutableList<String> = []
 
@@ -1098,6 +1106,9 @@ public class Driver {
 		if let targetArgument = arguments.first(where: { $0.hasPrefix("--target=") }) {
 			result.append(targetArgument)
 		}
+
+		let configFiles = getPathConfigurationFiles(inArguments: arguments)
+		result.append(contentsOf: configFiles)
 
 		return result
 	}
