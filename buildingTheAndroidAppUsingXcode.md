@@ -32,15 +32,33 @@ class Model {
 
 In Xcode, switch to the Gryphon target if needed and hit build (**⌘ + B**) to translate the new code. You'll see Gryphon raises a few warnings, but we have bigger problems at the moment: if you switch to Android Studio and tell it to build the app, it'll say the translated code has a few errors.
 
-We could try to fix these problems in Android Studio, where we can see what the errors are, but our changes would be overwritten as soon as we translated the Swift code again. Ideally, warnings and errors in the translated Kotlin code would be reported in the Swift lines that generated the errors, so that we could fix them at the source. This can be done using the `Kotlin` target in Xcode - we just have to tell it where the Android app is.
+We could try to fix these problems in Android Studio, where we can see what the errors are, but our changes would be overwritten as soon as we translated the Swift code again. Ideally, warnings and errors in the translated Kotlin code would be reported in the Swift lines that generated the errors, so that we could fix them at the source. This can be done using the `Kotlin` target in Xcode - we just have to tell Gryphon where our Android app is located.
 
-Switch to Xcode, click the `MyAwesomeiOSApp` project in the left sidebar, then click the `Kotlin` target. Click `Build Settings` and type `Android` in the search box. You'll see an `ANDROID_ROOT` build setting, which should point to the folder containing the Android project. It's set to `../Android` by default, but our android app is at `../MyAwesomeAndroidApp`. Let's change that:
+To do that, open the `local.config` file (Gryphon created it when you ran `gryphon init`). This file currently contains only one configuration, which says that the root of our Android app (the `ANDROID_ROOT`) is at the `../Android` directory - but in our case, this should be `../MyAwesomeAndroidApp`. Just change the directory path to `../MyAwesomeAndroidApp` and Gryphon will know where to look.
 
-![The Kotlin target's Build Settings in Xcode](assets/images/iOS/ios8.png)
+Note that this file is called `local.config` because it's meant to contain file paths for your local computer. If you work in the same project with other people, keep this file out of your git repository so that each developer can set the correct paths for their own computers.
 
-Once that's done, switch to the `Kotlin` target and hit build (**⌘ + B**). Xcode should report the Android errors at the correct place in the Swift code now:
+Once the path in the configuration file is fixed, switch to the `Kotlin` target and hit build (**⌘ + B**). Xcode should report the Android errors at the correct place in the Swift code now:
 
-![Kotlin errors in Xcode](assets/images/iOS/ios9.png)
+![Kotlin errors in Xcode](assets/images/iOS/ios8.png)
+
+## Bonus: creating your own path variables
+
+Gryphon looks for the `ANDROID_ROOT` configuration in your `local.config` file when building your Kotlin code, but you can also use that file to specify any other configurations you want. For instance, we could create a new `ANDROID_SOURCES` variable right below the `ANDROID_ROOT`:
+
+````
+ANDROID_ROOT = ../MyAwesomeAndroidApp
+ANDROID_SOURCES = ../MyAwesomeAndroidApp/app/src/main/java/com/example/myawesomeandroidapp
+````
+
+...and then use this variable on the `// gryphon output` comment at the top of the `Model.swift` file:
+
+```` swift
+// gryphon output: ANDROID_SOURCES/Model.kt
+````
+
+This makes the comment shorter and easier to understand, and allows other developers to set their own file paths according to their preferred file structure.
+
 
 ---
 
