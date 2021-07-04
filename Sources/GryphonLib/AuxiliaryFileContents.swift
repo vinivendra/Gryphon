@@ -200,6 +200,11 @@ fun <Element> MutableList<Element>.partition(
 
 """
 
+internal let localConfigFileContents = """
+ANDROID_ROOT = ../Android
+
+"""
+
 internal let gryphonSwiftLibraryFileContents = """
 //
 // Copyright 2018 Vinicius Jorge Vendramini
@@ -2375,6 +2380,10 @@ public class SupportingFile {
 		"gryphonInputFiles.xcfilelist",
 		folder: nil,
 		contents: "")
+	public static let configFile = SupportingFile(
+		"local.config",
+		folder: nil,
+		contents: localConfigFileContents)
 	public static let gryphonSwiftLibrary = SupportingFile(
 		"GryphonSwiftLibrary.swift",
 		folder: nil,

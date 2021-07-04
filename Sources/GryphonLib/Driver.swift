@@ -170,6 +170,13 @@ public class Driver {
 				let makeTargetArguments: MutableList = ["make-gryphon-targets", xcodeProject]
 				makeTargetArguments.append(contentsOf: recursiveArguments)
 				_ = try Driver.run(withArguments: makeTargetArguments)
+
+				let configFiles = getPathConfigurationFiles(inArguments: arguments)
+				if configFiles.isEmpty,
+				   !Utilities.fileExists(at: SupportingFile.configFile.absolutePath)
+				{
+					try initialize(file: SupportingFile.configFile)
+				}
 			}
 
 			Compiler.logEnd("✅  Done initializing.")
@@ -729,15 +736,19 @@ public class Driver {
 		}
 
 		for file in filesToInitialize {
-			if let contents = file.contents {
-				if let folder = file.folder {
-					Utilities.createFolderIfNeeded(at: folder)
-				}
-				try Utilities.createFile(
-					atPath: file.relativePath,
-					containing: contents,
-					createIntermediateFolders: false)
+			try initialize(file: file)
+		}
+	}
+
+	static func initialize(file: SupportingFile) throws {
+		if let contents = file.contents {
+			if let folder = file.folder {
+				Utilities.createFolderIfNeeded(at: folder)
 			}
+			try Utilities.createFile(
+				atPath: file.relativePath,
+				containing: contents,
+				createIntermediateFolders: false)
 		}
 	}
 
