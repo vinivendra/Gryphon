@@ -2307,7 +2307,7 @@ else
 	1>&2 echo "If you need to, run \"gryphon init \\<xcodeproj\\>\" again to create"
 	1>&2 echo "a new config file where you can set your ANDROID_ROOT."
 	1>&2 echo "For more information, read the tutorial at"
-	1>&2 echo "https://vinivendra.github.io/Gryphon/gettingStarted.html"
+	1>&2 echo "https://vinivendra.github.io/Gryphon/buildingTheAndroidAppUsingXcode.html"
 	exit -1
 fi
 
