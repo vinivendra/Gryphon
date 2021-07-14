@@ -208,6 +208,12 @@ public class OS {
 	static let architecture = "x86_64"
 	#elseif arch(i386)
 	static let architecture = "i386"
+	#elseif arch(arm)
+	static let architecture = "arm"
+	#elseif arch(arm64)
+	static let architecture = "arm64"
+	#else
+	static let architecture = "unknownArch"
 	#endif
 
 	public static let systemIdentifier: String = osName + "-" + architecture
