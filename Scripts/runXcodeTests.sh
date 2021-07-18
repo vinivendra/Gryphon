@@ -21,7 +21,13 @@ safeCat () {
 echo "➡️ [1/8] Preparing..."
 
 # Install Gryphon (Xcode uses the installed binary, so it should be the one we want to test)
+# Remove the existing binary (if needed)
+echo "Installing the test binary in /usr/local/bin/gryphon..."
+rm -f "/usr/local/bin/gryphon"
+# Install our test binary
 ./Scripts/install.sh
+
+echo "Setting up test files..."
 
 # Set the Android SDK path in the properties file
 echo "sdk.dir=/Users/$USER/Library/Android/sdk" > \
