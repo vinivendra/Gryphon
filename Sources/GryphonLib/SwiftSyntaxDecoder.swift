@@ -1414,6 +1414,11 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 					else {
 						// If there's no label (e.g. the `value` on `A.b(value: Int)` we can't
 						// declare the variable.
+
+						let maybeCaseText =
+							try? calledExpression.getLiteralText(fromSourceFile: self.sourceFile)
+						let caseText = maybeCaseText ?? ".enum"
+
 						try variableDeclarations.append(VariableDeclaration(
 							syntax: Syntax(argument),
 							range: argument.getRange(inFile: self.sourceFile),
@@ -1421,8 +1426,8 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 							typeAnnotation: nil,
 							expression: errorExpression(
 								forASTNode: Syntax(argument),
-								withMessage: "Failed to get the label for this enum's " +
-									"associated value"),
+								withMessage: "Please add the associated value's label, e.g. " +
+									"\"case \(caseText)(label: ...)\""),
 							getter: nil, setter: nil, access: nil, isOpen: false,
 							isLet: true, isStatic: false, extendsType: nil,
 							annotations: []))
