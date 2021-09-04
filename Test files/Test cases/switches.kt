@@ -50,6 +50,27 @@ internal sealed class MySealedClass {
 	class B: MySealedClass()
 }
 
+internal sealed class L {
+	class A(val s1: String): L()
+	class B(val s2: String, val s3: String): L()
+	class C: L()
+
+	fun get(): String {
+		return when (this) {
+			is L.A -> {
+				val string: String = this.s1
+				string
+			}
+			is L.B -> {
+				val string2: String = this.s2
+				val string3: String = this.s3
+				string2 + string3
+			}
+			is L.C -> ""
+		}
+	}
+}
+
 internal fun g(i: Int) {
 	when (i) {
 		0, 1, 2 -> println("Low")

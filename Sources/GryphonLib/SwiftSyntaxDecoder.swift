@@ -1000,27 +1000,17 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 				if let label = switchCase.label.as(SwitchCaseLabelSyntax.self) {
 					// If it's a case with an expression
 					expressions = try MutableList(label.caseItems.map { item -> Expression in
-						if let expression = item.pattern.as(ExpressionPatternSyntax.self) {
-							// If it's a simple case
-							if let memberExpression =
-									expression.expression.as(MemberAccessExprSyntax.self),
-								memberExpression.base == nil,
-								let typeName = switchExpression.swiftType
-							{
-								// If it's a `.a`, assume the type is the same as the switch
-								// expression's
-								return try convertMemberAccessExpression(
-									memberExpression,
-									typeName: typeName)
-							}
-							else {
-								return try convertExpression(expression.expression)
-							}
-						}
-						else if let pattern = item.pattern.as(ValueBindingPatternSyntax.self) {
-							// If it's a case let
+						// If it's a case let:
+
+						if  // `case let .foo(bar: ...)`
+							let patternExpression = item.pattern.as(ValueBindingPatternSyntax.self)?
+									.valuePattern.as(ExpressionPatternSyntax.self) ??
+							// `case .foo(bar: let ...)`
+								item.pattern.as(ExpressionPatternSyntax.self),
+							patternExpression.expression.is(FunctionCallExprSyntax.self)
+						{
 							let caseLetResult = try convertCaseLet(
-								pattern: pattern,
+								pattern: patternExpression,
 								patternExpression: switchExpression)
 
 							statements.append(contentsOf:
@@ -1044,6 +1034,23 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 							}
 
 							return onlyCondition
+						}
+						// If it's a simple case
+						else if let expression = item.pattern.as(ExpressionPatternSyntax.self) {
+							if let memberExpression =
+								expression.expression.as(MemberAccessExprSyntax.self),
+							   memberExpression.base == nil,
+							   let typeName = switchExpression.swiftType
+							{
+								// If it's a `.a`, assume the type is the same as the switch
+								// expression's
+								return try convertMemberAccessExpression(
+									memberExpression,
+									typeName: typeName)
+							}
+							else {
+								return try convertExpression(expression.expression)
+							}
 						}
 						else {
 							return try errorExpression(
@@ -1241,12 +1248,14 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			else if let matchingPattern =
 					ifCondition.condition.as(MatchingPatternConditionSyntax.self),
 				let valueBindingPattern =
-					matchingPattern.pattern.as(ValueBindingPatternSyntax.self)
+					matchingPattern.pattern.as(ValueBindingPatternSyntax.self),
+				let patternExpressionSyntax =
+					valueBindingPattern.valuePattern.as(ExpressionPatternSyntax.self)
 			{
 				// If case let
 				let patternExpression = try convertExpression(matchingPattern.initializer.value)
 				let caseLetResult = try convertCaseLet(
-					pattern: valueBindingPattern,
+					pattern: patternExpressionSyntax,
 					patternExpression: patternExpression)
 				conditions.append(contentsOf:
 					caseLetResult.conditions.map { .condition(expression: $0) })
@@ -1303,17 +1312,15 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 	/// Translates a case let like `A.a(b: c) = myEnum`. The `pattern` parameter is the `A.a(b: c)`,
 	/// and the `expression` parameter is the `myEnum`.
 	private func convertCaseLet(
-		pattern: ValueBindingPatternSyntax,
+		pattern: ExpressionPatternSyntax,
 		patternExpression: Expression)
 		throws -> CaseLetResult
 	{
 		let conditions: MutableList<Expression> = []
 		let variableDeclarations: MutableList<VariableDeclaration> = []
 
-		if let valuePattern =
-				pattern.valuePattern.as(ExpressionPatternSyntax.self),
-			let callExpression =
-				valuePattern.expression.as(FunctionCallExprSyntax.self),
+		if let callExpression =
+				pattern.expression.as(FunctionCallExprSyntax.self),
 			let calledExpression =
 				callExpression.calledExpression.as(MemberAccessExprSyntax.self)
 		{
@@ -1364,8 +1371,12 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 
 						if let pattern =
 							argument.expression.as(UnresolvedPatternExprSyntax.self),
-							let identifierPattern =
-							pattern.pattern.as(IdentifierPatternSyntax.self)
+						   let identifierPattern =
+							// `case let .foo(bar: ...)`
+							pattern.pattern.as(IdentifierPatternSyntax.self) ??
+						    // `case .foo(bar: let ...)`
+							pattern.pattern.as(ValueBindingPatternSyntax.self)?
+								.valuePattern.as(IdentifierPatternSyntax.self)
 						{
 							// If we're declaring a variable, e.g. the `bar` in
 							// `A.b(foo: bar)`
