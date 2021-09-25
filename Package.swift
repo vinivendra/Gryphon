@@ -22,10 +22,16 @@
 
 import PackageDescription
 
+// To use a beta version of SwiftSyntax:
+//
+//let swiftSyntaxPackage = Package.Dependency.package(
+//	url: "https://github.com/apple/swift-syntax.git",
+//	.revision("release/5.6")) // <- git branch name
+
 #if swift(>=5.5)
 let swiftSyntaxPackage = Package.Dependency.package(
-    url: "https://github.com/apple/swift-syntax.git",
-    .revision("release/5.5"))
+	url: "https://github.com/apple/swift-syntax.git",
+	.exact("0.50500.0"))
 #elseif swift(>=5.4)
 let swiftSyntaxPackage = Package.Dependency.package(
     url: "https://github.com/apple/swift-syntax.git",
