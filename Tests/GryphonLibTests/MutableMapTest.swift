@@ -166,6 +166,26 @@ class MutableMapTest: XCTestCase {
 		XCTAssertEqual(forceOptionalMapMM, [1: "1", 2: "2"])
 	}
 
+	/// This function tests an implementation of `subscript(bounds: Range<Index>) -> Subsequence`
+	/// that is necessary for `MutableMap` to conform with `Collection`.
+	func testSubscriptWithRange() {
+		let dictionary: MutableMap = [1: 10, 2: 20]
+		let index0 = dictionary.startIndex
+		let index1 = dictionary.index(after: index0)
+		let index2 = dictionary.endIndex
+
+		let slice1 = Array(dictionary[index0..<index2]).sorted { $0.0 < $1.0 }
+		let slice2 = Array(dictionary[index0..<index1]).sorted { $0.0 < $1.0 }
+		let slice3 = Array(dictionary[index1..<index2]).sorted { $0.0 < $1.0 }
+
+		XCTAssert(slice1[0] == (1, 10))
+		XCTAssert(slice1[1] == (2, 20))
+
+		XCTAssert(slice2[0] == (1, 10))
+
+		XCTAssert(slice3[0] == (2, 20))
+	}
+
 	func testCopy() {
 		let dictionary1: MutableMap = [1: 10, 2: 20]
 		let dictionary2 = dictionary1.toMutableMap()
