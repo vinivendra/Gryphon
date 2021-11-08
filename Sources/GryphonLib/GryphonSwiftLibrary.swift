@@ -195,9 +195,17 @@ private struct _Comparable: Comparable {
 	}
 }
 
+// Replacement for Hashable
+// gryphon ignore
+private struct _Hashable: Hashable { }
+
 private func gryphonTemplates() {
 	let _array1: MutableList<Any> = [1, 2, 3]
 	let _array2: MutableList<Any> = [1, 2, 3]
+	let _array3: [Any] = [1, 2, 3]
+	let _dictionary: [_Hashable: Any] = [:]
+	let _list: List<Any> = []
+	let _map: Map<_Hashable, Any> = [:]
 	let _any: Any = 0
 	let _string: String = ""
 	let _index = _string.startIndex
@@ -216,6 +224,24 @@ private func gryphonTemplates() {
 
 	_ = _array1.appending(contentsOf: _array2)
 	_ = "_array1 + _array2"
+
+	_ = List(_array3)
+	_ = GRYTemplate.call(.dot("_array3", "toList"), [])
+
+	_ = MutableList(_array3)
+	_ = GRYTemplate.call(.dot("_array3", "toMutableList"), [])
+
+	_ = Map(_dictionary)
+	_ = GRYTemplate.call(.dot("_dictionary", "toMap"), [])
+
+	_ = MutableMap(_dictionary)
+	_ = GRYTemplate.call(.dot("_dictionary", "toMutableMap"), [])
+
+	_ = _list.array
+	_ = GRYTemplate.call(.dot("_list", "toList"), [])
+
+	_ = _map.dictionary
+	_ = GRYTemplate.call(.dot("_map", "toMap"), [])
 
 	// Templates with an output that references methods defined in the GryphonKotlinLibrary.kt file
 	_ = _string.suffix(from: _index)
@@ -249,6 +275,14 @@ public struct _ListSlice<Element>: Collection,
 	let list: List<Element>
 	let range: Range<Int>
 
+	public init(
+		list: List<Element>,
+		range: Range<Int>)
+	{
+		self.list = list
+		self.range = range
+	}
+
 	public var startIndex: Int {
 		return range.startIndex
 	}
@@ -268,14 +302,20 @@ public struct _ListSlice<Element>: Collection,
 		}
 	}
 
+	public subscript(bounds: Range<Index>) -> _ListSlice<Element> {
+		// From Collection.swift
+		_failEarlyRangeCheck(bounds, bounds: startIndex..<endIndex)
+		return _ListSlice(list: list, range: bounds)
+	}
+
 	public func index(after i: Int) -> Int {
-        return list.index(after: i)
-    }
+		return list.index(after: i)
+	}
 
 	// BidirectionalCollection
 	public func index(before i: Int) -> Int {
-        return list.index(before: i)
-    }
+		return list.index(before: i)
+	}
 
 	// RangeReplaceableCollection
 	public init() {
@@ -363,14 +403,20 @@ public class List<Element>: CustomStringConvertible,
 		return array[position]
 	}
 
+	public subscript(bounds: Range<Index>) -> _ListSlice<Element> {
+		// From Collection.swift
+		_failEarlyRangeCheck(bounds, bounds: startIndex..<endIndex)
+		return _ListSlice(list: self, range: bounds)
+	}
+
 	public func index(after i: Int) -> Int {
-        return array.index(after: i)
-    }
+		return array.index(after: i)
+	}
 
 	// BidirectionalCollection
 	public func index(before i: Int) -> Int {
-        return array.index(before: i)
-    }
+		return array.index(before: i)
+	}
 
 	// Used for _ListSlice to conform to MutableCollection
 	fileprivate func _setElement(_ element: Element, atIndex index: Int) {
@@ -422,11 +468,15 @@ public class List<Element>: CustomStringConvertible,
 	}
 
 	public func dropFirst(_ k: Int = 1) -> List<Element> {
-		return List(array.dropFirst())
+		return List(array.dropFirst(k))
 	}
 
 	public func dropLast(_ k: Int = 1) -> List<Element> {
-		return List(array.dropLast())
+		return List(array.dropLast(k))
+	}
+
+	public func drop(while predicate: (Element) throws -> Bool) rethrows -> List<Element> {
+		return try List(array.drop(while: predicate))
 	}
 
 	public func appending(_ newElement: Element) -> List<Element> {
@@ -587,8 +637,17 @@ public class MutableList<Element>: List<Element>,
 		array.removeAll(keepingCapacity: keepCapacity)
 	}
 
+	@discardableResult
+	public func remove(at index: Int) -> Element {
+		return array.remove(at: index)
+	}
+
 	public func reverse() {
 		self.array = self.array.reversed()
+	}
+
+	override public func drop(while predicate: (Element) throws -> Bool) rethrows -> List<Element> {
+		return try List(array.drop(while: predicate))
 	}
 }
 
@@ -659,8 +718,7 @@ public func zip<List1Element, List2Element>(
 /// the Dictionary type in Swift conforms exactly to these protocols,
 /// plus CustomReflectable (which is beyond Gryphon's scope for now).
 // gryphon ignore
-public class Map<Key, Value>:
-	CustomStringConvertible,
+public class Map<Key, Value>: CustomStringConvertible,
 	CustomDebugStringConvertible,
 	ExpressibleByDictionaryLiteral,
 	Collection
@@ -719,6 +777,12 @@ public class Map<Key, Value>:
 
 	public func index(after i: Index) -> Index {
 		return dictionary.index(after: i)
+	}
+
+	public subscript(bounds: Range<Index>) -> Slice<Buffer> {
+		// From Collection.swift
+		_failEarlyRangeCheck(bounds, bounds: startIndex..<endIndex)
+		return Slice(base: self.dictionary, bounds: bounds)
 	}
 
 	// Other methods
