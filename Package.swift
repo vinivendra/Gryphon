@@ -1,4 +1,4 @@
-// swift-tools-version:5.1
+// swift-tools-version:5.2
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 //
@@ -22,12 +22,32 @@
 
 import PackageDescription
 
-#if swift(>=5.4)
-let swiftSyntaxVersion = Version("0.50400.0")
+// To use a beta version of SwiftSyntax:
+//
+//let swiftSyntaxPackage = Package.Dependency.package(
+//	url: "https://github.com/apple/swift-syntax.git",
+//	.revision("release/5.6")) // <- git branch name
+
+#if swift(>=5.5)
+let swiftSyntaxPackage = Package.Dependency.package(
+	name: "SwiftSyntax",
+	url: "https://github.com/apple/swift-syntax.git",
+	.exact("0.50500.0"))
+#elseif swift(>=5.4)
+let swiftSyntaxPackage = Package.Dependency.package(
+	name: "SwiftSyntax",
+	url: "https://github.com/apple/swift-syntax.git",
+	.exact("0.50400.0"))
 #elseif swift(>=5.3)
-let swiftSyntaxVersion = Version("0.50300.0")
+let swiftSyntaxPackage = Package.Dependency.package(
+	name: "SwiftSyntax",
+	url: "https://github.com/apple/swift-syntax.git",
+	.exact("0.50300.0"))
 #else
-let swiftSyntaxVersion = Version("0.50200.0")
+let swiftSyntaxPackage = Package.Dependency.package(
+	name: "SwiftSyntax",
+	url: "https://github.com/apple/swift-syntax.git",
+	.exact("0.50200.0"))
 #endif
 
 let package = Package(
@@ -40,9 +60,7 @@ let package = Package(
 		.executable(name: "gryphon", targets: ["Gryphon"])
 	],
 	dependencies: [
-		.package(
-			url: "https://github.com/apple/swift-syntax.git",
-			.exact(swiftSyntaxVersion)),
+		swiftSyntaxPackage,
 		.package(
 			url: "https://github.com/jpsim/SourceKitten",
 			from: "0.30.1"),
@@ -51,7 +69,7 @@ let package = Package(
 		.target(
 			name: "GryphonLib",
 			dependencies: [
-				"SwiftSyntax",
+				.product(name: "SwiftSyntax", package: "SwiftSyntax"),
 				.product(name: "SourceKittenFramework", package: "SourceKitten")
 			]),
 		.target(

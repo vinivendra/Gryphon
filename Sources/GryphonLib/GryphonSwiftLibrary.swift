@@ -275,6 +275,14 @@ public struct _ListSlice<Element>: Collection,
 	let list: List<Element>
 	let range: Range<Int>
 
+	public init(
+		list: List<Element>,
+		range: Range<Int>)
+	{
+		self.list = list
+		self.range = range
+	}
+
 	public var startIndex: Int {
 		return range.startIndex
 	}
@@ -294,14 +302,20 @@ public struct _ListSlice<Element>: Collection,
 		}
 	}
 
+	public subscript(bounds: Range<Index>) -> _ListSlice<Element> {
+		// From Collection.swift
+		_failEarlyRangeCheck(bounds, bounds: startIndex..<endIndex)
+		return _ListSlice(list: list, range: bounds)
+	}
+
 	public func index(after i: Int) -> Int {
-        return list.index(after: i)
-    }
+		return list.index(after: i)
+	}
 
 	// BidirectionalCollection
 	public func index(before i: Int) -> Int {
-        return list.index(before: i)
-    }
+		return list.index(before: i)
+	}
 
 	// RangeReplaceableCollection
 	public init() {
@@ -389,14 +403,20 @@ public class List<Element>: CustomStringConvertible,
 		return array[position]
 	}
 
+	public subscript(bounds: Range<Index>) -> _ListSlice<Element> {
+		// From Collection.swift
+		_failEarlyRangeCheck(bounds, bounds: startIndex..<endIndex)
+		return _ListSlice(list: self, range: bounds)
+	}
+
 	public func index(after i: Int) -> Int {
-        return array.index(after: i)
-    }
+		return array.index(after: i)
+	}
 
 	// BidirectionalCollection
 	public func index(before i: Int) -> Int {
-        return array.index(before: i)
-    }
+		return array.index(before: i)
+	}
 
 	// Used for _ListSlice to conform to MutableCollection
 	fileprivate func _setElement(_ element: Element, atIndex index: Int) {
@@ -757,6 +777,12 @@ public class Map<Key, Value>: CustomStringConvertible,
 
 	public func index(after i: Index) -> Index {
 		return dictionary.index(after: i)
+	}
+
+	public subscript(bounds: Range<Index>) -> Slice<Buffer> {
+		// From Collection.swift
+		_failEarlyRangeCheck(bounds, bounds: startIndex..<endIndex)
+		return Slice(base: self.dictionary, bounds: bounds)
 	}
 
 	// Other methods

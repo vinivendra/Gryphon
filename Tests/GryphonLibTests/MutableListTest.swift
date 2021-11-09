@@ -178,6 +178,19 @@ class MutableListTest: XCTestCase {
 		XCTAssertEqual(forcedOptionalMM, [1, 2, 3])
 	}
 
+	/// This function tests an implementation of `subscript(bounds: Range<Index>) -> Subsequence`
+	/// that is necessary for `MutableList` to conform with `Collection`.
+	func testSubscriptWithRange() {
+		let list: MutableList = [1, 2, 3]
+		let slice1 = Array(list[0..<3])
+		let slice2 = Array(list[0..<2])
+		let slice3 = Array(list[1..<2])
+
+		XCTAssert(slice1 == list.array)
+		XCTAssert(slice2 == [1, 2])
+		XCTAssert(slice3 == [2])
+	}
+
 	func testCopy() {
 		let list1: MutableList = [1, 2, 3]
 		let list2 = list1.toMutableList()

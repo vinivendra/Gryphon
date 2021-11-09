@@ -115,6 +115,24 @@ case .b:
 	print("b")
 }
 
+// Let in the middle of a case
+enum L {
+	case a(s1: String)
+	case b(s2: String, s3: String)
+	case c
+
+	func get() -> String {
+		switch self {
+		case .a(s1: let string):
+			return string
+		case .b(s2: let string2, s3: let string3):
+			return string2 + string3
+		case .c:
+			return ""
+		}
+	}
+}
+
 // Switch case with multiple expressions
 func g(i: Int) {
 	switch i {

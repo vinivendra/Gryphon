@@ -101,9 +101,9 @@ Gryphon's support for Swift features is constantly evolving. **It is currently c
 
 #### What Swift versions can Gryphon translate?
 
-Gryphon currently supports **Swift 5.2, 5.3 and 5.4**. It will use whatever Swift version was used to build it, so if you build the Gryphon binary using Swift 5.4 then that's the version it will assume all your Swift code is in. You can find out which Swift version your Gryphon binary uses by running `gryphon --version`.
+Gryphon currently supports **Swift 5.2 to 5.5**. It will use whatever Swift version was used to build it, so if you build the Gryphon binary using Swift 5.5 then that's the version it will assume all your Swift code is in. You can find out which Swift version your Gryphon binary uses by running `gryphon --version`.
 
-Due to some technical limitations, only Swift 5.3 and 5.4 are being tested in the latest versions of Gryphon. If you have any difficulties with Swift 5.2, please [let us know](https://github.com/vinivendra/Gryphon/issues/new/choose).
+Due to some technical limitations, only Swift 5.3, 5.4 and 5.5 are being tested in the latest versions of Gryphon. If you have any difficulties with Swift 5.2, please [let us know](https://github.com/vinivendra/Gryphon/issues/new/choose).
 
 #### Can Gryphon help translate my existing iOS app?
 
