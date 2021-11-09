@@ -104,15 +104,15 @@ class MapTest: XCTestCase {
 		let index2 = dictionary.endIndex
 
 		let slice1 = Array(dictionary[index0..<index2]).sorted { $0.0 < $1.0 }
-		let slice2 = Array(dictionary[index0..<index1]).sorted { $0.0 < $1.0 }
-		let slice3 = Array(dictionary[index1..<index2]).sorted { $0.0 < $1.0 }
+		let slice2 = Array(dictionary[index0..<index1])
+		let slice3 = Array(dictionary[index1..<index2])
 
 		XCTAssert(slice1[0] == (1, 10))
 		XCTAssert(slice1[1] == (2, 20))
 
-		XCTAssert(slice2[0] == (1, 10))
+		XCTAssert(slice2[0] == (1, 10) || slice2[0] == (2, 20))
 
-		XCTAssert(slice3[0] == (2, 20))
+		XCTAssert(slice3[0] == (1, 10) || slice3[0] == (2, 20))
 	}
 
 	func testToMutableMap() {
