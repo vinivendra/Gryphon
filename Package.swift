@@ -63,7 +63,7 @@ let package = Package(
 		swiftSyntaxPackage,
 		.package(
 			url: "https://github.com/jpsim/SourceKitten",
-			from: "0.30.1"),
+			from: "0.31.1"),
 	],
 	targets: [
 		.target(
