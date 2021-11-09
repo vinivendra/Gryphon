@@ -30,18 +30,22 @@ import PackageDescription
 
 #if swift(>=5.5)
 let swiftSyntaxPackage = Package.Dependency.package(
+	name: "SwiftSyntax",
 	url: "https://github.com/apple/swift-syntax.git",
 	.exact("0.50500.0"))
 #elseif swift(>=5.4)
 let swiftSyntaxPackage = Package.Dependency.package(
+	name: "SwiftSyntax",
 	url: "https://github.com/apple/swift-syntax.git",
 	.exact("0.50400.0"))
 #elseif swift(>=5.3)
 let swiftSyntaxPackage = Package.Dependency.package(
+	name: "SwiftSyntax",
 	url: "https://github.com/apple/swift-syntax.git",
 	.exact("0.50300.0"))
 #else
 let swiftSyntaxPackage = Package.Dependency.package(
+	name: "SwiftSyntax",
 	url: "https://github.com/apple/swift-syntax.git",
 	.exact("0.50200.0"))
 #endif
@@ -65,7 +69,7 @@ let package = Package(
 		.target(
 			name: "GryphonLib",
 			dependencies: [
-				.product(name: "SwiftSyntax", package: "swift-syntax"),
+				.product(name: "SwiftSyntax", package: "SwiftSyntax"),
 				.product(name: "SourceKittenFramework", package: "SourceKitten")
 			]),
 		.target(
