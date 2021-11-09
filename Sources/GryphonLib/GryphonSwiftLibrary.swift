@@ -402,7 +402,7 @@ public class List<Element>: CustomStringConvertible,
 	public subscript(position: Int) -> Element {
 		return array[position]
 	}
-	
+
 	public subscript(bounds: Range<Index>) -> _ListSlice<Element> {
 		// From Collection.swift
 		_failEarlyRangeCheck(bounds, bounds: startIndex..<endIndex)
