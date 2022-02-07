@@ -451,6 +451,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 						"⚠️ Something went wrong, attempting to update iOS compilation files")
 					try Driver.createIOSCompilationFiles(
 						forXcodeProject: xcodeProjectPath,
+                        useNewBuildSystem: false,
 						forTarget: context.target)
 					let (sdkPath, otherSwiftArguments) =
 						try Driver.readCompilationArgumentsFromFile()

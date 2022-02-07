@@ -39,6 +39,7 @@ public class Driver {
 	public static let supportedArgumentsWithParameters: List = [
 		"--indentation=",
 		"--target=",
+        "--UseModernBuildSystem",
 		"-line-limit=",
 	]
 
@@ -129,6 +130,15 @@ public class Driver {
 		}
 
 		Compiler.logStart("🧑‍💻  Checking Xcode arguments...")
+        
+        //
+        let needToUseNewBuildSystem = getValue(of: "--UseModernBuildSystem", inArguments: arguments)
+        if let reallyUseNewBuildSystem = needToUseNewBuildSystem {
+            Compiler.log("ℹ️  Using UseModernBuildSystem \(reallyUseNewBuildSystem).")
+        }
+        else {
+            Compiler.log("ℹ️  Using default value for UseModernBuildSystem which is legacy system.")
+        }
 
 		// Get the chosen target, if there is one
 		let target = getValue(of: "--target", inArguments: arguments)
@@ -192,7 +202,8 @@ public class Driver {
 
 			Compiler.logStart("🧑‍💻  Creating iOS compilation files...")
 
-			try createIOSCompilationFiles(forXcodeProject: xcodeProject, forTarget: target)
+            let newBuildSystemEnabled = needToUseNewBuildSystem == "YES"
+            try createIOSCompilationFiles(forXcodeProject: xcodeProject, useNewBuildSystem: newBuildSystemEnabled, forTarget: target)
 
 			Compiler.logEnd("✅  Done creating iOS compilation files.")
 
@@ -777,16 +788,19 @@ public class Driver {
 	static func runXcodebuild(
 		forXcodeProject xcodeProjectPath: String,
 		forTarget target: String?,
+        useNewBuildSystem newBuildSystemEnabled: Bool,
 		simulator: String? = nil,
 		dryRun: Bool)
 		-> Shell.CommandOutput
 	{
+        // TODO: replace hardcoded value on the argument
+        let newBuildSystemStringValue = "YES" //  newBuildSystemEnabled ? "YES" : "NO"
 		let arguments: MutableList = [
 			"xcodebuild",
-			"-UseModernBuildSystem=NO",
+            "-UseModernBuildSystem=\(newBuildSystemStringValue)",
 			"-project",
 			"\(xcodeProjectPath)", ]
-
+        
 		if let userTarget = target {
 			arguments.append("-target")
 			arguments.append(userTarget)
@@ -797,7 +811,8 @@ public class Driver {
 			arguments.append("iphonesimulator\(simulatorVersion)")
 		}
 
-		if dryRun {
+		if dryRun && !newBuildSystemEnabled {
+            // -dry-run is not yet supported in the new build system
 			arguments.append("-dry-run")
 		}
 
@@ -819,8 +834,9 @@ public class Driver {
 					let result = runXcodebuild(
 						forXcodeProject: xcodeProjectPath,
 						forTarget: target,
+                        useNewBuildSystem: newBuildSystemEnabled,
 						simulator: iOSVersion,
-						dryRun: dryRun)
+						dryRun: !newBuildSystemEnabled)
 					Compiler.logEnd("⚠️  Done.")
 					return result
 				}
@@ -862,13 +878,16 @@ public class Driver {
 	/// and a file with the `swiftc` arguments for SourceKit.
 	static func createIOSCompilationFiles(
 		forXcodeProject xcodeProjectPath: String,
+        useNewBuildSystem enableNewBuildSystem: Bool,
 		forTarget target: String?)
 		throws
 	{
+        // TODO: replace dryRun value on `true` which was an original value
 		let commandResult = runXcodebuild(
 			forXcodeProject: xcodeProjectPath,
 			forTarget: target,
-			dryRun: true)
+            useNewBuildSystem: enableNewBuildSystem,
+			dryRun: !enableNewBuildSystem)
 
 		guard commandResult.status == 0 else {
 			throw GryphonError(errorMessage: "Error running xcodebuild:\n" +
