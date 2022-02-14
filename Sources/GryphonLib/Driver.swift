@@ -224,6 +224,7 @@ public class Driver {
 			try makeGryphonTargets(
 				forXcodeProject: xcodeProject,
 				forTarget: target,
+				useModernBuildSystem: enableModernBuildSystem,
 				configFiles: configFiles)
 
 			Compiler.logEnd("✅  Done adding Gryphon targets.")
@@ -997,6 +998,7 @@ public class Driver {
 	static func makeGryphonTargets(
 		forXcodeProject xcodeProjectPath: String,
 		forTarget target: String?,
+		useModernBuildSystem: Bool,
 		configFiles: List<String>)
 		throws
 	{
@@ -1007,6 +1009,8 @@ public class Driver {
 			"\(SupportingFile.makeGryphonTargets.absolutePath)",
 			"\(xcodeProjectPath)", ]
 
+		let modernBuildSystemStringValue = useModernBuildSystem ? "YES": "NO"
+		arguments.append("--UseModernBuildSystem=\(modernBuildSystemStringValue)")
 		// Any other arguments will be appended to the target's script
 		if let userTarget = target {
 			arguments.append("--target=\"\(userTarget)\"")
