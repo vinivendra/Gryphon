@@ -958,14 +958,30 @@ public class Driver {
 
 		let splittedCommandComponents = compileSwiftStep.splitUsingUnescapedSpaces()
 		
+		let initialLength = splittedCommandComponents.count
 		var swiftComponentIndex = 0
+		var remarkComponentIndex: Int?
 		for i in 0..<splittedCommandComponents.count {
 			if splittedCommandComponents[i].hasSuffix("swiftc") {
+				// need to drop all text which goes before compiler name
 				swiftComponentIndex = i
-				break
+			} else if splittedCommandComponents[i].hasSuffix("remark:") {
+				// when swiftc uses -incremental option and -whole-module-optimization was present
+				// they are not compatible and compiler prints a warning message
+				// which breaks the arguments parsing
+				remarkComponentIndex = i
 			}
 		}
-		let commandComponents = splittedCommandComponents.dropFirst(swiftComponentIndex)
+		// Probably better need to use `toMutableList()`
+		var commandComponents = splittedCommandComponents.dropFirst(swiftComponentIndex)
+		if let actualRemarkComponentIndex = remarkComponentIndex {
+			commandComponents = commandComponents.dropLast(initialLength - actualRemarkComponentIndex - 1)
+			if let workDirWithRemark = commandComponents.last, workDirWithRemark.hasSuffix("remark:") {
+				let fixedWorkDirValue = workDirWithRemark.dropLast("remark:".count + 1) // 1 is to remove new line symbol
+				commandComponents = commandComponents.dropLast(1)
+				commandComponents = commandComponents.appending(String(fixedWorkDirValue))
+			}
+		}
 
 		let filteredArguments = commandComponents.filter { (argument: String) -> Bool in
 			argument != "-incremental" &&
