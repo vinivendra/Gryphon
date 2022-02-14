@@ -950,15 +950,17 @@ public class Driver {
 					"Unable to find the Swift compilation command in the Xcode project.")
 			}
 		}
+		Compiler.log("ℹ️  SwiftCompiler step output: \(compileSwiftStep)\n")
 
 		Compiler.log("ℹ️  Adapting Swift compilation command for dumping ASTs...")
-		let commands = compileSwiftStep.split(withStringSeparator: "\n")
 
 		var sourceKitFileContents = ""
 
-		// Fix the call to the Swift compiler
-		let compilationCommand = commands.last!
-		let commandComponents = compilationCommand.splitUsingUnescapedSpaces()
+		let commandComponents = compileSwiftStep.splitUsingUnescapedSpaces()
+		
+		for i in 0..<commandComponents.count {
+			Compiler.log("ℹ️  Swift Compiler argument \(i):\n \(commandComponents[i])\n")
+		}
 
 		let filteredArguments = commandComponents.filter { (argument: String) -> Bool in
 			argument != "-incremental" &&
