@@ -950,7 +950,6 @@ public class Driver {
 					"Unable to find the Swift compilation command in the Xcode project.")
 			}
 		}
-		// Compiler.log("ℹ️  SwiftCompiler step output: \(compileSwiftStep)\n\n")
 
 		Compiler.log("ℹ️  Adapting Swift compilation command for dumping ASTs...")
 
@@ -965,11 +964,7 @@ public class Driver {
 				break
 			}
 		}
-		let commandComponents = splittedCommandComponents.dropFirst(swiftComponentIndex + 1)
-		
-		for i in 0..<commandComponents.count {
-			// Compiler.log("ℹ️  Swift Compiler argument \(i):\n \(commandComponents[i])\n")
-		}
+		let commandComponents = splittedCommandComponents.dropFirst(swiftComponentIndex)
 
 		let filteredArguments = commandComponents.filter { (argument: String) -> Bool in
 			argument != "-incremental" &&
