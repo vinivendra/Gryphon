@@ -917,13 +917,17 @@ public class Driver {
 
 			let separator = "=== BUILD TARGET "
 			let components = output.split(withStringSeparator: separator)
-			guard let selectedComponent = components.first(where: { $0.hasPrefix(userTarget) })
-				else
-			{
-				throw GryphonError(errorMessage: "Failed to find build instructions for target " +
-					"\(userTarget) in the xcodebuild output.")
+			if components.count > 1 {
+				guard let selectedComponent = components.first(where: { $0.hasPrefix(userTarget) })
+					else
+				{
+					throw GryphonError(errorMessage: "Failed to find build instructions for target " +
+						"\(userTarget) in the xcodebuild output.")
+				}
+				targetContents = selectedComponent
+			} else {
+				targetContents = output
 			}
-			targetContents = selectedComponent
 		}
 		else {
 			targetContents = output
