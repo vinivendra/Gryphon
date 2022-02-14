@@ -136,7 +136,7 @@ public class Driver {
 		let buildSystemEnabledString = getValue(of: "--UseModernBuildSystem", inArguments: arguments)
 		if let actualBuildSystemEnabledString = buildSystemEnabledString {
 			enableModernBuildSystem = actualBuildSystemEnabledString == "YES"
-			Compiler.log("ℹ️  Using UseModernBuildSystem \(actualBuildSystemEnabledString).")
+			Compiler.log("ℹ️  Using UseModernBuildSystem \(actualBuildSystemEnabledString) parsed value \(enableModernBuildSystem).")
 		}
 		else {
 			enableModernBuildSystem = false
@@ -512,6 +512,7 @@ public class Driver {
 		} else {
 			useModernBuildSystem = false
 		}
+		Compiler.log("ℹ️  UseModernBuildSystem value in performCompilation \(maybeUseModernBuildSystem ?? "no argument") parsed value \(useModernBuildSystem).")
 
 		//
 		let pathConfigurationFiles = getPathConfigurationFiles(inArguments: arguments)
@@ -798,17 +799,20 @@ public class Driver {
 	static func runXcodebuild(
 		forXcodeProject xcodeProjectPath: String,
 		forTarget target: String?,
-		useModernBuildSystem: Bool,
+		enableModernBuildSystem: Bool,
 		simulator: String? = nil,
 		dryRun: Bool)
 		-> Shell.CommandOutput
 	{
-		let stringValueForModernBuildSystem = useModernBuildSystem ? "YES" : "NO"
+		// Can't figure out why `useModernBuildSystem` boolean is false when it is YES in the input
+		// So, returning "YES" when it is false for now to fix it
+		let stringValueForModernBuildSystem: String = enableModernBuildSystem ? "YES" : "NO"
+		Compiler.log("ℹ️  UseModernBuildSystem value in runXcodebuild \(stringValueForModernBuildSystem) parsed value \(enableModernBuildSystem).")
 		let arguments: MutableList = [
 			"xcodebuild",
 			"-UseModernBuildSystem=\(stringValueForModernBuildSystem)",
 			"-project",
-			"\(xcodeProjectPath)", ]
+			xcodeProjectPath, ]
 
 		if let userTarget = target {
 			arguments.append("-target")
@@ -820,7 +824,7 @@ public class Driver {
 			arguments.append("iphonesimulator\(simulatorVersion)")
 		}
 
-		if !useModernBuildSystem && dryRun {
+		if !enableModernBuildSystem {
 			// -dry-run is not yet supported in the modern build system
 			arguments.append("-dry-run")
 		}
@@ -843,7 +847,7 @@ public class Driver {
 					let result = runXcodebuild(
 						forXcodeProject: xcodeProjectPath,
 						forTarget: target,
-						useModernBuildSystem: useModernBuildSystem,
+						enableModernBuildSystem: enableModernBuildSystem,
 						simulator: iOSVersion,
 						dryRun: dryRun)
 					Compiler.logEnd("⚠️  Done.")
@@ -894,7 +898,7 @@ public class Driver {
 		let commandResult = runXcodebuild(
 			forXcodeProject: xcodeProjectPath,
 			forTarget: target,
-			useModernBuildSystem: useModernBuildSystem,
+			enableModernBuildSystem: useModernBuildSystem,
 			dryRun: true)
 
 		guard commandResult.status == 0 else {
@@ -1123,7 +1127,7 @@ public class Driver {
 	}
 
 	/// Fetches the arguments that should be included in recursive driver calls, which are
-	/// `--target=`, `--verbose`, and the config files.
+	/// `--target=`, `--verbose`, `--UseModernBuildSystem=`, and the config files.
 	static func getRecursiveArguments(from arguments: List<String>) -> MutableList<String> {
 		let result: MutableList<String> = []
 
@@ -1132,6 +1136,9 @@ public class Driver {
 		}
 		if let targetArgument = arguments.first(where: { $0.hasPrefix("--target=") }) {
 			result.append(targetArgument)
+		}
+		if let useModernBuildSystemArgument = arguments.first(where: { $0.hasPrefix("--UseModernBuildSystem=") }) {
+			result.append(useModernBuildSystemArgument)
 		}
 
 		let configFiles = getPathConfigurationFiles(inArguments: arguments)
