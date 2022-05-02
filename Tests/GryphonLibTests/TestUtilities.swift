@@ -28,6 +28,4 @@ extension TestUtilities {
 		let success = FileManager.default.changeCurrentDirectoryPath(newPath)
 		assert(success)
 	}
-
-	static let libraryASTDumpFilePath = "ASTDumps-Swift-5.5/gryphon/GryphonTemplatesLibrary.swiftASTDump"
 }

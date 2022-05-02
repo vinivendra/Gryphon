@@ -19,5 +19,3 @@
 internal fun TestUtilities.Companion.changeCurrentDirectoryPath(newPath: String) {
     System.setProperty("user.dir", newPath)
 }
-
-val TestUtilities.libraryASTDumpFilePath = "ASTDumps-Swift-5.5/gryphon/GryphonTemplatesLibrary.swiftASTDump"

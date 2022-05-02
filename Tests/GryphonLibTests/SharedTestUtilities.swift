@@ -40,6 +40,8 @@ class TestUtilities {
 	static let testCasesPath: String = Utilities.getCurrentFolder() + "/ASTDumps-Swift-5.5/Test cases/"
 	static let kotlinTestCasesPath: String = Utilities.getCurrentFolder() + "/Test cases/"
 
+	static let libraryASTDumpFilePath = "ASTDumps-Swift-5.5/gryphon/GryphonTemplatesLibrary.swiftASTDump"
+
 	static func diff(_ string1: String, _ string2: String) -> String {
 		do {
 			let diffResult = try withTemporaryFile(fileName: "file1.txt", contents: string1)
