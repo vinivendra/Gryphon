@@ -36,7 +36,6 @@ class IntegrationTest: XCTestCase {
 	/// Tests to be run by the translated Kotlin version.
 	// gryphon annotation: override
 	public func runAllTests() {
-		IntegrationTest.setUp()
 		test()
 		testWarnings()
 	}

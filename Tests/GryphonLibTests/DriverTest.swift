@@ -36,7 +36,6 @@ class DriverTest: XCTestCase {
 	/// Tests to be run by the translated Kotlin version.
 	// gryphon annotation: override
 	public func runAllTests() {
-		DriverTest.setUp()
 		testOutputs()
 		testGenerateGryphonLibraries()
 		testUsageString()
