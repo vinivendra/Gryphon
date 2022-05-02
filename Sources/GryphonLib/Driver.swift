@@ -883,7 +883,7 @@ public class Driver {
 		}
 
 		// If the library AST dump was passed we don't consider it a file that should be translated, only processed
-		result = result.filter { !isLibraryASTDumpFile($0) }
+		result = result.filter { !isLibraryASTDumpFile($0) }.toMutableList()
 
 		return result
 	}
