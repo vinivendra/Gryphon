@@ -1,0 +1,33 @@
+(source_file "/Users/vini/Development/Gryphon/Gryphon bootstrap/test.swift"
+  (top_level_code_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/test.swift:19:1 - line:19:14]
+    (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/test.swift:19:1 - line:19:14]
+      (pattern_binding_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/test.swift:19:1 - line:19:14]
+        (pattern_typed type='Any'
+          (pattern_named type='Any' 'a')
+          (type_composite))
+        Original init:
+        (string_literal_expr type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/test.swift:19:14 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/test.swift:19:14 - line:19:14] encoding=utf8 value="" builtin_initializer=Swift.(file).String extension.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**)
+        Processed init:
+        (erasure_expr implicit type='Any' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/test.swift:19:14 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/test.swift:19:14 - line:19:14]
+          (string_literal_expr type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/test.swift:19:14 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/test.swift:19:14 - line:19:14] encoding=utf8 value="" builtin_initializer=Swift.(file).String extension.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**)))
+))
+  (var_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/test.swift:19:5 - line:19:5] "a" type='Any' interface type='Any' access=internal let readImpl=stored immutable)
+  (top_level_code_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/test.swift:21:1 - line:23:1]
+    (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/test.swift:21:1 - line:23:1]
+      (if_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/test.swift:21:1 - line:23:1]
+        (pattern
+          (pattern_optional_some implicit type='String?'
+            (pattern_let implicit type='String'
+              (pattern_named type='String' 'a')))
+          (conditional_checked_cast_expr type='String?' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/test.swift:21:14 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/test.swift:21:12 - line:21:18] value_cast writtenType='String'
+            (declref_expr type='Any' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/test.swift:21:12 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/test.swift:21:12 - line:21:12] decl=Main.(file).a@/Users/vini/Development/Gryphon/Gryphon bootstrap/test.swift:19:5 function_ref=unapplied)))
+        (brace_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/test.swift:21:25 - line:23:1]
+          (call_expr type='()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/test.swift:22:2 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/test.swift:22:2 - line:22:24] nothrow arg_labels=_:
+            (declref_expr type='(Any..., String, String) -> ()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/test.swift:22:2 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/test.swift:22:2 - line:22:2] decl=Swift.(file).print(_:separator:terminator:) function_ref=single)
+            (tuple_expr type='(Any..., separator: String, terminator: String)' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/test.swift:22:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/test.swift:22:7 - line:22:24] names='',separator,terminator
+              (vararg_expansion_expr implicit type='[Any]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/test.swift:22:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/test.swift:22:8 - line:22:8]
+                (array_expr implicit type='[Any]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/test.swift:22:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/test.swift:22:8 - line:22:8] initializer=**NULL**
+                  (erasure_expr implicit type='Any' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/test.swift:22:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/test.swift:22:8 - line:22:8]
+                    (string_literal_expr type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/test.swift:22:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/test.swift:22:8 - line:22:8] encoding=utf8 value="It's a string!" builtin_initializer=Swift.(file).String extension.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**))))
+              (default_argument_expr implicit type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/test.swift:22:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/test.swift:22:7 - line:22:7] default_args_owner=Swift.(file).print(_:separator:terminator:) param=1)
+              (default_argument_expr implicit type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/test.swift:22:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/test.swift:22:7 - line:22:7] default_args_owner=Swift.(file).print(_:separator:terminator:) param=2))))))))

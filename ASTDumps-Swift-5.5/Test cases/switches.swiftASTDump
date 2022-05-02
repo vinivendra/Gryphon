@@ -1,0 +1,816 @@
+(source_file "/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift"
+  (func_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:24:1 - line:41:1] "printNumberName(_:)" interface type='(Int) -> ()' access=internal
+    (parameter_list range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:24:21 - line:24:30]
+      (parameter "x" type='Int' interface type='Int'))
+    (brace_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:24:32 - line:41:1]
+      (switch_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:25:2 - line:40:2]
+        (declref_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:25:9 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:25:9 - line:25:9] decl=Main.(file).printNumberName(_:).x@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:24:24 function_ref=unapplied)
+        (case_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:26:2 - line:27:15]
+          (case_body_variables
+          )
+          (case_label_item
+          (pattern_expr type='Int'
+            (binary_expr implicit type='Bool' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:26:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:26:7 - line:26:7] nothrow
+              (declref_expr implicit type='(Int, Int) -> Bool' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:26:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:26:7 - line:26:7] decl=Swift.(file).~= [with (substitution_map generic_signature=<T where T : Equatable> (substitution T -> Int))] function_ref=compound)
+              (tuple_expr implicit type='(Int, Int)' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:26:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:26:7 - line:26:7]
+                (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:26:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:26:7 - line:26:7] value=0 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**)
+                (declref_expr implicit type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:26:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:26:7 - line:26:7] decl=Main.(file).printNumberName(_:).$match@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:26:7 function_ref=unapplied)))))
+          (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:27:3 - line:27:15]
+            (call_expr type='()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:27:3 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:27:3 - line:27:15] nothrow arg_labels=_:
+              (declref_expr type='(Any..., String, String) -> ()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:27:3 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:27:3 - line:27:3] decl=Swift.(file).print(_:separator:terminator:) function_ref=single)
+              (tuple_expr type='(Any..., separator: String, terminator: String)' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:27:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:27:8 - line:27:15] names='',separator,terminator
+                (vararg_expansion_expr implicit type='[Any]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:27:9 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:27:9 - line:27:9]
+                  (array_expr implicit type='[Any]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:27:9 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:27:9 - line:27:9] initializer=**NULL**
+                    (erasure_expr implicit type='Any' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:27:9 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:27:9 - line:27:9]
+                      (string_literal_expr type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:27:9 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:27:9 - line:27:9] encoding=utf8 value="Zero" builtin_initializer=Swift.(file).String extension.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**))))
+                (default_argument_expr implicit type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:27:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:27:8 - line:27:8] default_args_owner=Swift.(file).print(_:separator:terminator:) param=1)
+                (default_argument_expr implicit type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:27:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:27:8 - line:27:8] default_args_owner=Swift.(file).print(_:separator:terminator:) param=2)))))
+        (case_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:28:2 - line:29:14]
+          (case_body_variables
+          )
+          (case_label_item
+          (pattern_expr type='Int'
+            (binary_expr implicit type='Bool' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:28:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:28:7 - line:28:7] nothrow
+              (declref_expr implicit type='(Int, Int) -> Bool' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:28:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:28:7 - line:28:7] decl=Swift.(file).~= [with (substitution_map generic_signature=<T where T : Equatable> (substitution T -> Int))] function_ref=compound)
+              (tuple_expr implicit type='(Int, Int)' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:28:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:28:7 - line:28:7]
+                (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:28:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:28:7 - line:28:7] value=1 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**)
+                (declref_expr implicit type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:28:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:28:7 - line:28:7] decl=Main.(file).printNumberName(_:).$match@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:28:7 function_ref=unapplied)))))
+          (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:29:3 - line:29:14]
+            (call_expr type='()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:29:3 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:29:3 - line:29:14] nothrow arg_labels=_:
+              (declref_expr type='(Any..., String, String) -> ()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:29:3 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:29:3 - line:29:3] decl=Swift.(file).print(_:separator:terminator:) function_ref=single)
+              (tuple_expr type='(Any..., separator: String, terminator: String)' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:29:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:29:8 - line:29:14] names='',separator,terminator
+                (vararg_expansion_expr implicit type='[Any]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:29:9 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:29:9 - line:29:9]
+                  (array_expr implicit type='[Any]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:29:9 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:29:9 - line:29:9] initializer=**NULL**
+                    (erasure_expr implicit type='Any' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:29:9 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:29:9 - line:29:9]
+                      (string_literal_expr type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:29:9 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:29:9 - line:29:9] encoding=utf8 value="One" builtin_initializer=Swift.(file).String extension.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**))))
+                (default_argument_expr implicit type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:29:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:29:8 - line:29:8] default_args_owner=Swift.(file).print(_:separator:terminator:) param=1)
+                (default_argument_expr implicit type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:29:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:29:8 - line:29:8] default_args_owner=Swift.(file).print(_:separator:terminator:) param=2)))))
+        (case_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:30:2 - line:31:14]
+          (case_body_variables
+          )
+          (case_label_item
+          (pattern_expr type='Int'
+            (binary_expr implicit type='Bool' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:30:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:30:7 - line:30:7] nothrow
+              (declref_expr implicit type='(Int, Int) -> Bool' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:30:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:30:7 - line:30:7] decl=Swift.(file).~= [with (substitution_map generic_signature=<T where T : Equatable> (substitution T -> Int))] function_ref=compound)
+              (tuple_expr implicit type='(Int, Int)' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:30:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:30:7 - line:30:7]
+                (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:30:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:30:7 - line:30:7] value=2 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**)
+                (declref_expr implicit type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:30:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:30:7 - line:30:7] decl=Main.(file).printNumberName(_:).$match@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:30:7 function_ref=unapplied)))))
+          (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:31:3 - line:31:14]
+            (call_expr type='()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:31:3 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:31:3 - line:31:14] nothrow arg_labels=_:
+              (declref_expr type='(Any..., String, String) -> ()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:31:3 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:31:3 - line:31:3] decl=Swift.(file).print(_:separator:terminator:) function_ref=single)
+              (tuple_expr type='(Any..., separator: String, terminator: String)' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:31:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:31:8 - line:31:14] names='',separator,terminator
+                (vararg_expansion_expr implicit type='[Any]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:31:9 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:31:9 - line:31:9]
+                  (array_expr implicit type='[Any]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:31:9 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:31:9 - line:31:9] initializer=**NULL**
+                    (erasure_expr implicit type='Any' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:31:9 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:31:9 - line:31:9]
+                      (string_literal_expr type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:31:9 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:31:9 - line:31:9] encoding=utf8 value="Two" builtin_initializer=Swift.(file).String extension.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**))))
+                (default_argument_expr implicit type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:31:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:31:8 - line:31:8] default_args_owner=Swift.(file).print(_:separator:terminator:) param=1)
+                (default_argument_expr implicit type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:31:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:31:8 - line:31:8] default_args_owner=Swift.(file).print(_:separator:terminator:) param=2)))))
+        (case_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:32:2 - line:33:16]
+          (case_body_variables
+          )
+          (case_label_item
+          (pattern_expr type='Int'
+            (binary_expr implicit type='Bool' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:32:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:32:7 - line:32:7] nothrow
+              (declref_expr implicit type='(Int, Int) -> Bool' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:32:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:32:7 - line:32:7] decl=Swift.(file).~= [with (substitution_map generic_signature=<T where T : Equatable> (substitution T -> Int))] function_ref=compound)
+              (tuple_expr implicit type='(Int, Int)' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:32:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:32:7 - line:32:7]
+                (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:32:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:32:7 - line:32:7] value=3 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**)
+                (declref_expr implicit type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:32:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:32:7 - line:32:7] decl=Main.(file).printNumberName(_:).$match@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:32:7 function_ref=unapplied)))))
+          (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:33:3 - line:33:16]
+            (call_expr type='()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:33:3 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:33:3 - line:33:16] nothrow arg_labels=_:
+              (declref_expr type='(Any..., String, String) -> ()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:33:3 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:33:3 - line:33:3] decl=Swift.(file).print(_:separator:terminator:) function_ref=single)
+              (tuple_expr type='(Any..., separator: String, terminator: String)' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:33:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:33:8 - line:33:16] names='',separator,terminator
+                (vararg_expansion_expr implicit type='[Any]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:33:9 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:33:9 - line:33:9]
+                  (array_expr implicit type='[Any]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:33:9 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:33:9 - line:33:9] initializer=**NULL**
+                    (erasure_expr implicit type='Any' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:33:9 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:33:9 - line:33:9]
+                      (string_literal_expr type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:33:9 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:33:9 - line:33:9] encoding=utf8 value="Three" builtin_initializer=Swift.(file).String extension.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**))))
+                (default_argument_expr implicit type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:33:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:33:8 - line:33:8] default_args_owner=Swift.(file).print(_:separator:terminator:) param=1)
+                (default_argument_expr implicit type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:33:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:33:8 - line:33:8] default_args_owner=Swift.(file).print(_:separator:terminator:) param=2)))))
+        (case_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:34:2 - line:35:23]
+          (case_body_variables
+          )
+          (case_label_item
+          (pattern_expr type='Int'
+            (binary_expr implicit type='Bool' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:34:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:34:7 - line:34:11] nothrow
+              (dot_syntax_call_expr implicit type='(ClosedRange<Int>, Int) -> Bool' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:34:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:34:7 - line:34:7] nothrow
+                (declref_expr implicit type='(ClosedRange<Int>.Type) -> (ClosedRange<Int>, Int) -> Bool' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:34:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:34:7 - line:34:7] decl=Swift.(file).RangeExpression extension.~= [with (substitution_map generic_signature=<Self where Self : RangeExpression> (substitution Self -> ClosedRange<Int>))] function_ref=compound)
+                (type_expr implicit type='ClosedRange<Int>.Type' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:34:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:34:7 - line:34:7] typerepr='ClosedRange<Int>'))
+              (tuple_expr implicit type='(ClosedRange<Int>, Int)' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:34:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:34:7 - line:34:11]
+                (binary_expr type='ClosedRange<Int>' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:34:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:34:7 - line:34:11] nothrow
+                  (dot_syntax_call_expr implicit type='(Int, Int) -> ClosedRange<Int>' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:34:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:34:8 - line:34:8] nothrow
+                    (declref_expr type='(Int.Type) -> (Int, Int) -> ClosedRange<Int>' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:34:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:34:8 - line:34:8] decl=Swift.(file).Comparable extension.... [with (substitution_map generic_signature=<Self where Self : Comparable> (substitution Self -> Int))] function_ref=single)
+                    (type_expr implicit type='Int.Type' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:34:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:34:8 - line:34:8] typerepr='Int'))
+                  (tuple_expr implicit type='(Int, Int)' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:34:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:34:7 - line:34:11]
+                    (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:34:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:34:7 - line:34:7] value=4 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**)
+                    (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:34:11 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:34:11 - line:34:11] value=5 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**)))
+                (declref_expr implicit type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:34:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:34:7 - line:34:7] decl=Main.(file).printNumberName(_:).$match@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:34:7 function_ref=unapplied)))))
+          (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:35:3 - line:35:23]
+            (call_expr type='()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:35:3 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:35:3 - line:35:23] nothrow arg_labels=_:
+              (declref_expr type='(Any..., String, String) -> ()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:35:3 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:35:3 - line:35:3] decl=Swift.(file).print(_:separator:terminator:) function_ref=single)
+              (tuple_expr type='(Any..., separator: String, terminator: String)' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:35:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:35:8 - line:35:23] names='',separator,terminator
+                (vararg_expansion_expr implicit type='[Any]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:35:9 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:35:9 - line:35:9]
+                  (array_expr implicit type='[Any]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:35:9 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:35:9 - line:35:9] initializer=**NULL**
+                    (erasure_expr implicit type='Any' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:35:9 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:35:9 - line:35:9]
+                      (string_literal_expr type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:35:9 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:35:9 - line:35:9] encoding=utf8 value="Four or five" builtin_initializer=Swift.(file).String extension.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**))))
+                (default_argument_expr implicit type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:35:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:35:8 - line:35:8] default_args_owner=Swift.(file).print(_:separator:terminator:) param=1)
+                (default_argument_expr implicit type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:35:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:35:8 - line:35:8] default_args_owner=Swift.(file).print(_:separator:terminator:) param=2)))))
+        (case_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:36:2 - line:37:24]
+          (case_body_variables
+          )
+          (case_label_item
+          (pattern_expr type='Int'
+            (binary_expr implicit type='Bool' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:36:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:36:7 - line:36:11] nothrow
+              (dot_syntax_call_expr implicit type='(Range<Int>, Int) -> Bool' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:36:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:36:7 - line:36:7] nothrow
+                (declref_expr implicit type='(Range<Int>.Type) -> (Range<Int>, Int) -> Bool' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:36:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:36:7 - line:36:7] decl=Swift.(file).RangeExpression extension.~= [with (substitution_map generic_signature=<Self where Self : RangeExpression> (substitution Self -> Range<Int>))] function_ref=compound)
+                (type_expr implicit type='Range<Int>.Type' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:36:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:36:7 - line:36:7] typerepr='Range<Int>'))
+              (tuple_expr implicit type='(Range<Int>, Int)' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:36:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:36:7 - line:36:11]
+                (binary_expr type='Range<Int>' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:36:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:36:7 - line:36:11] nothrow
+                  (dot_syntax_call_expr implicit type='(Int, Int) -> Range<Int>' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:36:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:36:8 - line:36:8] nothrow
+                    (declref_expr type='(Int.Type) -> (Int, Int) -> Range<Int>' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:36:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:36:8 - line:36:8] decl=Swift.(file).Comparable extension...< [with (substitution_map generic_signature=<Self where Self : Comparable> (substitution Self -> Int))] function_ref=single)
+                    (type_expr implicit type='Int.Type' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:36:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:36:8 - line:36:8] typerepr='Int'))
+                  (tuple_expr implicit type='(Int, Int)' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:36:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:36:7 - line:36:11]
+                    (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:36:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:36:7 - line:36:7] value=6 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**)
+                    (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:36:11 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:36:11 - line:36:11] value=10 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**)))
+                (declref_expr implicit type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:36:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:36:7 - line:36:7] decl=Main.(file).printNumberName(_:).$match@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:36:7 function_ref=unapplied)))))
+          (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:37:3 - line:37:24]
+            (call_expr type='()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:37:3 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:37:3 - line:37:24] nothrow arg_labels=_:
+              (declref_expr type='(Any..., String, String) -> ()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:37:3 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:37:3 - line:37:3] decl=Swift.(file).print(_:separator:terminator:) function_ref=single)
+              (tuple_expr type='(Any..., separator: String, terminator: String)' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:37:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:37:8 - line:37:24] names='',separator,terminator
+                (vararg_expansion_expr implicit type='[Any]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:37:9 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:37:9 - line:37:9]
+                  (array_expr implicit type='[Any]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:37:9 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:37:9 - line:37:9] initializer=**NULL**
+                    (erasure_expr implicit type='Any' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:37:9 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:37:9 - line:37:9]
+                      (string_literal_expr type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:37:9 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:37:9 - line:37:9] encoding=utf8 value="Less than ten" builtin_initializer=Swift.(file).String extension.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**))))
+                (default_argument_expr implicit type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:37:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:37:8 - line:37:8] default_args_owner=Swift.(file).print(_:separator:terminator:) param=1)
+                (default_argument_expr implicit type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:37:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:37:8 - line:37:8] default_args_owner=Swift.(file).print(_:separator:terminator:) param=2)))))
+        (case_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:38:2 - line:39:17]
+          (case_label_item default
+          (pattern_any type='Int'))
+          (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:39:3 - line:39:17]
+            (call_expr type='()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:39:3 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:39:3 - line:39:17] nothrow arg_labels=_:
+              (declref_expr type='(Any..., String, String) -> ()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:39:3 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:39:3 - line:39:3] decl=Swift.(file).print(_:separator:terminator:) function_ref=single)
+              (tuple_expr type='(Any..., separator: String, terminator: String)' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:39:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:39:8 - line:39:17] names='',separator,terminator
+                (vararg_expansion_expr implicit type='[Any]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:39:9 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:39:9 - line:39:9]
+                  (array_expr implicit type='[Any]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:39:9 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:39:9 - line:39:9] initializer=**NULL**
+                    (erasure_expr implicit type='Any' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:39:9 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:39:9 - line:39:9]
+                      (string_literal_expr type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:39:9 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:39:9 - line:39:9] encoding=utf8 value="Dunno!" builtin_initializer=Swift.(file).String extension.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**))))
+                (default_argument_expr implicit type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:39:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:39:8 - line:39:8] default_args_owner=Swift.(file).print(_:separator:terminator:) param=1)
+                (default_argument_expr implicit type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:39:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:39:8 - line:39:8] default_args_owner=Swift.(file).print(_:separator:terminator:) param=2))))))))
+  (top_level_code_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:43:1 - line:43:18]
+    (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:43:1 - line:43:18]
+      (call_expr type='()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:43:1 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:43:1 - line:43:18] nothrow arg_labels=_:
+        (declref_expr type='(Int) -> ()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:43:1 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:43:1 - line:43:1] decl=Main.(file).printNumberName@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:24:6 function_ref=single)
+        (paren_expr type='(Int)' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:43:17 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:43:16 - line:43:18]
+          (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:43:17 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:43:17 - line:43:17] value=0 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**)))))
+  (top_level_code_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:44:1 - line:44:18]
+    (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:44:1 - line:44:18]
+      (call_expr type='()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:44:1 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:44:1 - line:44:18] nothrow arg_labels=_:
+        (declref_expr type='(Int) -> ()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:44:1 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:44:1 - line:44:1] decl=Main.(file).printNumberName@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:24:6 function_ref=single)
+        (paren_expr type='(Int)' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:44:17 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:44:16 - line:44:18]
+          (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:44:17 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:44:17 - line:44:17] value=1 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**)))))
+  (top_level_code_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:45:1 - line:45:18]
+    (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:45:1 - line:45:18]
+      (call_expr type='()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:45:1 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:45:1 - line:45:18] nothrow arg_labels=_:
+        (declref_expr type='(Int) -> ()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:45:1 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:45:1 - line:45:1] decl=Main.(file).printNumberName@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:24:6 function_ref=single)
+        (paren_expr type='(Int)' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:45:17 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:45:16 - line:45:18]
+          (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:45:17 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:45:17 - line:45:17] value=2 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**)))))
+  (top_level_code_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:46:1 - line:46:18]
+    (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:46:1 - line:46:18]
+      (call_expr type='()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:46:1 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:46:1 - line:46:18] nothrow arg_labels=_:
+        (declref_expr type='(Int) -> ()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:46:1 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:46:1 - line:46:1] decl=Main.(file).printNumberName@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:24:6 function_ref=single)
+        (paren_expr type='(Int)' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:46:17 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:46:16 - line:46:18]
+          (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:46:17 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:46:17 - line:46:17] value=3 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**)))))
+  (top_level_code_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:47:1 - line:47:18]
+    (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:47:1 - line:47:18]
+      (call_expr type='()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:47:1 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:47:1 - line:47:18] nothrow arg_labels=_:
+        (declref_expr type='(Int) -> ()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:47:1 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:47:1 - line:47:1] decl=Main.(file).printNumberName@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:24:6 function_ref=single)
+        (paren_expr type='(Int)' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:47:17 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:47:16 - line:47:18]
+          (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:47:17 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:47:17 - line:47:17] value=4 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**)))))
+  (top_level_code_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:48:1 - line:48:18]
+    (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:48:1 - line:48:18]
+      (call_expr type='()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:48:1 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:48:1 - line:48:18] nothrow arg_labels=_:
+        (declref_expr type='(Int) -> ()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:48:1 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:48:1 - line:48:1] decl=Main.(file).printNumberName@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:24:6 function_ref=single)
+        (paren_expr type='(Int)' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:48:17 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:48:16 - line:48:18]
+          (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:48:17 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:48:17 - line:48:17] value=7 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**)))))
+  (top_level_code_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:49:1 - line:49:19]
+    (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:49:1 - line:49:19]
+      (call_expr type='()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:49:1 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:49:1 - line:49:19] nothrow arg_labels=_:
+        (declref_expr type='(Int) -> ()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:49:1 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:49:1 - line:49:1] decl=Main.(file).printNumberName@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:24:6 function_ref=single)
+        (paren_expr type='(Int)' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:49:17 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:49:16 - line:49:19]
+          (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:49:17 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:49:17 - line:49:17] value=10 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**)))))
+  (func_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:52:1 - line:65:1] "getNumberName(_:)" interface type='(Int) -> String' access=internal
+    (parameter_list range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:52:19 - line:52:28]
+      (parameter "x" type='Int' interface type='Int'))
+    (result
+      (type_ident
+        (component id='String' bind=Swift.(file).String)))
+    (brace_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:52:40 - line:65:1]
+      (switch_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:53:2 - line:64:2]
+        (declref_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:53:9 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:53:9 - line:53:9] decl=Main.(file).getNumberName(_:).x@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:52:22 function_ref=unapplied)
+        (case_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:54:2 - line:55:10]
+          (case_body_variables
+          )
+          (case_label_item
+          (pattern_expr type='Int'
+            (binary_expr implicit type='Bool' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:54:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:54:7 - line:54:7] nothrow
+              (declref_expr implicit type='(Int, Int) -> Bool' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:54:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:54:7 - line:54:7] decl=Swift.(file).~= [with (substitution_map generic_signature=<T where T : Equatable> (substitution T -> Int))] function_ref=compound)
+              (tuple_expr implicit type='(Int, Int)' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:54:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:54:7 - line:54:7]
+                (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:54:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:54:7 - line:54:7] value=0 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**)
+                (declref_expr implicit type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:54:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:54:7 - line:54:7] decl=Main.(file).getNumberName(_:).$match@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:54:7 function_ref=unapplied)))))
+          (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:55:3 - line:55:10]
+            (return_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:55:3 - line:55:10]
+              (string_literal_expr type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:55:10 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:55:10 - line:55:10] encoding=utf8 value="Zero" builtin_initializer=Swift.(file).String extension.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**))))
+        (case_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:56:2 - line:57:10]
+          (case_body_variables
+          )
+          (case_label_item
+          (pattern_expr type='Int'
+            (binary_expr implicit type='Bool' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:56:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:56:7 - line:56:7] nothrow
+              (declref_expr implicit type='(Int, Int) -> Bool' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:56:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:56:7 - line:56:7] decl=Swift.(file).~= [with (substitution_map generic_signature=<T where T : Equatable> (substitution T -> Int))] function_ref=compound)
+              (tuple_expr implicit type='(Int, Int)' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:56:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:56:7 - line:56:7]
+                (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:56:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:56:7 - line:56:7] value=1 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**)
+                (declref_expr implicit type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:56:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:56:7 - line:56:7] decl=Main.(file).getNumberName(_:).$match@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:56:7 function_ref=unapplied)))))
+          (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:57:3 - line:57:10]
+            (return_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:57:3 - line:57:10]
+              (string_literal_expr type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:57:10 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:57:10 - line:57:10] encoding=utf8 value="One" builtin_initializer=Swift.(file).String extension.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**))))
+        (case_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:58:2 - line:59:10]
+          (case_body_variables
+          )
+          (case_label_item
+          (pattern_expr type='Int'
+            (binary_expr implicit type='Bool' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:58:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:58:7 - line:58:7] nothrow
+              (declref_expr implicit type='(Int, Int) -> Bool' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:58:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:58:7 - line:58:7] decl=Swift.(file).~= [with (substitution_map generic_signature=<T where T : Equatable> (substitution T -> Int))] function_ref=compound)
+              (tuple_expr implicit type='(Int, Int)' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:58:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:58:7 - line:58:7]
+                (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:58:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:58:7 - line:58:7] value=2 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**)
+                (declref_expr implicit type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:58:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:58:7 - line:58:7] decl=Main.(file).getNumberName(_:).$match@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:58:7 function_ref=unapplied)))))
+          (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:59:3 - line:59:10]
+            (return_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:59:3 - line:59:10]
+              (string_literal_expr type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:59:10 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:59:10 - line:59:10] encoding=utf8 value="Two" builtin_initializer=Swift.(file).String extension.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**))))
+        (case_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:60:2 - line:61:10]
+          (case_body_variables
+          )
+          (case_label_item
+          (pattern_expr type='Int'
+            (binary_expr implicit type='Bool' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:60:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:60:7 - line:60:7] nothrow
+              (declref_expr implicit type='(Int, Int) -> Bool' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:60:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:60:7 - line:60:7] decl=Swift.(file).~= [with (substitution_map generic_signature=<T where T : Equatable> (substitution T -> Int))] function_ref=compound)
+              (tuple_expr implicit type='(Int, Int)' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:60:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:60:7 - line:60:7]
+                (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:60:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:60:7 - line:60:7] value=3 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**)
+                (declref_expr implicit type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:60:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:60:7 - line:60:7] decl=Main.(file).getNumberName(_:).$match@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:60:7 function_ref=unapplied)))))
+          (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:61:3 - line:61:10]
+            (return_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:61:3 - line:61:10]
+              (string_literal_expr type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:61:10 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:61:10 - line:61:10] encoding=utf8 value="Three" builtin_initializer=Swift.(file).String extension.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**))))
+        (case_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:62:2 - line:63:10]
+          (case_label_item default
+          (pattern_any type='Int'))
+          (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:63:3 - line:63:10]
+            (return_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:63:3 - line:63:10]
+              (string_literal_expr type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:63:10 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:63:10 - line:63:10] encoding=utf8 value="Dunno!" builtin_initializer=Swift.(file).String extension.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**)))))))
+  (top_level_code_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:67:1 - line:67:23]
+    (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:67:1 - line:67:23]
+      (call_expr type='()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:67:1 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:67:1 - line:67:23] nothrow arg_labels=_:
+        (declref_expr type='(Any..., String, String) -> ()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:67:1 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:67:1 - line:67:1] decl=Swift.(file).print(_:separator:terminator:) function_ref=single)
+        (tuple_expr type='(Any..., separator: String, terminator: String)' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:67:6 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:67:6 - line:67:23] names='',separator,terminator
+          (vararg_expansion_expr implicit type='[Any]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:67:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:67:7 - line:67:22]
+            (array_expr implicit type='[Any]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:67:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:67:7 - line:67:22] initializer=**NULL**
+              (erasure_expr implicit type='Any' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:67:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:67:7 - line:67:22]
+                (call_expr type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:67:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:67:7 - line:67:22] nothrow arg_labels=_:
+                  (declref_expr type='(Int) -> String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:67:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:67:7 - line:67:7] decl=Main.(file).getNumberName@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:52:6 function_ref=single)
+                  (paren_expr type='(Int)' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:67:21 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:67:20 - line:67:22]
+                    (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:67:21 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:67:21 - line:67:21] value=0 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**))))))
+          (default_argument_expr implicit type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:67:6 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:67:6 - line:67:6] default_args_owner=Swift.(file).print(_:separator:terminator:) param=1)
+          (default_argument_expr implicit type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:67:6 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:67:6 - line:67:6] default_args_owner=Swift.(file).print(_:separator:terminator:) param=2)))))
+  (top_level_code_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:68:1 - line:68:23]
+    (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:68:1 - line:68:23]
+      (call_expr type='()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:68:1 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:68:1 - line:68:23] nothrow arg_labels=_:
+        (declref_expr type='(Any..., String, String) -> ()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:68:1 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:68:1 - line:68:1] decl=Swift.(file).print(_:separator:terminator:) function_ref=single)
+        (tuple_expr type='(Any..., separator: String, terminator: String)' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:68:6 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:68:6 - line:68:23] names='',separator,terminator
+          (vararg_expansion_expr implicit type='[Any]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:68:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:68:7 - line:68:22]
+            (array_expr implicit type='[Any]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:68:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:68:7 - line:68:22] initializer=**NULL**
+              (erasure_expr implicit type='Any' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:68:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:68:7 - line:68:22]
+                (call_expr type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:68:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:68:7 - line:68:22] nothrow arg_labels=_:
+                  (declref_expr type='(Int) -> String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:68:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:68:7 - line:68:7] decl=Main.(file).getNumberName@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:52:6 function_ref=single)
+                  (paren_expr type='(Int)' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:68:21 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:68:20 - line:68:22]
+                    (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:68:21 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:68:21 - line:68:21] value=1 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**))))))
+          (default_argument_expr implicit type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:68:6 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:68:6 - line:68:6] default_args_owner=Swift.(file).print(_:separator:terminator:) param=1)
+          (default_argument_expr implicit type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:68:6 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:68:6 - line:68:6] default_args_owner=Swift.(file).print(_:separator:terminator:) param=2)))))
+  (top_level_code_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:69:1 - line:69:23]
+    (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:69:1 - line:69:23]
+      (call_expr type='()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:69:1 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:69:1 - line:69:23] nothrow arg_labels=_:
+        (declref_expr type='(Any..., String, String) -> ()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:69:1 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:69:1 - line:69:1] decl=Swift.(file).print(_:separator:terminator:) function_ref=single)
+        (tuple_expr type='(Any..., separator: String, terminator: String)' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:69:6 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:69:6 - line:69:23] names='',separator,terminator
+          (vararg_expansion_expr implicit type='[Any]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:69:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:69:7 - line:69:22]
+            (array_expr implicit type='[Any]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:69:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:69:7 - line:69:22] initializer=**NULL**
+              (erasure_expr implicit type='Any' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:69:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:69:7 - line:69:22]
+                (call_expr type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:69:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:69:7 - line:69:22] nothrow arg_labels=_:
+                  (declref_expr type='(Int) -> String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:69:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:69:7 - line:69:7] decl=Main.(file).getNumberName@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:52:6 function_ref=single)
+                  (paren_expr type='(Int)' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:69:21 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:69:20 - line:69:22]
+                    (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:69:21 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:69:21 - line:69:21] value=2 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**))))))
+          (default_argument_expr implicit type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:69:6 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:69:6 - line:69:6] default_args_owner=Swift.(file).print(_:separator:terminator:) param=1)
+          (default_argument_expr implicit type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:69:6 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:69:6 - line:69:6] default_args_owner=Swift.(file).print(_:separator:terminator:) param=2)))))
+  (top_level_code_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:70:1 - line:70:23]
+    (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:70:1 - line:70:23]
+      (call_expr type='()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:70:1 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:70:1 - line:70:23] nothrow arg_labels=_:
+        (declref_expr type='(Any..., String, String) -> ()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:70:1 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:70:1 - line:70:1] decl=Swift.(file).print(_:separator:terminator:) function_ref=single)
+        (tuple_expr type='(Any..., separator: String, terminator: String)' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:70:6 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:70:6 - line:70:23] names='',separator,terminator
+          (vararg_expansion_expr implicit type='[Any]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:70:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:70:7 - line:70:22]
+            (array_expr implicit type='[Any]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:70:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:70:7 - line:70:22] initializer=**NULL**
+              (erasure_expr implicit type='Any' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:70:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:70:7 - line:70:22]
+                (call_expr type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:70:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:70:7 - line:70:22] nothrow arg_labels=_:
+                  (declref_expr type='(Int) -> String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:70:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:70:7 - line:70:7] decl=Main.(file).getNumberName@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:52:6 function_ref=single)
+                  (paren_expr type='(Int)' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:70:21 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:70:20 - line:70:22]
+                    (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:70:21 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:70:21 - line:70:21] value=3 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**))))))
+          (default_argument_expr implicit type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:70:6 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:70:6 - line:70:6] default_args_owner=Swift.(file).print(_:separator:terminator:) param=1)
+          (default_argument_expr implicit type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:70:6 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:70:6 - line:70:6] default_args_owner=Swift.(file).print(_:separator:terminator:) param=2)))))
+  (top_level_code_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:71:1 - line:71:23]
+    (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:71:1 - line:71:23]
+      (call_expr type='()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:71:1 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:71:1 - line:71:23] nothrow arg_labels=_:
+        (declref_expr type='(Any..., String, String) -> ()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:71:1 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:71:1 - line:71:1] decl=Swift.(file).print(_:separator:terminator:) function_ref=single)
+        (tuple_expr type='(Any..., separator: String, terminator: String)' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:71:6 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:71:6 - line:71:23] names='',separator,terminator
+          (vararg_expansion_expr implicit type='[Any]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:71:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:71:7 - line:71:22]
+            (array_expr implicit type='[Any]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:71:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:71:7 - line:71:22] initializer=**NULL**
+              (erasure_expr implicit type='Any' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:71:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:71:7 - line:71:22]
+                (call_expr type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:71:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:71:7 - line:71:22] nothrow arg_labels=_:
+                  (declref_expr type='(Int) -> String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:71:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:71:7 - line:71:7] decl=Main.(file).getNumberName@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:52:6 function_ref=single)
+                  (paren_expr type='(Int)' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:71:21 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:71:20 - line:71:22]
+                    (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:71:21 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:71:21 - line:71:21] value=4 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**))))))
+          (default_argument_expr implicit type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:71:6 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:71:6 - line:71:6] default_args_owner=Swift.(file).print(_:separator:terminator:) param=1)
+          (default_argument_expr implicit type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:71:6 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:71:6 - line:71:6] default_args_owner=Swift.(file).print(_:separator:terminator:) param=2)))))
+  (top_level_code_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:75:1 - line:75:9]
+    (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:75:1 - line:75:9]
+      (pattern_binding_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:75:1 - line:75:9]
+        (pattern_named type='Int' 'y')
+        Original init:
+        (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:75:9 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:75:9 - line:75:9] value=0 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**)
+        Processed init:
+        (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:75:9 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:75:9 - line:75:9] value=0 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**))
+))
+  (var_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:75:5 - line:75:5] "y" type='Int' interface type='Int' access=internal readImpl=stored writeImpl=stored readWriteImpl=stored)
+  (top_level_code_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:76:1 - line:76:8]
+    (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:76:1 - line:76:8]
+      (pattern_binding_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:76:1 - line:76:8]
+        (pattern_typed type='Int'
+          (pattern_named type='Int' 'x')
+          (type_ident
+            (component id='Int' bind=Swift.(file).Int))))
+))
+  (var_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:76:5 - line:76:5] "x" type='Int' interface type='Int' access=internal readImpl=stored writeImpl=stored readWriteImpl=stored)
+  (top_level_code_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:77:1 - line:82:1]
+    (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:77:1 - line:82:1]
+      (switch_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:77:1 - line:82:1]
+        (load_expr implicit type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:77:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:77:8 - line:77:8]
+          (declref_expr type='@lvalue Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:77:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:77:8 - line:77:8] decl=Main.(file).y@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:75:5 function_ref=unapplied))
+        (case_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:78:1 - line:79:6]
+          (case_body_variables
+          )
+          (case_label_item
+          (pattern_expr type='Int'
+            (binary_expr implicit type='Bool' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:78:6 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:78:6 - line:78:6] nothrow
+              (declref_expr implicit type='(Int, Int) -> Bool' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:78:6 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:78:6 - line:78:6] decl=Swift.(file).~= [with (substitution_map generic_signature=<T where T : Equatable> (substitution T -> Int))] function_ref=compound)
+              (tuple_expr implicit type='(Int, Int)' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:78:6 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:78:6 - line:78:6]
+                (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:78:6 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:78:6 - line:78:6] value=0 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**)
+                (declref_expr implicit type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:78:6 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:78:6 - line:78:6] decl=Main.(file).top-level code.$match@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:78:6 function_ref=unapplied)))))
+          (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:79:2 - line:79:6]
+            (assign_expr type='()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:79:4 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:79:2 - line:79:6]
+              (declref_expr type='@lvalue Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:79:2 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:79:2 - line:79:2] decl=Main.(file).x@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:76:5 function_ref=unapplied)
+              (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:79:6 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:79:6 - line:79:6] value=10 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**))))
+        (case_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:80:1 - line:81:6]
+          (case_label_item default
+          (pattern_any type='Int'))
+          (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:81:2 - line:81:6]
+            (assign_expr type='()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:81:4 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:81:2 - line:81:6]
+              (declref_expr type='@lvalue Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:81:2 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:81:2 - line:81:2] decl=Main.(file).x@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:76:5 function_ref=unapplied)
+              (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:81:6 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:81:6 - line:81:6] value=20 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**)))))))
+  (top_level_code_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:84:1 - line:84:8]
+    (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:84:1 - line:84:8]
+      (call_expr type='()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:84:1 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:84:1 - line:84:8] nothrow arg_labels=_:
+        (declref_expr type='(Any..., String, String) -> ()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:84:1 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:84:1 - line:84:1] decl=Swift.(file).print(_:separator:terminator:) function_ref=single)
+        (tuple_expr type='(Any..., separator: String, terminator: String)' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:84:6 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:84:6 - line:84:8] names='',separator,terminator
+          (vararg_expansion_expr implicit type='[Any]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:84:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:84:7 - line:84:7]
+            (array_expr implicit type='[Any]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:84:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:84:7 - line:84:7] initializer=**NULL**
+              (erasure_expr implicit type='Any' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:84:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:84:7 - line:84:7]
+                (load_expr implicit type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:84:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:84:7 - line:84:7]
+                  (declref_expr type='@lvalue Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:84:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:84:7 - line:84:7] decl=Main.(file).x@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:76:5 function_ref=unapplied)))))
+          (default_argument_expr implicit type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:84:6 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:84:6 - line:84:6] default_args_owner=Swift.(file).print(_:separator:terminator:) param=1)
+          (default_argument_expr implicit type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:84:6 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:84:6 - line:84:6] default_args_owner=Swift.(file).print(_:separator:terminator:) param=2)))))
+  (top_level_code_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:87:1 - line:92:1]
+    (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:87:1 - line:92:1]
+      (switch_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:87:1 - line:92:1]
+        (load_expr implicit type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:87:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:87:8 - line:87:8]
+          (declref_expr type='@lvalue Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:87:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:87:8 - line:87:8] decl=Main.(file).y@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:75:5 function_ref=unapplied))
+        (case_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:88:1 - line:89:6]
+          (case_body_variables
+          )
+          (case_label_item
+          (pattern_expr type='Int'
+            (binary_expr implicit type='Bool' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:88:6 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:88:6 - line:88:6] nothrow
+              (declref_expr implicit type='(Int, Int) -> Bool' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:88:6 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:88:6 - line:88:6] decl=Swift.(file).~= [with (substitution_map generic_signature=<T where T : Equatable> (substitution T -> Int))] function_ref=compound)
+              (tuple_expr implicit type='(Int, Int)' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:88:6 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:88:6 - line:88:6]
+                (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:88:6 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:88:6 - line:88:6] value=0 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**)
+                (declref_expr implicit type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:88:6 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:88:6 - line:88:6] decl=Main.(file).top-level code.$match@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:88:6 function_ref=unapplied)))))
+          (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:89:2 - line:89:6]
+            (assign_expr type='()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:89:4 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:89:2 - line:89:6]
+              (declref_expr type='@lvalue Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:89:2 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:89:2 - line:89:2] decl=Main.(file).x@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:76:5 function_ref=unapplied)
+              (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:89:6 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:89:6 - line:89:6] value=100 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**))))
+        (case_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:90:1 - line:91:6]
+          (case_label_item default
+          (pattern_any type='Int'))
+          (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:91:2 - line:91:6]
+            (assign_expr type='()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:91:4 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:91:2 - line:91:6]
+              (declref_expr type='@lvalue Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:91:2 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:91:2 - line:91:2] decl=Main.(file).x@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:76:5 function_ref=unapplied)
+              (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:91:6 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:91:6 - line:91:6] value=200 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**)))))))
+  (top_level_code_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:94:1 - line:94:8]
+    (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:94:1 - line:94:8]
+      (call_expr type='()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:94:1 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:94:1 - line:94:8] nothrow arg_labels=_:
+        (declref_expr type='(Any..., String, String) -> ()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:94:1 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:94:1 - line:94:1] decl=Swift.(file).print(_:separator:terminator:) function_ref=single)
+        (tuple_expr type='(Any..., separator: String, terminator: String)' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:94:6 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:94:6 - line:94:8] names='',separator,terminator
+          (vararg_expansion_expr implicit type='[Any]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:94:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:94:7 - line:94:7]
+            (array_expr implicit type='[Any]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:94:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:94:7 - line:94:7] initializer=**NULL**
+              (erasure_expr implicit type='Any' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:94:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:94:7 - line:94:7]
+                (load_expr implicit type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:94:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:94:7 - line:94:7]
+                  (declref_expr type='@lvalue Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:94:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:94:7 - line:94:7] decl=Main.(file).x@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:76:5 function_ref=unapplied)))))
+          (default_argument_expr implicit type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:94:6 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:94:6 - line:94:6] default_args_owner=Swift.(file).print(_:separator:terminator:) param=1)
+          (default_argument_expr implicit type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:94:6 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:94:6 - line:94:6] default_args_owner=Swift.(file).print(_:separator:terminator:) param=2)))))
+  (enum_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:97:1 - line:99:1] "MyEnum" interface type='MyEnum.Type' access=internal non-resilient
+    (enum_case_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:98:2 - line:98:19]
+      (enum_element_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:98:7 - line:98:7] "a" interface type='(MyEnum.Type) -> MyEnum' access=internal)
+      (enum_element_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:98:10 - line:98:10] "b" interface type='(MyEnum.Type) -> MyEnum' access=internal)
+      (enum_element_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:98:13 - line:98:13] "c" interface type='(MyEnum.Type) -> MyEnum' access=internal)
+      (enum_element_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:98:16 - line:98:16] "d" interface type='(MyEnum.Type) -> MyEnum' access=internal)
+      (enum_element_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:98:19 - line:98:19] "e" interface type='(MyEnum.Type) -> MyEnum' access=internal))
+    (enum_element_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:98:7 - line:98:7] "a" interface type='(MyEnum.Type) -> MyEnum' access=internal)
+    (enum_element_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:98:10 - line:98:10] "b" interface type='(MyEnum.Type) -> MyEnum' access=internal)
+    (enum_element_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:98:13 - line:98:13] "c" interface type='(MyEnum.Type) -> MyEnum' access=internal)
+    (enum_element_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:98:16 - line:98:16] "d" interface type='(MyEnum.Type) -> MyEnum' access=internal)
+    (enum_element_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:98:19 - line:98:19] "e" interface type='(MyEnum.Type) -> MyEnum' access=internal)
+    (func_decl implicit "__derived_enum_equals(_:_:)" interface type='(MyEnum.Type) -> (MyEnum, MyEnum) -> Bool' access=internal type
+      (parameter "self")
+      (parameter_list
+        (parameter "a" type='MyEnum' interface type='MyEnum')
+        (parameter "b" type='MyEnum' interface type='MyEnum'))
+      (brace_stmt implicit
+        (pattern_binding_decl implicit
+          (pattern_typed implicit type='Int'
+            (pattern_named implicit type='Int' 'index_a')))
+
+        (switch_stmt implicit
+          (declref_expr implicit type='MyEnum' decl=Main.(file).MyEnum.__derived_enum_equals(_:_:).a function_ref=unapplied)
+          (case_stmt implicit
+            (case_label_item
+            (pattern_enum_element implicit type='MyEnum' MyEnum._))
+            (brace_stmt implicit
+              (assign_expr implicit type='()'
+                (declref_expr implicit type='@lvalue Int' decl=Main.(file).MyEnum.__derived_enum_equals(_:_:).index_a function_ref=unapplied)
+                (integer_literal_expr implicit type='Int' value=0 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**))))
+          (case_stmt implicit
+            (case_label_item
+            (pattern_enum_element implicit type='MyEnum' MyEnum._))
+            (brace_stmt implicit
+              (assign_expr implicit type='()'
+                (declref_expr implicit type='@lvalue Int' decl=Main.(file).MyEnum.__derived_enum_equals(_:_:).index_a function_ref=unapplied)
+                (integer_literal_expr implicit type='Int' value=1 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**))))
+          (case_stmt implicit
+            (case_label_item
+            (pattern_enum_element implicit type='MyEnum' MyEnum._))
+            (brace_stmt implicit
+              (assign_expr implicit type='()'
+                (declref_expr implicit type='@lvalue Int' decl=Main.(file).MyEnum.__derived_enum_equals(_:_:).index_a function_ref=unapplied)
+                (integer_literal_expr implicit type='Int' value=2 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**))))
+          (case_stmt implicit
+            (case_label_item
+            (pattern_enum_element implicit type='MyEnum' MyEnum._))
+            (brace_stmt implicit
+              (assign_expr implicit type='()'
+                (declref_expr implicit type='@lvalue Int' decl=Main.(file).MyEnum.__derived_enum_equals(_:_:).index_a function_ref=unapplied)
+                (integer_literal_expr implicit type='Int' value=3 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**))))
+          (case_stmt implicit
+            (case_label_item
+            (pattern_enum_element implicit type='MyEnum' MyEnum._))
+            (brace_stmt implicit
+              (assign_expr implicit type='()'
+                (declref_expr implicit type='@lvalue Int' decl=Main.(file).MyEnum.__derived_enum_equals(_:_:).index_a function_ref=unapplied)
+                (integer_literal_expr implicit type='Int' value=4 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**)))))
+        (pattern_binding_decl implicit
+          (pattern_typed implicit type='Int'
+            (pattern_named implicit type='Int' 'index_b')))
+
+        (switch_stmt implicit
+          (declref_expr implicit type='MyEnum' decl=Main.(file).MyEnum.__derived_enum_equals(_:_:).b function_ref=unapplied)
+          (case_stmt implicit
+            (case_label_item
+            (pattern_enum_element implicit type='MyEnum' MyEnum._))
+            (brace_stmt implicit
+              (assign_expr implicit type='()'
+                (declref_expr implicit type='@lvalue Int' decl=Main.(file).MyEnum.__derived_enum_equals(_:_:).index_b function_ref=unapplied)
+                (integer_literal_expr implicit type='Int' value=0 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**))))
+          (case_stmt implicit
+            (case_label_item
+            (pattern_enum_element implicit type='MyEnum' MyEnum._))
+            (brace_stmt implicit
+              (assign_expr implicit type='()'
+                (declref_expr implicit type='@lvalue Int' decl=Main.(file).MyEnum.__derived_enum_equals(_:_:).index_b function_ref=unapplied)
+                (integer_literal_expr implicit type='Int' value=1 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**))))
+          (case_stmt implicit
+            (case_label_item
+            (pattern_enum_element implicit type='MyEnum' MyEnum._))
+            (brace_stmt implicit
+              (assign_expr implicit type='()'
+                (declref_expr implicit type='@lvalue Int' decl=Main.(file).MyEnum.__derived_enum_equals(_:_:).index_b function_ref=unapplied)
+                (integer_literal_expr implicit type='Int' value=2 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**))))
+          (case_stmt implicit
+            (case_label_item
+            (pattern_enum_element implicit type='MyEnum' MyEnum._))
+            (brace_stmt implicit
+              (assign_expr implicit type='()'
+                (declref_expr implicit type='@lvalue Int' decl=Main.(file).MyEnum.__derived_enum_equals(_:_:).index_b function_ref=unapplied)
+                (integer_literal_expr implicit type='Int' value=3 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**))))
+          (case_stmt implicit
+            (case_label_item
+            (pattern_enum_element implicit type='MyEnum' MyEnum._))
+            (brace_stmt implicit
+              (assign_expr implicit type='()'
+                (declref_expr implicit type='@lvalue Int' decl=Main.(file).MyEnum.__derived_enum_equals(_:_:).index_b function_ref=unapplied)
+                (integer_literal_expr implicit type='Int' value=4 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**)))))
+        (return_stmt implicit
+          (binary_expr implicit type='Bool' nothrow
+            (dot_syntax_call_expr implicit type='(Int, Int) -> Bool' nothrow
+              (declref_expr implicit type='(Int.Type) -> (Int, Int) -> Bool' decl=Swift.(file).Int.== function_ref=unapplied)
+              (type_expr implicit type='Int.Type' typerepr='<<NULL>>'))
+            (tuple_expr implicit type='(Int, Int)'
+              (declref_expr implicit type='Int' decl=Main.(file).MyEnum.__derived_enum_equals(_:_:).index_a function_ref=unapplied)
+              (declref_expr implicit type='Int' decl=Main.(file).MyEnum.__derived_enum_equals(_:_:).index_b function_ref=unapplied))))))
+    (var_decl implicit "hashValue" type='Int' interface type='Int' access=internal readImpl=getter immutable
+      (accessor_decl implicit 'anonname=0x10a011b48' interface type='(MyEnum) -> () -> Int' access=internal get_for=hashValue
+        (parameter "self" type='MyEnum' interface type='MyEnum')
+        (parameter_list)
+        (brace_stmt implicit
+          (return_stmt implicit
+            (call_expr implicit type='Int' nothrow arg_labels=for:
+              (declref_expr implicit type='(MyEnum) -> Int' decl=Swift.(file)._hashValue(for:) [with (substitution_map generic_signature=<H where H : Hashable> (substitution H -> MyEnum))] function_ref=unapplied)
+              (tuple_expr implicit type='(for: MyEnum)' names=for
+                (declref_expr implicit type='MyEnum' decl=Main.(file).MyEnum.<anonymous>.self function_ref=unapplied)))))))
+    (pattern_binding_decl implicit
+      (pattern_typed implicit type='Int'
+        (pattern_named implicit type='Int' 'hashValue')))
+    (func_decl implicit "hash(into:)" interface type='(MyEnum) -> (inout Hasher) -> ()' access=internal
+      (parameter "self" type='MyEnum' interface type='MyEnum')
+      (parameter_list
+        (parameter "hasher" apiName=into type='Hasher' interface type='Hasher' inout))
+      (brace_stmt implicit
+        (pattern_binding_decl implicit
+          (pattern_typed implicit type='Int'
+            (pattern_named implicit type='Int' 'discriminator')))
+
+        (switch_stmt implicit
+          (declref_expr implicit type='MyEnum' decl=Main.(file).MyEnum.hash(into:).self function_ref=unapplied)
+          (case_stmt implicit
+            (case_label_item
+            (pattern_enum_element implicit type='MyEnum' MyEnum._))
+            (brace_stmt implicit
+              (assign_expr implicit type='()'
+                (declref_expr implicit type='@lvalue Int' decl=Main.(file).MyEnum.hash(into:).discriminator function_ref=unapplied)
+                (integer_literal_expr implicit type='Int' value=0 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**))))
+          (case_stmt implicit
+            (case_label_item
+            (pattern_enum_element implicit type='MyEnum' MyEnum._))
+            (brace_stmt implicit
+              (assign_expr implicit type='()'
+                (declref_expr implicit type='@lvalue Int' decl=Main.(file).MyEnum.hash(into:).discriminator function_ref=unapplied)
+                (integer_literal_expr implicit type='Int' value=1 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**))))
+          (case_stmt implicit
+            (case_label_item
+            (pattern_enum_element implicit type='MyEnum' MyEnum._))
+            (brace_stmt implicit
+              (assign_expr implicit type='()'
+                (declref_expr implicit type='@lvalue Int' decl=Main.(file).MyEnum.hash(into:).discriminator function_ref=unapplied)
+                (integer_literal_expr implicit type='Int' value=2 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**))))
+          (case_stmt implicit
+            (case_label_item
+            (pattern_enum_element implicit type='MyEnum' MyEnum._))
+            (brace_stmt implicit
+              (assign_expr implicit type='()'
+                (declref_expr implicit type='@lvalue Int' decl=Main.(file).MyEnum.hash(into:).discriminator function_ref=unapplied)
+                (integer_literal_expr implicit type='Int' value=3 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**))))
+          (case_stmt implicit
+            (case_label_item
+            (pattern_enum_element implicit type='MyEnum' MyEnum._))
+            (brace_stmt implicit
+              (assign_expr implicit type='()'
+                (declref_expr implicit type='@lvalue Int' decl=Main.(file).MyEnum.hash(into:).discriminator function_ref=unapplied)
+                (integer_literal_expr implicit type='Int' value=4 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**)))))
+        (call_expr implicit type='()' nothrow arg_labels=_:
+          (dot_syntax_call_expr implicit type='(Int) -> ()' nothrow
+            (declref_expr implicit type='(inout Hasher) -> (Int) -> ()' decl=Swift.(file).Hasher.combine [with (substitution_map generic_signature=<H where H : Hashable> (substitution H -> Int))] function_ref=single)
+            (inout_expr implicit type='inout Hasher'
+              (declref_expr implicit type='@lvalue Hasher' decl=Main.(file).MyEnum.hash(into:).hasher function_ref=unapplied)))
+          (paren_expr implicit type='(Int)'
+            (load_expr implicit type='Int'
+              (declref_expr implicit type='@lvalue Int' decl=Main.(file).MyEnum.hash(into:).discriminator function_ref=unapplied)))))))
+  (top_level_code_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:101:1 - line:101:21]
+    (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:101:1 - line:101:21]
+      (pattern_binding_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:101:1 - line:101:21]
+        (pattern_named type='MyEnum' 'myEnum')
+        Original init:
+        (unresolved_dot_expr type='<null>' field 'a' function_ref=unapplied
+          (type_expr type='MyEnum.Type' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:101:14 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:101:14 - line:101:14] typerepr='MyEnum'))
+        Processed init:
+        (dot_syntax_call_expr type='MyEnum' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:101:21 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:101:14 - line:101:21] nothrow
+          (declref_expr type='(MyEnum.Type) -> MyEnum' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:101:21 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:101:21 - line:101:21] decl=Main.(file).MyEnum.a@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:98:7 function_ref=unapplied)
+          (type_expr type='MyEnum.Type' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:101:14 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:101:14 - line:101:14] typerepr='MyEnum')))
+))
+  (var_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:101:5 - line:101:5] "myEnum" type='MyEnum' interface type='MyEnum' access=internal let readImpl=stored immutable)
+  (top_level_code_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:102:1 - line:107:1]
+    (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:102:1 - line:107:1]
+      (switch_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:102:1 - line:107:1]
+        (declref_expr type='MyEnum' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:102:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:102:8 - line:102:8] decl=Main.(file).myEnum@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:101:5 function_ref=unapplied)
+        (case_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:103:1 - line:104:17]
+          (case_body_variables
+          )
+          (case_label_item
+          (pattern_enum_element type='MyEnum' MyEnum.a))
+          (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:104:2 - line:104:17]
+            (call_expr type='()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:104:2 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:104:2 - line:104:17] nothrow arg_labels=_:
+              (declref_expr type='(Any..., String, String) -> ()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:104:2 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:104:2 - line:104:2] decl=Swift.(file).print(_:separator:terminator:) function_ref=single)
+              (tuple_expr type='(Any..., separator: String, terminator: String)' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:104:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:104:7 - line:104:17] names='',separator,terminator
+                (vararg_expansion_expr implicit type='[Any]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:104:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:104:8 - line:104:8]
+                  (array_expr implicit type='[Any]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:104:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:104:8 - line:104:8] initializer=**NULL**
+                    (erasure_expr implicit type='Any' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:104:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:104:8 - line:104:8]
+                      (string_literal_expr type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:104:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:104:8 - line:104:8] encoding=utf8 value="It's a!" builtin_initializer=Swift.(file).String extension.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**))))
+                (default_argument_expr implicit type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:104:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:104:7 - line:104:7] default_args_owner=Swift.(file).print(_:separator:terminator:) param=1)
+                (default_argument_expr implicit type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:104:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:104:7 - line:104:7] default_args_owner=Swift.(file).print(_:separator:terminator:) param=2)))))
+        (case_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:105:1 - line:106:21]
+          (case_label_item default
+          (pattern_any type='MyEnum'))
+          (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:106:2 - line:106:21]
+            (call_expr type='()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:106:2 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:106:2 - line:106:21] nothrow arg_labels=_:
+              (declref_expr type='(Any..., String, String) -> ()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:106:2 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:106:2 - line:106:2] decl=Swift.(file).print(_:separator:terminator:) function_ref=single)
+              (tuple_expr type='(Any..., separator: String, terminator: String)' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:106:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:106:7 - line:106:21] names='',separator,terminator
+                (vararg_expansion_expr implicit type='[Any]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:106:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:106:8 - line:106:8]
+                  (array_expr implicit type='[Any]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:106:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:106:8 - line:106:8] initializer=**NULL**
+                    (erasure_expr implicit type='Any' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:106:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:106:8 - line:106:8]
+                      (string_literal_expr type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:106:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:106:8 - line:106:8] encoding=utf8 value="It's not a." builtin_initializer=Swift.(file).String extension.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**))))
+                (default_argument_expr implicit type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:106:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:106:7 - line:106:7] default_args_owner=Swift.(file).print(_:separator:terminator:) param=1)
+                (default_argument_expr implicit type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:106:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:106:7 - line:106:7] default_args_owner=Swift.(file).print(_:separator:terminator:) param=2))))))))
+  (enum_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:111:1 - line:113:1] "MySealedClass" interface type='MySealedClass.Type' access=internal non-resilient
+    (enum_case_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:112:2 - line:112:17]
+      (enum_element_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:112:7 - line:112:17] "a(int:)" interface type='(MySealedClass.Type) -> (Int) -> MySealedClass' access=internal
+        (parameter_list range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:112:8 - line:112:17]
+          (parameter "int" apiName=int type='Int' interface type='Int'))))
+    (enum_element_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:112:7 - line:112:17] "a(int:)" interface type='(MySealedClass.Type) -> (Int) -> MySealedClass' access=internal
+      (parameter_list range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:112:8 - line:112:17]
+        (parameter "int" apiName=int type='Int' interface type='Int'))))
+  (top_level_code_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:115:1 - line:115:43]
+    (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:115:1 - line:115:43]
+      (pattern_binding_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:115:1 - line:115:43]
+        (pattern_named type='MySealedClass' 'mySealedClass')
+        Original init:
+        (call_expr type='MySealedClass' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:115:35 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:115:21 - line:115:43] nothrow arg_labels=int:
+          (dot_syntax_call_expr type='(Int) -> MySealedClass' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:115:35 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:115:21 - line:115:35] nothrow
+            (declref_expr type='(MySealedClass.Type) -> (Int) -> MySealedClass' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:115:35 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:115:35 - line:115:35] decl=Main.(file).MySealedClass.a(int:)@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:112:7 function_ref=single)
+            (type_expr type='MySealedClass.Type' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:115:21 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:115:21 - line:115:21] typerepr='MySealedClass'))
+          (tuple_expr type='(int: Int)' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:115:36 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:115:36 - line:115:43] names=int
+            (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:115:42 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:115:42 - line:115:42] value=0 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**)))
+        Processed init:
+        (call_expr type='MySealedClass' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:115:35 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:115:21 - line:115:43] nothrow arg_labels=int:
+          (dot_syntax_call_expr type='(Int) -> MySealedClass' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:115:35 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:115:21 - line:115:35] nothrow
+            (declref_expr type='(MySealedClass.Type) -> (Int) -> MySealedClass' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:115:35 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:115:35 - line:115:35] decl=Main.(file).MySealedClass.a(int:)@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:112:7 function_ref=single)
+            (type_expr type='MySealedClass.Type' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:115:21 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:115:21 - line:115:21] typerepr='MySealedClass'))
+          (tuple_expr type='(int: Int)' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:115:36 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:115:36 - line:115:43] names=int
+            (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:115:42 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:115:42 - line:115:42] value=0 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**))))
+))
+  (var_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:115:5 - line:115:5] "mySealedClass" type='MySealedClass' interface type='MySealedClass' access=internal let readImpl=stored immutable)
+  (top_level_code_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:116:1 - line:119:1]
+    (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:116:1 - line:119:1]
+      (switch_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:116:1 - line:119:1]
+        (declref_expr type='MySealedClass' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:116:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:116:8 - line:116:8] decl=Main.(file).mySealedClass@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:115:5 function_ref=unapplied)
+        (case_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:117:1 - line:118:11]
+          (case_body_variables
+            (var_decl implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:117:18 - line:117:18] "int" type='Int' interface type='Int' let readImpl=stored immutable)
+          )
+          (case_label_item
+          (pattern_let type='MySealedClass'
+            (pattern_enum_element type='MySealedClass' MySealedClass.a
+              (pattern_tuple type='(int: Int)' names=int
+                (pattern_named type='Int' 'int')))))
+          (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:118:2 - line:118:11]
+            (call_expr type='()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:118:2 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:118:2 - line:118:11] nothrow arg_labels=_:
+              (declref_expr type='(Any..., String, String) -> ()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:118:2 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:118:2 - line:118:2] decl=Swift.(file).print(_:separator:terminator:) function_ref=single)
+              (tuple_expr type='(Any..., separator: String, terminator: String)' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:118:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:118:7 - line:118:11] names='',separator,terminator
+                (vararg_expansion_expr implicit type='[Any]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:118:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:118:8 - line:118:8]
+                  (array_expr implicit type='[Any]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:118:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:118:8 - line:118:8] initializer=**NULL**
+                    (erasure_expr implicit type='Any' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:118:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:118:8 - line:118:8]
+                      (declref_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:118:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:118:8 - line:118:8] decl=Main.(file).top-level code.int@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:117:18 function_ref=unapplied))))
+                (default_argument_expr implicit type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:118:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:118:7 - line:118:7] default_args_owner=Swift.(file).print(_:separator:terminator:) param=1)
+                (default_argument_expr implicit type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:118:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:118:7 - line:118:7] default_args_owner=Swift.(file).print(_:separator:terminator:) param=2))))))))
+  (func_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:122:1 - line:132:1] "f()" interface type='() -> ()' access=internal
+    (parameter_list range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:122:7 - line:122:8])
+    (brace_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:122:10 - line:132:1]
+      (pattern_binding_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:123:2 - line:123:15]
+        (pattern_named type='Int' 'number')
+        Original init:
+        (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:123:15 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:123:15 - line:123:15] value=0 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**)
+        Processed init:
+        (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:123:15 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:123:15 - line:123:15] value=0 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**))
+
+      (var_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:123:6 - line:123:6] "number" type='Int' interface type='Int' access=private let readImpl=stored immutable)
+
+      (pattern_binding_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:125:2 - line:125:12]
+        (pattern_typed type='String'
+          (pattern_named type='String' 'name')
+          (type_ident
+            (component id='String' bind=Swift.(file).String))))
+
+      (var_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:125:6 - line:125:6] "name" type='String' interface type='String' access=private let readImpl=stored immutable)
+
+      (switch_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:126:2 - line:131:2]
+        (declref_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:126:9 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:126:9 - line:126:9] decl=Main.(file).f().number@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:123:6 function_ref=unapplied)
+        (case_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:127:2 - line:128:10]
+          (case_body_variables
+          )
+          (case_label_item
+          (pattern_expr type='Int'
+            (binary_expr implicit type='Bool' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:127:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:127:7 - line:127:7] nothrow
+              (declref_expr implicit type='(Int, Int) -> Bool' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:127:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:127:7 - line:127:7] decl=Swift.(file).~= [with (substitution_map generic_signature=<T where T : Equatable> (substitution T -> Int))] function_ref=compound)
+              (tuple_expr implicit type='(Int, Int)' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:127:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:127:7 - line:127:7]
+                (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:127:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:127:7 - line:127:7] value=0 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**)
+                (declref_expr implicit type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:127:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:127:7 - line:127:7] decl=Main.(file).f().$match@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:127:7 function_ref=unapplied)))))
+          (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:128:3 - line:128:10]
+            (assign_expr type='()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:128:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:128:3 - line:128:10]
+              (declref_expr type='@lvalue String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:128:3 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:128:3 - line:128:3] decl=Main.(file).f().name@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:125:6 function_ref=unapplied)
+              (string_literal_expr type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:128:10 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:128:10 - line:128:10] encoding=utf8 value="Zero" builtin_initializer=Swift.(file).String extension.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**))))
+        (case_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:129:2 - line:130:10]
+          (case_label_item default
+          (pattern_any type='Int'))
+          (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:130:3 - line:130:10]
+            (assign_expr type='()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:130:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:130:3 - line:130:10]
+              (declref_expr type='@lvalue String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:130:3 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:130:3 - line:130:3] decl=Main.(file).f().name@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:125:6 function_ref=unapplied)
+              (string_literal_expr type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:130:10 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:130:10 - line:130:10] encoding=utf8 value="More" builtin_initializer=Swift.(file).String extension.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**)))))))
+  (top_level_code_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:135:1 - line:135:14]
+    (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:135:1 - line:135:14]
+      (pattern_binding_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:135:1 - line:135:14]
+        (pattern_typed type='Int'
+          (pattern_named type='Int' 'z')
+          (type_ident
+            (component id='Int' bind=Swift.(file).Int)))
+        Original init:
+        (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:135:14 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:135:14 - line:135:14] value=0 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**)
+        Processed init:
+        (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:135:14 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:135:14 - line:135:14] value=0 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**))
+))
+  (var_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:135:5 - line:135:5] "z" type='Int' interface type='Int' access=internal let readImpl=stored immutable)
+  (top_level_code_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:136:1 - line:145:1]
+    (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:136:1 - line:145:1]
+      (switch_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:136:1 - line:145:1]
+        (declref_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:136:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:136:8 - line:136:8] decl=Main.(file).z@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:135:5 function_ref=unapplied)
+        (case_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:137:1 - line:139:9]
+          (case_body_variables
+          )
+          (case_label_item
+          (pattern_expr type='Int'
+            (binary_expr implicit type='Bool' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:137:6 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:137:6 - line:137:6] nothrow
+              (declref_expr implicit type='(Int, Int) -> Bool' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:137:6 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:137:6 - line:137:6] decl=Swift.(file).~= [with (substitution_map generic_signature=<T where T : Equatable> (substitution T -> Int))] function_ref=compound)
+              (tuple_expr implicit type='(Int, Int)' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:137:6 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:137:6 - line:137:6]
+                (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:137:6 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:137:6 - line:137:6] value=0 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**)
+                (declref_expr implicit type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:137:6 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:137:6 - line:137:6] decl=Main.(file).top-level code.$match@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:137:6 function_ref=unapplied)))))
+          (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:138:2 - line:139:9]
+            (break_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:138:2 - line:138:2])
+            (call_expr type='()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:139:2 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:139:2 - line:139:9] nothrow arg_labels=_:
+              (declref_expr type='(Any..., String, String) -> ()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:139:2 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:139:2 - line:139:2] decl=Swift.(file).print(_:separator:terminator:) function_ref=single)
+              (tuple_expr type='(Any..., separator: String, terminator: String)' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:139:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:139:7 - line:139:9] names='',separator,terminator
+                (vararg_expansion_expr implicit type='[Any]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:139:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:139:8 - line:139:8]
+                  (array_expr implicit type='[Any]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:139:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:139:8 - line:139:8] initializer=**NULL**
+                    (erasure_expr implicit type='Any' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:139:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:139:8 - line:139:8]
+                      (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:139:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:139:8 - line:139:8] value=0 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**))))
+                (default_argument_expr implicit type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:139:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:139:7 - line:139:7] default_args_owner=Swift.(file).print(_:separator:terminator:) param=1)
+                (default_argument_expr implicit type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:139:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:139:7 - line:139:7] default_args_owner=Swift.(file).print(_:separator:terminator:) param=2)))))
+        (case_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:140:1 - line:142:2]
+          (case_body_variables
+          )
+          (case_label_item
+          (pattern_expr type='Int'
+            (binary_expr implicit type='Bool' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:140:6 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:140:6 - line:140:6] nothrow
+              (declref_expr implicit type='(Int, Int) -> Bool' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:140:6 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:140:6 - line:140:6] decl=Swift.(file).~= [with (substitution_map generic_signature=<T where T : Equatable> (substitution T -> Int))] function_ref=compound)
+              (tuple_expr implicit type='(Int, Int)' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:140:6 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:140:6 - line:140:6]
+                (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:140:6 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:140:6 - line:140:6] value=1 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**)
+                (declref_expr implicit type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:140:6 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:140:6 - line:140:6] decl=Main.(file).top-level code.$match@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:140:6 function_ref=unapplied)))))
+          (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:141:2 - line:142:2]
+            (call_expr type='()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:141:2 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:141:2 - line:141:9] nothrow arg_labels=_:
+              (declref_expr type='(Any..., String, String) -> ()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:141:2 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:141:2 - line:141:2] decl=Swift.(file).print(_:separator:terminator:) function_ref=single)
+              (tuple_expr type='(Any..., separator: String, terminator: String)' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:141:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:141:7 - line:141:9] names='',separator,terminator
+                (vararg_expansion_expr implicit type='[Any]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:141:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:141:8 - line:141:8]
+                  (array_expr implicit type='[Any]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:141:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:141:8 - line:141:8] initializer=**NULL**
+                    (erasure_expr implicit type='Any' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:141:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:141:8 - line:141:8]
+                      (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:141:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:141:8 - line:141:8] value=1 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**))))
+                (default_argument_expr implicit type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:141:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:141:7 - line:141:7] default_args_owner=Swift.(file).print(_:separator:terminator:) param=1)
+                (default_argument_expr implicit type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:141:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:141:7 - line:141:7] default_args_owner=Swift.(file).print(_:separator:terminator:) param=2)))
+            (break_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:142:2 - line:142:2])))
+        (case_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:143:1 - line:144:9]
+          (case_label_item default
+          (pattern_any type='Int'))
+          (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:144:2 - line:144:9]
+            (call_expr type='()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:144:2 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:144:2 - line:144:9] nothrow arg_labels=_:
+              (declref_expr type='(Any..., String, String) -> ()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:144:2 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:144:2 - line:144:2] decl=Swift.(file).print(_:separator:terminator:) function_ref=single)
+              (tuple_expr type='(Any..., separator: String, terminator: String)' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:144:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:144:7 - line:144:9] names='',separator,terminator
+                (vararg_expansion_expr implicit type='[Any]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:144:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:144:8 - line:144:8]
+                  (array_expr implicit type='[Any]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:144:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:144:8 - line:144:8] initializer=**NULL**
+                    (erasure_expr implicit type='Any' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:144:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:144:8 - line:144:8]
+                      (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:144:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:144:8 - line:144:8] value=2 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**))))
+                (default_argument_expr implicit type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:144:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:144:7 - line:144:7] default_args_owner=Swift.(file).print(_:separator:terminator:) param=1)
+                (default_argument_expr implicit type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:144:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/switches.swift:144:7 - line:144:7] default_args_owner=Swift.(file).print(_:separator:terminator:) param=2)))))))))

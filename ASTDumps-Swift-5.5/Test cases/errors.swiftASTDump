@@ -1,0 +1,27 @@
+(source_file "/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/errors.swift"
+  (top_level_code_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/errors.swift:27:1 - line:27:14]
+    (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/errors.swift:27:1 - line:27:14]
+      (pattern_binding_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/errors.swift:27:1 - line:27:14]
+        (pattern_typed type='Int'
+          (pattern_named type='Int' 'y')
+          (type_ident
+            (component id='Int' bind=Swift.(file).Int)))
+        Original init:
+        (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/errors.swift:27:14 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/errors.swift:27:14 - line:27:14] value=0x0101 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**)
+        Processed init:
+        (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/errors.swift:27:14 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/errors.swift:27:14 - line:27:14] value=0x0101 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**))
+))
+  (var_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/errors.swift:27:5 - line:27:5] "y" type='Int' interface type='Int' access=internal readImpl=stored writeImpl=stored readWriteImpl=stored)
+  (top_level_code_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/errors.swift:28:1 - line:28:14]
+    (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/errors.swift:28:1 - line:28:14]
+      (pattern_binding_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/errors.swift:28:1 - line:28:14]
+        (pattern_typed type='Int'
+          (pattern_named type='Int' 'x')
+          (type_ident
+            (component id='Int' bind=Swift.(file).Int)))
+        Original init:
+        (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/errors.swift:28:14 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/errors.swift:28:14 - line:28:14] value=0b0101 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**)
+        Processed init:
+        (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/errors.swift:28:14 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/errors.swift:28:14 - line:28:14] value=0b0101 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**))
+))
+  (var_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/errors.swift:28:5 - line:28:5] "x" type='Int' interface type='Int' access=internal readImpl=stored writeImpl=stored readWriteImpl=stored))

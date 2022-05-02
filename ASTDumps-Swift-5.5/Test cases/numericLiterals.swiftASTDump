@@ -1,0 +1,466 @@
+(source_file "/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift"
+  (func_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:24:1 - line:28:1] "foo(int:double:float:)" interface type='(Int, Double, Float) -> ()' access=internal
+    (parameter_list range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:24:9 - line:24:48]
+      (parameter "int" apiName=int type='Int' interface type='Int')
+      (parameter "double" apiName=double type='Double' interface type='Double')
+      (parameter "float" apiName=float type='Float' interface type='Float'))
+    (brace_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:24:50 - line:28:1]
+      (call_expr type='()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:25:2 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:25:2 - line:25:11] nothrow arg_labels=_:
+        (declref_expr type='(Any..., String, String) -> ()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:25:2 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:25:2 - line:25:2] decl=Swift.(file).print(_:separator:terminator:) function_ref=single)
+        (tuple_expr type='(Any..., separator: String, terminator: String)' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:25:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:25:7 - line:25:11] names='',separator,terminator
+          (vararg_expansion_expr implicit type='[Any]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:25:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:25:8 - line:25:8]
+            (array_expr implicit type='[Any]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:25:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:25:8 - line:25:8] initializer=**NULL**
+              (erasure_expr implicit type='Any' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:25:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:25:8 - line:25:8]
+                (declref_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:25:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:25:8 - line:25:8] decl=Main.(file).foo(int:double:float:).int@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:24:10 function_ref=unapplied))))
+          (default_argument_expr implicit type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:25:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:25:7 - line:25:7] default_args_owner=Swift.(file).print(_:separator:terminator:) param=1)
+          (default_argument_expr implicit type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:25:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:25:7 - line:25:7] default_args_owner=Swift.(file).print(_:separator:terminator:) param=2)))
+      (call_expr type='()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:26:2 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:26:2 - line:26:14] nothrow arg_labels=_:
+        (declref_expr type='(Any..., String, String) -> ()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:26:2 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:26:2 - line:26:2] decl=Swift.(file).print(_:separator:terminator:) function_ref=single)
+        (tuple_expr type='(Any..., separator: String, terminator: String)' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:26:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:26:7 - line:26:14] names='',separator,terminator
+          (vararg_expansion_expr implicit type='[Any]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:26:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:26:8 - line:26:8]
+            (array_expr implicit type='[Any]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:26:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:26:8 - line:26:8] initializer=**NULL**
+              (erasure_expr implicit type='Any' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:26:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:26:8 - line:26:8]
+                (declref_expr type='Double' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:26:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:26:8 - line:26:8] decl=Main.(file).foo(int:double:float:).double@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:24:20 function_ref=unapplied))))
+          (default_argument_expr implicit type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:26:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:26:7 - line:26:7] default_args_owner=Swift.(file).print(_:separator:terminator:) param=1)
+          (default_argument_expr implicit type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:26:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:26:7 - line:26:7] default_args_owner=Swift.(file).print(_:separator:terminator:) param=2)))
+      (call_expr type='()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:27:2 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:27:2 - line:27:13] nothrow arg_labels=_:
+        (declref_expr type='(Any..., String, String) -> ()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:27:2 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:27:2 - line:27:2] decl=Swift.(file).print(_:separator:terminator:) function_ref=single)
+        (tuple_expr type='(Any..., separator: String, terminator: String)' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:27:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:27:7 - line:27:13] names='',separator,terminator
+          (vararg_expansion_expr implicit type='[Any]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:27:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:27:8 - line:27:8]
+            (array_expr implicit type='[Any]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:27:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:27:8 - line:27:8] initializer=**NULL**
+              (erasure_expr implicit type='Any' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:27:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:27:8 - line:27:8]
+                (declref_expr type='Float' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:27:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:27:8 - line:27:8] decl=Main.(file).foo(int:double:float:).float@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:24:36 function_ref=unapplied))))
+          (default_argument_expr implicit type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:27:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:27:7 - line:27:7] default_args_owner=Swift.(file).print(_:separator:terminator:) param=1)
+          (default_argument_expr implicit type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:27:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:27:7 - line:27:7] default_args_owner=Swift.(file).print(_:separator:terminator:) param=2)))))
+  (top_level_code_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:30:1 - line:30:12]
+    (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:30:1 - line:30:12]
+      (pattern_binding_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:30:1 - line:30:12]
+        (pattern_named type='Int' 'int1')
+        Original init:
+        (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:30:12 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:30:12 - line:30:12] value=0 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**)
+        Processed init:
+        (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:30:12 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:30:12 - line:30:12] value=0 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**))
+))
+  (var_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:30:5 - line:30:5] "int1" type='Int' interface type='Int' access=internal let readImpl=stored immutable)
+  (top_level_code_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:31:1 - line:31:12]
+    (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:31:1 - line:31:12]
+      (pattern_binding_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:31:1 - line:31:12]
+        (pattern_named type='Int' 'int2')
+        Original init:
+        (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:31:12 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:31:12 - line:31:12] value=3 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**)
+        Processed init:
+        (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:31:12 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:31:12 - line:31:12] value=3 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**))
+))
+  (var_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:31:5 - line:31:5] "int2" type='Int' interface type='Int' access=internal let readImpl=stored immutable)
+  (top_level_code_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:32:1 - line:32:19]
+    (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:32:1 - line:32:19]
+      (pattern_binding_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:32:1 - line:32:19]
+        (pattern_named type='Int' 'int3')
+        Original init:
+        (sequence_expr type='<null>'
+          (declref_expr type='<null>' decl=Main.(file).int1@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:30:5 function_ref=unapplied)
+          (overloaded_decl_ref_expr type='<null>' name=+ number_of_decls=31 function_ref=single decls=[
+            Swift.(file).String extension.+,
+            Swift.(file).Float extension.+,
+            Swift.(file).Double extension.+,
+            Swift.(file).Float80 extension.+,
+            Swift.(file).UInt8 extension.+,
+            Swift.(file).Int8 extension.+,
+            Swift.(file).UInt16 extension.+,
+            Swift.(file).Int16 extension.+,
+            Swift.(file).UInt32 extension.+,
+            Swift.(file).Int32 extension.+,
+            Swift.(file).UInt64 extension.+,
+            Swift.(file).Int64 extension.+,
+            Swift.(file).UInt extension.+,
+            Swift.(file).Int extension.+,
+            Swift.(file).Array extension.+,
+            Swift.(file).FloatingPoint.+,
+            Swift.(file).AdditiveArithmetic.+,
+            Swift.(file).BinaryInteger.+,
+            Swift.(file).Strideable extension.+,
+            Swift.(file).Strideable extension.+,
+            Swift.(file).Sequence extension.+,
+            Swift.(file).Sequence extension.+,
+            Swift.(file).SIMD extension.+,
+            Swift.(file).SIMD extension.+,
+            Swift.(file).SIMD extension.+,
+            Swift.(file).SIMD extension.+,
+            Swift.(file).SIMD extension.+,
+            Swift.(file).SIMD extension.+,
+            Swift.(file).RangeReplaceableCollection extension.+,
+            Swift.(file).RangeReplaceableCollection extension.+,
+            Swift.(file).RangeReplaceableCollection extension.+])
+          (declref_expr type='<null>' decl=Main.(file).int2@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:31:5 function_ref=unapplied))
+        Processed init:
+        (binary_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:32:17 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:32:12 - line:32:19] nothrow
+          (dot_syntax_call_expr implicit type='(Int, Int) -> Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:32:17 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:32:17 - line:32:17] nothrow
+            (declref_expr type='(Int.Type) -> (Int, Int) -> Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:32:17 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:32:17 - line:32:17] decl=Swift.(file).Int extension.+ function_ref=single)
+            (type_expr implicit type='Int.Type' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:32:17 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:32:17 - line:32:17] typerepr='Int'))
+          (tuple_expr implicit type='(Int, Int)' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:32:12 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:32:12 - line:32:19]
+            (declref_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:32:12 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:32:12 - line:32:12] decl=Main.(file).int1@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:30:5 function_ref=unapplied)
+            (declref_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:32:19 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:32:19 - line:32:19] decl=Main.(file).int2@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:31:5 function_ref=unapplied))))
+))
+  (var_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:32:5 - line:32:5] "int3" type='Int' interface type='Int' access=internal let readImpl=stored immutable)
+  (top_level_code_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:34:1 - line:34:23]
+    (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:34:1 - line:34:23]
+      (pattern_binding_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:34:1 - line:34:23]
+        (pattern_typed type='Double'
+          (pattern_named type='Double' 'double1')
+          (type_ident
+            (component id='Double' bind=Swift.(file).Double)))
+        Original init:
+        (integer_literal_expr type='Double' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:34:23 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:34:23 - line:34:23] value=0 builtin_initializer=Swift.(file).Double extension.init(_builtinIntegerLiteral:) initializer=**NULL**)
+        Processed init:
+        (integer_literal_expr type='Double' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:34:23 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:34:23 - line:34:23] value=0 builtin_initializer=Swift.(file).Double extension.init(_builtinIntegerLiteral:) initializer=**NULL**))
+))
+  (var_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:34:5 - line:34:5] "double1" type='Double' interface type='Double' access=internal let readImpl=stored immutable)
+  (top_level_code_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:35:1 - line:35:23]
+    (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:35:1 - line:35:23]
+      (pattern_binding_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:35:1 - line:35:23]
+        (pattern_typed type='Double'
+          (pattern_named type='Double' 'double2')
+          (type_ident
+            (component id='Double' bind=Swift.(file).Double)))
+        Original init:
+        (integer_literal_expr type='Double' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:35:23 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:35:23 - line:35:23] value=3 builtin_initializer=Swift.(file).Double extension.init(_builtinIntegerLiteral:) initializer=**NULL**)
+        Processed init:
+        (integer_literal_expr type='Double' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:35:23 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:35:23 - line:35:23] value=3 builtin_initializer=Swift.(file).Double extension.init(_builtinIntegerLiteral:) initializer=**NULL**))
+))
+  (var_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:35:5 - line:35:5] "double2" type='Double' interface type='Double' access=internal let readImpl=stored immutable)
+  (top_level_code_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:36:1 - line:36:25]
+    (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:36:1 - line:36:25]
+      (pattern_binding_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:36:1 - line:36:25]
+        (pattern_named type='Double' 'double3')
+        Original init:
+        (sequence_expr type='<null>'
+          (declref_expr type='<null>' decl=Main.(file).double1@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:34:5 function_ref=unapplied)
+          (overloaded_decl_ref_expr type='<null>' name=+ number_of_decls=31 function_ref=single decls=[
+            Swift.(file).String extension.+,
+            Swift.(file).Float extension.+,
+            Swift.(file).Double extension.+,
+            Swift.(file).Float80 extension.+,
+            Swift.(file).UInt8 extension.+,
+            Swift.(file).Int8 extension.+,
+            Swift.(file).UInt16 extension.+,
+            Swift.(file).Int16 extension.+,
+            Swift.(file).UInt32 extension.+,
+            Swift.(file).Int32 extension.+,
+            Swift.(file).UInt64 extension.+,
+            Swift.(file).Int64 extension.+,
+            Swift.(file).UInt extension.+,
+            Swift.(file).Int extension.+,
+            Swift.(file).Array extension.+,
+            Swift.(file).FloatingPoint.+,
+            Swift.(file).AdditiveArithmetic.+,
+            Swift.(file).BinaryInteger.+,
+            Swift.(file).Strideable extension.+,
+            Swift.(file).Strideable extension.+,
+            Swift.(file).Sequence extension.+,
+            Swift.(file).Sequence extension.+,
+            Swift.(file).SIMD extension.+,
+            Swift.(file).SIMD extension.+,
+            Swift.(file).SIMD extension.+,
+            Swift.(file).SIMD extension.+,
+            Swift.(file).SIMD extension.+,
+            Swift.(file).SIMD extension.+,
+            Swift.(file).RangeReplaceableCollection extension.+,
+            Swift.(file).RangeReplaceableCollection extension.+,
+            Swift.(file).RangeReplaceableCollection extension.+])
+          (declref_expr type='<null>' decl=Main.(file).double2@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:35:5 function_ref=unapplied))
+        Processed init:
+        (binary_expr type='Double' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:36:23 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:36:15 - line:36:25] nothrow
+          (dot_syntax_call_expr implicit type='(Double, Double) -> Double' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:36:23 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:36:23 - line:36:23] nothrow
+            (declref_expr type='(Double.Type) -> (Double, Double) -> Double' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:36:23 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:36:23 - line:36:23] decl=Swift.(file).Double extension.+ function_ref=single)
+            (type_expr implicit type='Double.Type' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:36:23 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:36:23 - line:36:23] typerepr='Double'))
+          (tuple_expr implicit type='(Double, Double)' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:36:15 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:36:15 - line:36:25]
+            (declref_expr type='Double' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:36:15 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:36:15 - line:36:15] decl=Main.(file).double1@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:34:5 function_ref=unapplied)
+            (declref_expr type='Double' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:36:25 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:36:25 - line:36:25] decl=Main.(file).double2@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:35:5 function_ref=unapplied))))
+))
+  (var_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:36:5 - line:36:5] "double3" type='Double' interface type='Double' access=internal let readImpl=stored immutable)
+  (top_level_code_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:38:1 - line:38:11]
+    (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:38:1 - line:38:11]
+      (call_expr type='()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:38:1 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:38:1 - line:38:11] nothrow arg_labels=_:
+        (declref_expr type='(Any..., String, String) -> ()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:38:1 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:38:1 - line:38:1] decl=Swift.(file).print(_:separator:terminator:) function_ref=single)
+        (tuple_expr type='(Any..., separator: String, terminator: String)' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:38:6 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:38:6 - line:38:11] names='',separator,terminator
+          (vararg_expansion_expr implicit type='[Any]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:38:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:38:7 - line:38:7]
+            (array_expr implicit type='[Any]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:38:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:38:7 - line:38:7] initializer=**NULL**
+              (erasure_expr implicit type='Any' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:38:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:38:7 - line:38:7]
+                (declref_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:38:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:38:7 - line:38:7] decl=Main.(file).int1@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:30:5 function_ref=unapplied))))
+          (default_argument_expr implicit type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:38:6 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:38:6 - line:38:6] default_args_owner=Swift.(file).print(_:separator:terminator:) param=1)
+          (default_argument_expr implicit type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:38:6 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:38:6 - line:38:6] default_args_owner=Swift.(file).print(_:separator:terminator:) param=2)))))
+  (top_level_code_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:39:1 - line:39:11]
+    (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:39:1 - line:39:11]
+      (call_expr type='()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:39:1 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:39:1 - line:39:11] nothrow arg_labels=_:
+        (declref_expr type='(Any..., String, String) -> ()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:39:1 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:39:1 - line:39:1] decl=Swift.(file).print(_:separator:terminator:) function_ref=single)
+        (tuple_expr type='(Any..., separator: String, terminator: String)' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:39:6 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:39:6 - line:39:11] names='',separator,terminator
+          (vararg_expansion_expr implicit type='[Any]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:39:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:39:7 - line:39:7]
+            (array_expr implicit type='[Any]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:39:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:39:7 - line:39:7] initializer=**NULL**
+              (erasure_expr implicit type='Any' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:39:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:39:7 - line:39:7]
+                (declref_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:39:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:39:7 - line:39:7] decl=Main.(file).int2@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:31:5 function_ref=unapplied))))
+          (default_argument_expr implicit type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:39:6 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:39:6 - line:39:6] default_args_owner=Swift.(file).print(_:separator:terminator:) param=1)
+          (default_argument_expr implicit type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:39:6 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:39:6 - line:39:6] default_args_owner=Swift.(file).print(_:separator:terminator:) param=2)))))
+  (top_level_code_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:40:1 - line:40:11]
+    (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:40:1 - line:40:11]
+      (call_expr type='()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:40:1 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:40:1 - line:40:11] nothrow arg_labels=_:
+        (declref_expr type='(Any..., String, String) -> ()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:40:1 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:40:1 - line:40:1] decl=Swift.(file).print(_:separator:terminator:) function_ref=single)
+        (tuple_expr type='(Any..., separator: String, terminator: String)' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:40:6 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:40:6 - line:40:11] names='',separator,terminator
+          (vararg_expansion_expr implicit type='[Any]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:40:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:40:7 - line:40:7]
+            (array_expr implicit type='[Any]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:40:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:40:7 - line:40:7] initializer=**NULL**
+              (erasure_expr implicit type='Any' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:40:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:40:7 - line:40:7]
+                (declref_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:40:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:40:7 - line:40:7] decl=Main.(file).int3@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:32:5 function_ref=unapplied))))
+          (default_argument_expr implicit type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:40:6 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:40:6 - line:40:6] default_args_owner=Swift.(file).print(_:separator:terminator:) param=1)
+          (default_argument_expr implicit type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:40:6 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:40:6 - line:40:6] default_args_owner=Swift.(file).print(_:separator:terminator:) param=2)))))
+  (top_level_code_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:41:1 - line:41:14]
+    (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:41:1 - line:41:14]
+      (call_expr type='()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:41:1 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:41:1 - line:41:14] nothrow arg_labels=_:
+        (declref_expr type='(Any..., String, String) -> ()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:41:1 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:41:1 - line:41:1] decl=Swift.(file).print(_:separator:terminator:) function_ref=single)
+        (tuple_expr type='(Any..., separator: String, terminator: String)' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:41:6 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:41:6 - line:41:14] names='',separator,terminator
+          (vararg_expansion_expr implicit type='[Any]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:41:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:41:7 - line:41:7]
+            (array_expr implicit type='[Any]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:41:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:41:7 - line:41:7] initializer=**NULL**
+              (erasure_expr implicit type='Any' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:41:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:41:7 - line:41:7]
+                (declref_expr type='Double' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:41:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:41:7 - line:41:7] decl=Main.(file).double1@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:34:5 function_ref=unapplied))))
+          (default_argument_expr implicit type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:41:6 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:41:6 - line:41:6] default_args_owner=Swift.(file).print(_:separator:terminator:) param=1)
+          (default_argument_expr implicit type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:41:6 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:41:6 - line:41:6] default_args_owner=Swift.(file).print(_:separator:terminator:) param=2)))))
+  (top_level_code_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:42:1 - line:42:14]
+    (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:42:1 - line:42:14]
+      (call_expr type='()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:42:1 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:42:1 - line:42:14] nothrow arg_labels=_:
+        (declref_expr type='(Any..., String, String) -> ()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:42:1 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:42:1 - line:42:1] decl=Swift.(file).print(_:separator:terminator:) function_ref=single)
+        (tuple_expr type='(Any..., separator: String, terminator: String)' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:42:6 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:42:6 - line:42:14] names='',separator,terminator
+          (vararg_expansion_expr implicit type='[Any]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:42:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:42:7 - line:42:7]
+            (array_expr implicit type='[Any]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:42:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:42:7 - line:42:7] initializer=**NULL**
+              (erasure_expr implicit type='Any' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:42:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:42:7 - line:42:7]
+                (declref_expr type='Double' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:42:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:42:7 - line:42:7] decl=Main.(file).double2@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:35:5 function_ref=unapplied))))
+          (default_argument_expr implicit type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:42:6 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:42:6 - line:42:6] default_args_owner=Swift.(file).print(_:separator:terminator:) param=1)
+          (default_argument_expr implicit type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:42:6 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:42:6 - line:42:6] default_args_owner=Swift.(file).print(_:separator:terminator:) param=2)))))
+  (top_level_code_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:43:1 - line:43:14]
+    (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:43:1 - line:43:14]
+      (call_expr type='()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:43:1 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:43:1 - line:43:14] nothrow arg_labels=_:
+        (declref_expr type='(Any..., String, String) -> ()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:43:1 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:43:1 - line:43:1] decl=Swift.(file).print(_:separator:terminator:) function_ref=single)
+        (tuple_expr type='(Any..., separator: String, terminator: String)' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:43:6 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:43:6 - line:43:14] names='',separator,terminator
+          (vararg_expansion_expr implicit type='[Any]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:43:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:43:7 - line:43:7]
+            (array_expr implicit type='[Any]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:43:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:43:7 - line:43:7] initializer=**NULL**
+              (erasure_expr implicit type='Any' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:43:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:43:7 - line:43:7]
+                (declref_expr type='Double' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:43:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:43:7 - line:43:7] decl=Main.(file).double3@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:36:5 function_ref=unapplied))))
+          (default_argument_expr implicit type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:43:6 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:43:6 - line:43:6] default_args_owner=Swift.(file).print(_:separator:terminator:) param=1)
+          (default_argument_expr implicit type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:43:6 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:43:6 - line:43:6] default_args_owner=Swift.(file).print(_:separator:terminator:) param=2)))))
+  (top_level_code_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:45:1 - line:45:32]
+    (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:45:1 - line:45:32]
+      (call_expr type='()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:45:1 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:45:1 - line:45:32] nothrow arg_labels=int:double:float:
+        (declref_expr type='(Int, Double, Float) -> ()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:45:1 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:45:1 - line:45:1] decl=Main.(file).foo(int:double:float:)@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:24:6 function_ref=single)
+        (tuple_expr type='(int: Int, double: Double, float: Float)' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:45:4 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:45:4 - line:45:32] names=int,double,float
+          (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:45:10 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:45:10 - line:45:10] value=5 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**)
+          (integer_literal_expr type='Double' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:45:21 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:45:21 - line:45:21] value=5 builtin_initializer=Swift.(file).Double extension.init(_builtinIntegerLiteral:) initializer=**NULL**)
+          (integer_literal_expr type='Float' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:45:31 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:45:31 - line:45:31] value=5 builtin_initializer=Swift.(file).Float extension.init(_builtinIntegerLiteral:) initializer=**NULL**)))))
+  (top_level_code_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:48:1 - line:48:16]
+    (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:48:1 - line:48:16]
+      (pattern_binding_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:48:1 - line:48:16]
+        (pattern_typed type='UInt8'
+          (pattern_named type='UInt8' 'a')
+          (type_ident
+            (component id='UInt8' bind=Swift.(file).UInt8)))
+        Original init:
+        (integer_literal_expr type='UInt8' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:48:16 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:48:16 - line:48:16] value=255 builtin_initializer=Swift.(file).UInt8.init(_builtinIntegerLiteral:) initializer=**NULL**)
+        Processed init:
+        (integer_literal_expr type='UInt8' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:48:16 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:48:16 - line:48:16] value=255 builtin_initializer=Swift.(file).UInt8.init(_builtinIntegerLiteral:) initializer=**NULL**))
+))
+  (var_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:48:5 - line:48:5] "a" type='UInt8' interface type='UInt8' access=internal readImpl=stored writeImpl=stored readWriteImpl=stored)
+  (top_level_code_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:49:1 - line:49:17]
+    (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:49:1 - line:49:17]
+      (pattern_binding_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:49:1 - line:49:17]
+        (pattern_typed type='UInt16'
+          (pattern_named type='UInt16' 'b')
+          (type_ident
+            (component id='UInt16' bind=Swift.(file).UInt16)))
+        Original init:
+        (integer_literal_expr type='UInt16' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:49:17 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:49:17 - line:49:17] value=65535 builtin_initializer=Swift.(file).UInt16.init(_builtinIntegerLiteral:) initializer=**NULL**)
+        Processed init:
+        (integer_literal_expr type='UInt16' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:49:17 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:49:17 - line:49:17] value=65535 builtin_initializer=Swift.(file).UInt16.init(_builtinIntegerLiteral:) initializer=**NULL**))
+))
+  (var_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:49:5 - line:49:5] "b" type='UInt16' interface type='UInt16' access=internal readImpl=stored writeImpl=stored readWriteImpl=stored)
+  (top_level_code_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:50:1 - line:50:17]
+    (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:50:1 - line:50:17]
+      (pattern_binding_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:50:1 - line:50:17]
+        (pattern_typed type='UInt32'
+          (pattern_named type='UInt32' 'c')
+          (type_ident
+            (component id='UInt32' bind=Swift.(file).UInt32)))
+        Original init:
+        (integer_literal_expr type='UInt32' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:50:17 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:50:17 - line:50:17] value=4294967295 builtin_initializer=Swift.(file).UInt32.init(_builtinIntegerLiteral:) initializer=**NULL**)
+        Processed init:
+        (integer_literal_expr type='UInt32' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:50:17 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:50:17 - line:50:17] value=4294967295 builtin_initializer=Swift.(file).UInt32.init(_builtinIntegerLiteral:) initializer=**NULL**))
+))
+  (var_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:50:5 - line:50:5] "c" type='UInt32' interface type='UInt32' access=internal readImpl=stored writeImpl=stored readWriteImpl=stored)
+  (top_level_code_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:51:1 - line:51:17]
+    (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:51:1 - line:51:17]
+      (pattern_binding_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:51:1 - line:51:17]
+        (pattern_typed type='UInt64'
+          (pattern_named type='UInt64' 'd')
+          (type_ident
+            (component id='UInt64' bind=Swift.(file).UInt64)))
+        Original init:
+        (integer_literal_expr type='UInt64' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:51:17 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:51:17 - line:51:17] value=18446744073709551615 builtin_initializer=Swift.(file).UInt64.init(_builtinIntegerLiteral:) initializer=**NULL**)
+        Processed init:
+        (integer_literal_expr type='UInt64' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:51:17 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:51:17 - line:51:17] value=18446744073709551615 builtin_initializer=Swift.(file).UInt64.init(_builtinIntegerLiteral:) initializer=**NULL**))
+))
+  (var_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:51:5 - line:51:5] "d" type='UInt64' interface type='UInt64' access=internal readImpl=stored writeImpl=stored readWriteImpl=stored)
+  (top_level_code_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:53:1 - line:53:15]
+    (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:53:1 - line:53:15]
+      (pattern_binding_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:53:1 - line:53:15]
+        (pattern_typed type='Int8'
+          (pattern_named type='Int8' 'e')
+          (type_ident
+            (component id='Int8' bind=Swift.(file).Int8)))
+        Original init:
+        (integer_literal_expr type='Int8' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:53:15 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:53:15 - line:53:15] value=127 builtin_initializer=Swift.(file).Int8.init(_builtinIntegerLiteral:) initializer=**NULL**)
+        Processed init:
+        (integer_literal_expr type='Int8' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:53:15 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:53:15 - line:53:15] value=127 builtin_initializer=Swift.(file).Int8.init(_builtinIntegerLiteral:) initializer=**NULL**))
+))
+  (var_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:53:5 - line:53:5] "e" type='Int8' interface type='Int8' access=internal readImpl=stored writeImpl=stored readWriteImpl=stored)
+  (top_level_code_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:54:1 - line:54:16]
+    (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:54:1 - line:54:16]
+      (pattern_binding_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:54:1 - line:54:16]
+        (pattern_typed type='Int16'
+          (pattern_named type='Int16' 'f')
+          (type_ident
+            (component id='Int16' bind=Swift.(file).Int16)))
+        Original init:
+        (integer_literal_expr type='Int16' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:54:16 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:54:16 - line:54:16] value=32767 builtin_initializer=Swift.(file).Int16.init(_builtinIntegerLiteral:) initializer=**NULL**)
+        Processed init:
+        (integer_literal_expr type='Int16' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:54:16 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:54:16 - line:54:16] value=32767 builtin_initializer=Swift.(file).Int16.init(_builtinIntegerLiteral:) initializer=**NULL**))
+))
+  (var_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:54:5 - line:54:5] "f" type='Int16' interface type='Int16' access=internal readImpl=stored writeImpl=stored readWriteImpl=stored)
+  (top_level_code_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:55:1 - line:55:16]
+    (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:55:1 - line:55:16]
+      (pattern_binding_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:55:1 - line:55:16]
+        (pattern_typed type='Int32'
+          (pattern_named type='Int32' 'g')
+          (type_ident
+            (component id='Int32' bind=Swift.(file).Int32)))
+        Original init:
+        (integer_literal_expr type='Int32' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:55:16 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:55:16 - line:55:16] value=2147483647 builtin_initializer=Swift.(file).Int32.init(_builtinIntegerLiteral:) initializer=**NULL**)
+        Processed init:
+        (integer_literal_expr type='Int32' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:55:16 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:55:16 - line:55:16] value=2147483647 builtin_initializer=Swift.(file).Int32.init(_builtinIntegerLiteral:) initializer=**NULL**))
+))
+  (var_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:55:5 - line:55:5] "g" type='Int32' interface type='Int32' access=internal readImpl=stored writeImpl=stored readWriteImpl=stored)
+  (top_level_code_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:56:1 - line:56:16]
+    (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:56:1 - line:56:16]
+      (pattern_binding_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:56:1 - line:56:16]
+        (pattern_typed type='Int64'
+          (pattern_named type='Int64' 'h')
+          (type_ident
+            (component id='Int64' bind=Swift.(file).Int64)))
+        Original init:
+        (integer_literal_expr type='Int64' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:56:16 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:56:16 - line:56:16] value=9223372036854775807 builtin_initializer=Swift.(file).Int64.init(_builtinIntegerLiteral:) initializer=**NULL**)
+        Processed init:
+        (integer_literal_expr type='Int64' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:56:16 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:56:16 - line:56:16] value=9223372036854775807 builtin_initializer=Swift.(file).Int64.init(_builtinIntegerLiteral:) initializer=**NULL**))
+))
+  (var_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:56:5 - line:56:5] "h" type='Int64' interface type='Int64' access=internal readImpl=stored writeImpl=stored readWriteImpl=stored)
+  (top_level_code_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:57:1 - line:57:6]
+    (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:57:1 - line:57:6]
+      (assign_expr type='()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:57:3 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:57:1 - line:57:6]
+        (declref_expr type='@lvalue Int8' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:57:1 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:57:1 - line:57:1] decl=Main.(file).e@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:53:5 function_ref=unapplied)
+        (integer_literal_expr type='Int8' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:57:5 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:57:5 - line:57:6] negative value=128 builtin_initializer=Swift.(file).Int8.init(_builtinIntegerLiteral:) initializer=**NULL**))))
+  (top_level_code_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:58:1 - line:58:6]
+    (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:58:1 - line:58:6]
+      (assign_expr type='()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:58:3 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:58:1 - line:58:6]
+        (declref_expr type='@lvalue Int16' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:58:1 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:58:1 - line:58:1] decl=Main.(file).f@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:54:5 function_ref=unapplied)
+        (integer_literal_expr type='Int16' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:58:5 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:58:5 - line:58:6] negative value=32768 builtin_initializer=Swift.(file).Int16.init(_builtinIntegerLiteral:) initializer=**NULL**))))
+  (top_level_code_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:59:1 - line:59:6]
+    (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:59:1 - line:59:6]
+      (assign_expr type='()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:59:3 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:59:1 - line:59:6]
+        (declref_expr type='@lvalue Int32' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:59:1 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:59:1 - line:59:1] decl=Main.(file).g@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:55:5 function_ref=unapplied)
+        (integer_literal_expr type='Int32' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:59:5 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:59:5 - line:59:6] negative value=2147483648 builtin_initializer=Swift.(file).Int32.init(_builtinIntegerLiteral:) initializer=**NULL**))))
+  (top_level_code_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:60:1 - line:60:6]
+    (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:60:1 - line:60:6]
+      (assign_expr type='()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:60:3 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:60:1 - line:60:6]
+        (declref_expr type='@lvalue Int64' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:60:1 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:60:1 - line:60:1] decl=Main.(file).h@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:56:5 function_ref=unapplied)
+        (integer_literal_expr type='Int64' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:60:5 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:60:5 - line:60:6] negative value=9223372036854775807 builtin_initializer=Swift.(file).Int64.init(_builtinIntegerLiteral:) initializer=**NULL**))))
+  (top_level_code_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:62:1 - line:62:16]
+    (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:62:1 - line:62:16]
+      (pattern_binding_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:62:1 - line:62:16]
+        (pattern_typed type='Float'
+          (pattern_named type='Float' 'i')
+          (type_ident
+            (component id='Float' bind=Swift.(file).Float)))
+        Original init:
+        (integer_literal_expr type='Float' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:62:16 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:62:16 - line:62:16] value=0 builtin_initializer=Swift.(file).Float extension.init(_builtinIntegerLiteral:) initializer=**NULL**)
+        Processed init:
+        (integer_literal_expr type='Float' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:62:16 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:62:16 - line:62:16] value=0 builtin_initializer=Swift.(file).Float extension.init(_builtinIntegerLiteral:) initializer=**NULL**))
+))
+  (var_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:62:5 - line:62:5] "i" type='Float' interface type='Float' access=internal readImpl=stored writeImpl=stored readWriteImpl=stored)
+  (top_level_code_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:63:1 - line:63:18]
+    (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:63:1 - line:63:18]
+      (pattern_binding_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:63:1 - line:63:18]
+        (pattern_typed type='Float32'
+          (pattern_named type='Float32' 'j')
+          (type_ident
+            (component id='Float32' bind=Swift.(file).Float32)))
+        Original init:
+        (integer_literal_expr type='Float32' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:63:18 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:63:18 - line:63:18] value=0 builtin_initializer=Swift.(file).Float extension.init(_builtinIntegerLiteral:) initializer=**NULL**)
+        Processed init:
+        (integer_literal_expr type='Float32' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:63:18 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:63:18 - line:63:18] value=0 builtin_initializer=Swift.(file).Float extension.init(_builtinIntegerLiteral:) initializer=**NULL**))
+))
+  (var_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:63:5 - line:63:5] "j" type='Float32' interface type='Float32' access=internal readImpl=stored writeImpl=stored readWriteImpl=stored)
+  (top_level_code_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:65:1 - line:65:18]
+    (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:65:1 - line:65:18]
+      (pattern_binding_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:65:1 - line:65:18]
+        (pattern_typed type='Double'
+          (pattern_named type='Double' 'k')
+          (type_ident
+            (component id='Float64' bind=Swift.(file).Float64)))
+        Original init:
+        (integer_literal_expr type='Double' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:65:18 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:65:18 - line:65:18] value=0 builtin_initializer=Swift.(file).Double extension.init(_builtinIntegerLiteral:) initializer=**NULL**)
+        Processed init:
+        (integer_literal_expr type='Double' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:65:18 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:65:18 - line:65:18] value=0 builtin_initializer=Swift.(file).Double extension.init(_builtinIntegerLiteral:) initializer=**NULL**))
+))
+  (var_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:65:5 - line:65:5] "k" type='Float64' interface type='Float64' access=internal readImpl=stored writeImpl=stored readWriteImpl=stored)
+  (top_level_code_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:66:1 - line:66:17]
+    (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:66:1 - line:66:17]
+      (pattern_binding_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:66:1 - line:66:17]
+        (pattern_typed type='Double'
+          (pattern_named type='Double' 'l')
+          (type_ident
+            (component id='Double' bind=Swift.(file).Double)))
+        Original init:
+        (integer_literal_expr type='Double' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:66:17 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:66:17 - line:66:17] value=0 builtin_initializer=Swift.(file).Double extension.init(_builtinIntegerLiteral:) initializer=**NULL**)
+        Processed init:
+        (integer_literal_expr type='Double' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:66:17 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:66:17 - line:66:17] value=0 builtin_initializer=Swift.(file).Double extension.init(_builtinIntegerLiteral:) initializer=**NULL**))
+))
+  (var_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:66:5 - line:66:5] "l" type='Double' interface type='Double' access=internal readImpl=stored writeImpl=stored readWriteImpl=stored)
+  (top_level_code_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:69:1 - line:69:17]
+    (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:69:1 - line:69:17]
+      (pattern_binding_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:69:1 - line:69:17]
+        (pattern_typed type='Double'
+          (pattern_named type='Double' 'm')
+          (type_ident
+            (component id='Double' bind=Swift.(file).Double)))
+        Original init:
+        (float_literal_expr type='Double' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:69:17 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:69:17 - line:69:17] value=1.21875e1 builtin_initializer=Swift.(file).Double extension.init(_builtinFloatLiteral:) initializer=**NULL** builtin_type='Builtin.FPIEEE80')
+        Processed init:
+        (float_literal_expr type='Double' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:69:17 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:69:17 - line:69:17] value=1.21875e1 builtin_initializer=Swift.(file).Double extension.init(_builtinFloatLiteral:) initializer=**NULL** builtin_type='Builtin.FPIEEE80'))
+))
+  (var_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:69:5 - line:69:5] "m" type='Double' interface type='Double' access=internal readImpl=stored writeImpl=stored readWriteImpl=stored)
+  (top_level_code_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:70:1 - line:70:5]
+    (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:70:1 - line:70:5]
+      (assign_expr type='()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:70:3 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:70:1 - line:70:5]
+        (declref_expr type='@lvalue Double' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:70:1 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:70:1 - line:70:1] decl=Main.(file).m@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:69:5 function_ref=unapplied)
+        (float_literal_expr type='Double' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:70:5 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:70:5 - line:70:5] value=000123.456 builtin_initializer=Swift.(file).Double extension.init(_builtinFloatLiteral:) initializer=**NULL** builtin_type='Builtin.FPIEEE80'))))
+  (top_level_code_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:71:1 - line:71:5]
+    (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:71:1 - line:71:5]
+      (assign_expr type='()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:71:3 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:71:1 - line:71:5]
+        (declref_expr type='@lvalue Double' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:71:1 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:71:1 - line:71:1] decl=Main.(file).m@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:69:5 function_ref=unapplied)
+        (float_literal_expr type='Double' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:71:5 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:71:5 - line:71:5] value=1000000.0000001 builtin_initializer=Swift.(file).Double extension.init(_builtinFloatLiteral:) initializer=**NULL** builtin_type='Builtin.FPIEEE80'))))
+  (top_level_code_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:73:1 - line:73:14]
+    (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:73:1 - line:73:14]
+      (pattern_binding_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:73:1 - line:73:14]
+        (pattern_typed type='Int'
+          (pattern_named type='Int' 'n')
+          (type_ident
+            (component id='Int' bind=Swift.(file).Int)))
+        Original init:
+        (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:73:14 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:73:14 - line:73:14] value=1000000 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**)
+        Processed init:
+        (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:73:14 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:73:14 - line:73:14] value=1000000 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**))
+))
+  (var_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/numericLiterals.swift:73:5 - line:73:5] "n" type='Int' interface type='Int' access=internal readImpl=stored writeImpl=stored readWriteImpl=stored))

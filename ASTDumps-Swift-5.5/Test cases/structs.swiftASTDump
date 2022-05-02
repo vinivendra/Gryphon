@@ -1,0 +1,596 @@
+(source_file "/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift"
+  (struct_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:24:1 - line:27:1] "SupportedStruct" interface type='SupportedStruct.Type' access=internal non-resilient
+    (pattern_binding_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:25:2 - line:25:10]
+      (pattern_named type='Int' 'x')
+      Original init:
+      (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:25:10 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:25:10 - line:25:10] value=0 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**)
+      Processed init:
+      (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:25:10 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:25:10 - line:25:10] value=0 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**))
+    (var_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:25:6 - line:25:6] "x" type='Int' interface type='Int' access=internal let readImpl=stored immutable
+      (accessor_decl implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:25:6 - line:25:6] 'anonname=0x108116838' interface type='(SupportedStruct) -> () -> Int' access=internal get_for=x
+        (parameter "self" type='SupportedStruct' interface type='SupportedStruct')
+        (parameter_list)
+        (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:25:6 - line:25:6]
+          (return_stmt implicit
+            (member_ref_expr implicit type='Int' decl=Main.(file).SupportedStruct.x@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:25:6 direct_to_storage
+              (declref_expr implicit type='SupportedStruct' decl=Main.(file).SupportedStruct.<anonymous>.self@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:25:6 function_ref=unapplied))))))
+    (pattern_binding_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:26:2 - line:26:10]
+      (pattern_named type='Int' 'y')
+      Original init:
+      (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:26:10 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:26:10 - line:26:10] value=1 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**)
+      Processed init:
+      (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:26:10 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:26:10 - line:26:10] value=1 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**))
+    (var_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:26:6 - line:26:6] "y" type='Int' interface type='Int' access=internal let readImpl=stored immutable
+      (accessor_decl implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:26:6 - line:26:6] 'anonname=0x108116ab8' interface type='(SupportedStruct) -> () -> Int' access=internal get_for=y
+        (parameter "self" type='SupportedStruct' interface type='SupportedStruct')
+        (parameter_list)
+        (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:26:6 - line:26:6]
+          (return_stmt implicit
+            (member_ref_expr implicit type='Int' decl=Main.(file).SupportedStruct.y@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:26:6 direct_to_storage
+              (declref_expr implicit type='SupportedStruct' decl=Main.(file).SupportedStruct.<anonymous>.self@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:26:6 function_ref=unapplied))))))
+    (constructor_decl implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:24:8 - line:24:8] "init()" interface type='(SupportedStruct.Type) -> () -> SupportedStruct' access=internal designated
+      (parameter "self")
+      (parameter_list)
+      (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:24:8 - line:24:8]
+        (return_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:24:8 - line:24:8]))))
+  (struct_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:29:1 - line:32:1] "OtherSupportedStruct" interface type='OtherSupportedStruct.Type' access=internal non-resilient
+    (pattern_binding_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:30:2 - line:30:9]
+      (pattern_typed type='Int'
+        (pattern_named type='Int' 'x')
+        (type_ident
+          (component id='Int' bind=Swift.(file).Int))))
+    (var_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:30:6 - line:30:6] "x" type='Int' interface type='Int' access=internal let readImpl=stored immutable
+      (accessor_decl implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:30:6 - line:30:6] 'anonname=0x10812f4e8' interface type='(OtherSupportedStruct) -> () -> Int' access=internal get_for=x
+        (parameter "self" type='OtherSupportedStruct' interface type='OtherSupportedStruct')
+        (parameter_list)
+        (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:30:6 - line:30:6]
+          (return_stmt implicit
+            (member_ref_expr implicit type='Int' decl=Main.(file).OtherSupportedStruct.x@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:30:6 direct_to_storage
+              (declref_expr implicit type='OtherSupportedStruct' decl=Main.(file).OtherSupportedStruct.<anonymous>.self@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:30:6 function_ref=unapplied))))))
+    (pattern_binding_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:31:2 - line:31:9]
+      (pattern_typed type='Int'
+        (pattern_named type='Int' 'y')
+        (type_ident
+          (component id='Int' bind=Swift.(file).Int))))
+    (var_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:31:6 - line:31:6] "y" type='Int' interface type='Int' access=internal let readImpl=stored immutable
+      (accessor_decl implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:31:6 - line:31:6] 'anonname=0x10812f6d0' interface type='(OtherSupportedStruct) -> () -> Int' access=internal get_for=y
+        (parameter "self" type='OtherSupportedStruct' interface type='OtherSupportedStruct')
+        (parameter_list)
+        (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:31:6 - line:31:6]
+          (return_stmt implicit
+            (member_ref_expr implicit type='Int' decl=Main.(file).OtherSupportedStruct.y@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:31:6 direct_to_storage
+              (declref_expr implicit type='OtherSupportedStruct' decl=Main.(file).OtherSupportedStruct.<anonymous>.self@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:31:6 function_ref=unapplied))))))
+    (constructor_decl implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:29:8 - line:29:8] "init(x:y:)" interface type='(OtherSupportedStruct.Type) -> (Int, Int) -> OtherSupportedStruct' access=internal designated
+      (parameter "self")
+      (parameter_list range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:29:8 - line:29:8]
+        (parameter "x" apiName=x type='Int' interface type='Int')
+        (parameter "y" apiName=y type='Int' interface type='Int'))))
+  (struct_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:34:1 - line:37:1] "NoInheritance" interface type='NoInheritance.Type' access=internal non-resilient inherits: Equatable, Codable
+    (pattern_binding_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:35:2 - line:35:9]
+      (pattern_typed type='Int'
+        (pattern_named type='Int' 'x')
+        (type_ident
+          (component id='Int' bind=Swift.(file).Int))))
+    (var_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:35:6 - line:35:6] "x" type='Int' interface type='Int' access=internal let readImpl=stored immutable
+      (accessor_decl implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:35:6 - line:35:6] 'anonname=0x108476400' interface type='(NoInheritance) -> () -> Int' access=internal get_for=x
+        (parameter "self" type='NoInheritance' interface type='NoInheritance')
+        (parameter_list)
+        (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:35:6 - line:35:6]
+          (return_stmt implicit
+            (member_ref_expr implicit type='Int' decl=Main.(file).NoInheritance.x@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:35:6 direct_to_storage
+              (declref_expr implicit type='NoInheritance' decl=Main.(file).NoInheritance.<anonymous>.self@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:35:6 function_ref=unapplied))))))
+    (pattern_binding_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:36:2 - line:36:9]
+      (pattern_typed type='Int'
+        (pattern_named type='Int' 'y')
+        (type_ident
+          (component id='Int' bind=Swift.(file).Int))))
+    (var_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:36:6 - line:36:6] "y" type='Int' interface type='Int' access=internal let readImpl=stored immutable
+      (accessor_decl implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:36:6 - line:36:6] 'anonname=0x1084765e8' interface type='(NoInheritance) -> () -> Int' access=internal get_for=y
+        (parameter "self" type='NoInheritance' interface type='NoInheritance')
+        (parameter_list)
+        (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:36:6 - line:36:6]
+          (return_stmt implicit
+            (member_ref_expr implicit type='Int' decl=Main.(file).NoInheritance.y@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:36:6 direct_to_storage
+              (declref_expr implicit type='NoInheritance' decl=Main.(file).NoInheritance.<anonymous>.self@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:36:6 function_ref=unapplied))))))
+    (constructor_decl implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:34:8 - line:34:8] "init(x:y:)" interface type='(NoInheritance.Type) -> (Int, Int) -> NoInheritance' access=internal designated
+      (parameter "self")
+      (parameter_list range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:34:8 - line:34:8]
+        (parameter "x" apiName=x type='Int' interface type='Int')
+        (parameter "y" apiName=y type='Int' interface type='Int')))
+    (enum_decl implicit "CodingKeys" interface type='NoInheritance.CodingKeys.Type' access=private non-resilient inherits: CodingKey
+      (enum_element_decl implicit "x" interface type='(NoInheritance.CodingKeys.Type) -> NoInheritance.CodingKeys' access=internal)
+      (enum_element_decl implicit "y" interface type='(NoInheritance.CodingKeys.Type) -> NoInheritance.CodingKeys' access=internal)
+      (func_decl implicit "__derived_enum_equals(_:_:)" interface type='(NoInheritance.CodingKeys.Type) -> (NoInheritance.CodingKeys, NoInheritance.CodingKeys) -> Bool' access=fileprivate type
+        (parameter "self")
+        (parameter_list
+          (parameter "a" type='NoInheritance.CodingKeys' interface type='NoInheritance.CodingKeys')
+          (parameter "b" type='NoInheritance.CodingKeys' interface type='NoInheritance.CodingKeys'))
+        (brace_stmt implicit
+          (pattern_binding_decl implicit
+            (pattern_typed implicit type='Int'
+              (pattern_named implicit type='Int' 'index_a')))
+
+          (switch_stmt implicit
+            (declref_expr implicit type='NoInheritance.CodingKeys' decl=Main.(file).NoInheritance.CodingKeys.__derived_enum_equals(_:_:).a function_ref=unapplied)
+            (case_stmt implicit
+              (case_label_item
+              (pattern_enum_element implicit type='NoInheritance.CodingKeys' NoInheritance.CodingKeys._))
+              (brace_stmt implicit
+                (assign_expr implicit type='()'
+                  (declref_expr implicit type='@lvalue Int' decl=Main.(file).NoInheritance.CodingKeys.__derived_enum_equals(_:_:).index_a function_ref=unapplied)
+                  (integer_literal_expr implicit type='Int' value=0 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**))))
+            (case_stmt implicit
+              (case_label_item
+              (pattern_enum_element implicit type='NoInheritance.CodingKeys' NoInheritance.CodingKeys._))
+              (brace_stmt implicit
+                (assign_expr implicit type='()'
+                  (declref_expr implicit type='@lvalue Int' decl=Main.(file).NoInheritance.CodingKeys.__derived_enum_equals(_:_:).index_a function_ref=unapplied)
+                  (integer_literal_expr implicit type='Int' value=1 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**)))))
+          (pattern_binding_decl implicit
+            (pattern_typed implicit type='Int'
+              (pattern_named implicit type='Int' 'index_b')))
+
+          (switch_stmt implicit
+            (declref_expr implicit type='NoInheritance.CodingKeys' decl=Main.(file).NoInheritance.CodingKeys.__derived_enum_equals(_:_:).b function_ref=unapplied)
+            (case_stmt implicit
+              (case_label_item
+              (pattern_enum_element implicit type='NoInheritance.CodingKeys' NoInheritance.CodingKeys._))
+              (brace_stmt implicit
+                (assign_expr implicit type='()'
+                  (declref_expr implicit type='@lvalue Int' decl=Main.(file).NoInheritance.CodingKeys.__derived_enum_equals(_:_:).index_b function_ref=unapplied)
+                  (integer_literal_expr implicit type='Int' value=0 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**))))
+            (case_stmt implicit
+              (case_label_item
+              (pattern_enum_element implicit type='NoInheritance.CodingKeys' NoInheritance.CodingKeys._))
+              (brace_stmt implicit
+                (assign_expr implicit type='()'
+                  (declref_expr implicit type='@lvalue Int' decl=Main.(file).NoInheritance.CodingKeys.__derived_enum_equals(_:_:).index_b function_ref=unapplied)
+                  (integer_literal_expr implicit type='Int' value=1 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**)))))
+          (return_stmt implicit
+            (binary_expr implicit type='Bool' nothrow
+              (dot_syntax_call_expr implicit type='(Int, Int) -> Bool' nothrow
+                (declref_expr implicit type='(Int.Type) -> (Int, Int) -> Bool' decl=Swift.(file).Int.== function_ref=unapplied)
+                (type_expr implicit type='Int.Type' typerepr='<<NULL>>'))
+              (tuple_expr implicit type='(Int, Int)'
+                (declref_expr implicit type='Int' decl=Main.(file).NoInheritance.CodingKeys.__derived_enum_equals(_:_:).index_a function_ref=unapplied)
+                (declref_expr implicit type='Int' decl=Main.(file).NoInheritance.CodingKeys.__derived_enum_equals(_:_:).index_b function_ref=unapplied))))))
+      (var_decl implicit "hashValue" type='Int' interface type='Int' access=fileprivate readImpl=getter immutable
+        (accessor_decl implicit 'anonname=0x10844dc38' interface type='(NoInheritance.CodingKeys) -> () -> Int' access=fileprivate get_for=hashValue
+          (parameter "self" type='NoInheritance.CodingKeys' interface type='NoInheritance.CodingKeys')
+          (parameter_list)
+          (brace_stmt implicit
+            (return_stmt implicit
+              (call_expr implicit type='Int' nothrow arg_labels=for:
+                (declref_expr implicit type='(NoInheritance.CodingKeys) -> Int' decl=Swift.(file)._hashValue(for:) [with (substitution_map generic_signature=<H where H : Hashable> (substitution H -> NoInheritance.CodingKeys))] function_ref=unapplied)
+                (tuple_expr implicit type='(for: NoInheritance.CodingKeys)' names=for
+                  (declref_expr implicit type='NoInheritance.CodingKeys' decl=Main.(file).NoInheritance.CodingKeys.<anonymous>.self function_ref=unapplied)))))))
+      (pattern_binding_decl implicit
+        (pattern_typed implicit type='Int'
+          (pattern_named implicit type='Int' 'hashValue')))
+      (func_decl implicit "hash(into:)" interface type='(NoInheritance.CodingKeys) -> (inout Hasher) -> ()' access=fileprivate
+        (parameter "self" type='NoInheritance.CodingKeys' interface type='NoInheritance.CodingKeys')
+        (parameter_list
+          (parameter "hasher" apiName=into type='Hasher' interface type='Hasher' inout))
+        (brace_stmt implicit
+          (pattern_binding_decl implicit
+            (pattern_typed implicit type='Int'
+              (pattern_named implicit type='Int' 'discriminator')))
+
+          (switch_stmt implicit
+            (declref_expr implicit type='NoInheritance.CodingKeys' decl=Main.(file).NoInheritance.CodingKeys.hash(into:).self function_ref=unapplied)
+            (case_stmt implicit
+              (case_label_item
+              (pattern_enum_element implicit type='NoInheritance.CodingKeys' NoInheritance.CodingKeys._))
+              (brace_stmt implicit
+                (assign_expr implicit type='()'
+                  (declref_expr implicit type='@lvalue Int' decl=Main.(file).NoInheritance.CodingKeys.hash(into:).discriminator function_ref=unapplied)
+                  (integer_literal_expr implicit type='Int' value=0 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**))))
+            (case_stmt implicit
+              (case_label_item
+              (pattern_enum_element implicit type='NoInheritance.CodingKeys' NoInheritance.CodingKeys._))
+              (brace_stmt implicit
+                (assign_expr implicit type='()'
+                  (declref_expr implicit type='@lvalue Int' decl=Main.(file).NoInheritance.CodingKeys.hash(into:).discriminator function_ref=unapplied)
+                  (integer_literal_expr implicit type='Int' value=1 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**)))))
+          (call_expr implicit type='()' nothrow arg_labels=_:
+            (dot_syntax_call_expr implicit type='(Int) -> ()' nothrow
+              (declref_expr implicit type='(inout Hasher) -> (Int) -> ()' decl=Swift.(file).Hasher.combine [with (substitution_map generic_signature=<H where H : Hashable> (substitution H -> Int))] function_ref=single)
+              (inout_expr implicit type='inout Hasher'
+                (declref_expr implicit type='@lvalue Hasher' decl=Main.(file).NoInheritance.CodingKeys.hash(into:).hasher function_ref=unapplied)))
+            (paren_expr implicit type='(Int)'
+              (load_expr implicit type='Int'
+                (declref_expr implicit type='@lvalue Int' decl=Main.(file).NoInheritance.CodingKeys.hash(into:).discriminator function_ref=unapplied))))))
+      (var_decl implicit "stringValue" type='String' interface type='String' access=fileprivate readImpl=getter immutable
+        (accessor_decl implicit 'anonname=0x108463a30' interface type='(NoInheritance.CodingKeys) -> () -> String' access=fileprivate get_for=stringValue
+          (parameter "self" type='NoInheritance.CodingKeys' interface type='NoInheritance.CodingKeys')
+          (parameter_list)
+          (brace_stmt implicit
+            (switch_stmt implicit
+              (declref_expr implicit type='NoInheritance.CodingKeys' decl=Main.(file).NoInheritance.CodingKeys.<anonymous>.self function_ref=unapplied)
+              (case_stmt implicit
+                (case_label_item
+                (pattern_enum_element implicit type='NoInheritance.CodingKeys' NoInheritance.CodingKeys._))
+                (brace_stmt implicit
+                  (return_stmt implicit
+                    (string_literal_expr implicit type='String' encoding=utf8 value="x" builtin_initializer=Swift.(file).String extension.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**))))
+              (case_stmt implicit
+                (case_label_item
+                (pattern_enum_element implicit type='NoInheritance.CodingKeys' NoInheritance.CodingKeys._))
+                (brace_stmt implicit
+                  (return_stmt implicit
+                    (string_literal_expr implicit type='String' encoding=utf8 value="y" builtin_initializer=Swift.(file).String extension.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**))))))))
+      (pattern_binding_decl implicit
+        (pattern_typed implicit type='String'
+          (pattern_named implicit type='String' 'stringValue')))
+      (constructor_decl implicit "init(stringValue:)" interface type='(NoInheritance.CodingKeys.Type) -> (String) -> NoInheritance.CodingKeys?' access=private designated failable=Optional
+        (parameter "self" type='NoInheritance.CodingKeys' interface type='NoInheritance.CodingKeys' inout)
+        (parameter_list
+          (parameter "stringValue" apiName=stringValue type='String' interface type='String'))
+        (brace_stmt implicit
+          (switch_stmt implicit
+            (declref_expr implicit type='String' decl=Main.(file).NoInheritance.CodingKeys.init(stringValue:).stringValue function_ref=unapplied)
+            (case_stmt implicit
+              (case_label_item
+              (pattern_expr implicit type='String'
+                (binary_expr implicit type='Bool' nothrow
+                  (declref_expr implicit type='(String, String) -> Bool' decl=Swift.(file).~= [with (substitution_map generic_signature=<T where T : Equatable> (substitution T -> String))] function_ref=compound)
+                  (tuple_expr implicit type='(String, String)'
+                    (string_literal_expr implicit type='String' encoding=utf8 value="x" builtin_initializer=Swift.(file).String extension.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**)
+                    (declref_expr implicit type='String' decl=Main.(file).NoInheritance.CodingKeys.init(stringValue:).$match function_ref=unapplied)))))
+              (brace_stmt implicit
+                (assign_expr implicit type='()'
+                  (declref_expr implicit type='@lvalue NoInheritance.CodingKeys' decl=Main.(file).NoInheritance.CodingKeys.init(stringValue:).self function_ref=unapplied)
+                  (dot_syntax_call_expr implicit type='NoInheritance.CodingKeys' nothrow
+                    (declref_expr implicit type='(NoInheritance.CodingKeys.Type) -> NoInheritance.CodingKeys' decl=Main.(file).NoInheritance.CodingKeys.x function_ref=double)
+                    (type_expr implicit type='NoInheritance.CodingKeys.Type' typerepr='<<NULL>>')))))
+            (case_stmt implicit
+              (case_label_item
+              (pattern_expr implicit type='String'
+                (binary_expr implicit type='Bool' nothrow
+                  (declref_expr implicit type='(String, String) -> Bool' decl=Swift.(file).~= [with (substitution_map generic_signature=<T where T : Equatable> (substitution T -> String))] function_ref=compound)
+                  (tuple_expr implicit type='(String, String)'
+                    (string_literal_expr implicit type='String' encoding=utf8 value="y" builtin_initializer=Swift.(file).String extension.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**)
+                    (declref_expr implicit type='String' decl=Main.(file).NoInheritance.CodingKeys.init(stringValue:).$match function_ref=unapplied)))))
+              (brace_stmt implicit
+                (assign_expr implicit type='()'
+                  (declref_expr implicit type='@lvalue NoInheritance.CodingKeys' decl=Main.(file).NoInheritance.CodingKeys.init(stringValue:).self function_ref=unapplied)
+                  (dot_syntax_call_expr implicit type='NoInheritance.CodingKeys' nothrow
+                    (declref_expr implicit type='(NoInheritance.CodingKeys.Type) -> NoInheritance.CodingKeys' decl=Main.(file).NoInheritance.CodingKeys.y function_ref=double)
+                    (type_expr implicit type='NoInheritance.CodingKeys.Type' typerepr='<<NULL>>')))))
+            (case_stmt implicit
+              (case_label_item default
+              (pattern_any implicit type='String'))
+              (brace_stmt implicit
+                (fail_stmt implicit))))
+          (return_stmt implicit)))
+      (var_decl implicit "intValue" type='Int?' interface type='Int?' access=fileprivate readImpl=getter immutable
+        (accessor_decl implicit 'anonname=0x108464158' interface type='(NoInheritance.CodingKeys) -> () -> Int?' access=fileprivate get_for=intValue
+          (parameter "self")
+          (parameter_list)
+          (brace_stmt implicit
+            (return_stmt implicit
+              (nil_literal_expr implicit type='Int?' initializer=**NULL**)))))
+      (pattern_binding_decl implicit
+        (pattern_typed implicit type='Int?'
+          (pattern_named implicit type='Int?' 'intValue')))
+      (constructor_decl implicit "init(intValue:)" interface type='(NoInheritance.CodingKeys.Type) -> (Int) -> NoInheritance.CodingKeys?' access=private designated failable=Optional
+        (parameter "self")
+        (parameter_list
+          (parameter "intValue" apiName=intValue type='Int' interface type='Int'))
+        (brace_stmt implicit
+          (fail_stmt implicit))))
+    (constructor_decl implicit "init(from:)" interface type='(NoInheritance.Type) -> (Decoder) throws -> NoInheritance' access=internal designated
+      (parameter "self" type='NoInheritance' interface type='NoInheritance' inout)
+      (parameter_list
+        (parameter "decoder" apiName=from type='Decoder' interface type='Decoder'))
+      (brace_stmt implicit
+        (pattern_binding_decl implicit
+          (pattern_named implicit type='KeyedDecodingContainer<NoInheritance.CodingKeys>' 'container')
+          Processed init:
+          (try_expr implicit type='KeyedDecodingContainer<NoInheritance.CodingKeys>'
+            (open_existential_expr implicit type='KeyedDecodingContainer<NoInheritance.CodingKeys>'
+              (opaque_value_expr implicit type='Decoder' @ 0x10849bcd8)
+              (declref_expr implicit type='Decoder' decl=Main.(file).NoInheritance.init(from:).decoder function_ref=unapplied)
+              (call_expr implicit type='KeyedDecodingContainer<NoInheritance.CodingKeys>' throws arg_labels=keyedBy:
+                (dot_syntax_call_expr implicit type='(NoInheritance.CodingKeys.Type) throws -> KeyedDecodingContainer<NoInheritance.CodingKeys>' nothrow
+                  (declref_expr implicit type='(Decoder) -> (NoInheritance.CodingKeys.Type) throws -> KeyedDecodingContainer<NoInheritance.CodingKeys>' decl=Swift.(file).Decoder.container(keyedBy:) [with (substitution_map generic_signature=<Self, Key where Self : Decoder, Key : CodingKey> (substitution Self -> @opened("5AFC960A-CA36-11EC-BFF1-ACBC327994F5") Decoder) (substitution Key -> NoInheritance.CodingKeys))] function_ref=single)
+                  (opaque_value_expr implicit type='Decoder' @ 0x10849bcd8))
+                (tuple_expr implicit type='(keyedBy: NoInheritance.CodingKeys.Type)' names=keyedBy
+                  (dot_self_expr type='NoInheritance.CodingKeys.Type'
+                    (type_expr implicit type='NoInheritance.CodingKeys.Type' typerepr='CodingKeys')))))))
+
+        (var_decl implicit "container" type='KeyedDecodingContainer<NoInheritance.CodingKeys>' interface type='KeyedDecodingContainer<NoInheritance.CodingKeys>' access=private let readImpl=stored immutable)
+
+        (assign_expr implicit type='()'
+          (member_ref_expr implicit type='@lvalue Int' decl=Main.(file).NoInheritance.x@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:35:6 direct_to_storage
+            (declref_expr implicit type='@lvalue NoInheritance' decl=Main.(file).NoInheritance.init(from:).self function_ref=unapplied))
+          (try_expr implicit type='Int'
+            (call_expr implicit type='Int' throws arg_labels=_:forKey:
+              (dot_syntax_call_expr implicit type='(Int.Type, NoInheritance.CodingKeys) throws -> Int' nothrow
+                (declref_expr implicit type='(KeyedDecodingContainer<NoInheritance.CodingKeys>) -> (Int.Type, NoInheritance.CodingKeys) throws -> Int' decl=Swift.(file).KeyedDecodingContainer.decode(_:forKey:) [with (substitution_map generic_signature=<K where K : CodingKey> (substitution K -> NoInheritance.CodingKeys))] function_ref=single)
+                (declref_expr implicit type='KeyedDecodingContainer<NoInheritance.CodingKeys>' decl=Main.(file).NoInheritance.init(from:).container function_ref=unapplied))
+              (tuple_expr implicit type='(Int.Type, forKey: NoInheritance.CodingKeys)' names='',forKey
+                (dot_self_expr type='Int.Type'
+                  (type_expr implicit type='Int.Type' typerepr='<<NULL>>'))
+                (dot_syntax_call_expr implicit type='NoInheritance.CodingKeys' nothrow
+                  (declref_expr implicit type='(NoInheritance.CodingKeys.Type) -> NoInheritance.CodingKeys' decl=Main.(file).NoInheritance.CodingKeys.x function_ref=double)
+                  (type_expr implicit type='NoInheritance.CodingKeys.Type' typerepr='<<NULL>>'))))))
+        (assign_expr implicit type='()'
+          (member_ref_expr implicit type='@lvalue Int' decl=Main.(file).NoInheritance.y@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:36:6 direct_to_storage
+            (declref_expr implicit type='@lvalue NoInheritance' decl=Main.(file).NoInheritance.init(from:).self function_ref=unapplied))
+          (try_expr implicit type='Int'
+            (call_expr implicit type='Int' throws arg_labels=_:forKey:
+              (dot_syntax_call_expr implicit type='(Int.Type, NoInheritance.CodingKeys) throws -> Int' nothrow
+                (declref_expr implicit type='(KeyedDecodingContainer<NoInheritance.CodingKeys>) -> (Int.Type, NoInheritance.CodingKeys) throws -> Int' decl=Swift.(file).KeyedDecodingContainer.decode(_:forKey:) [with (substitution_map generic_signature=<K where K : CodingKey> (substitution K -> NoInheritance.CodingKeys))] function_ref=single)
+                (declref_expr implicit type='KeyedDecodingContainer<NoInheritance.CodingKeys>' decl=Main.(file).NoInheritance.init(from:).container function_ref=unapplied))
+              (tuple_expr implicit type='(Int.Type, forKey: NoInheritance.CodingKeys)' names='',forKey
+                (dot_self_expr type='Int.Type'
+                  (type_expr implicit type='Int.Type' typerepr='<<NULL>>'))
+                (dot_syntax_call_expr implicit type='NoInheritance.CodingKeys' nothrow
+                  (declref_expr implicit type='(NoInheritance.CodingKeys.Type) -> NoInheritance.CodingKeys' decl=Main.(file).NoInheritance.CodingKeys.y function_ref=double)
+                  (type_expr implicit type='NoInheritance.CodingKeys.Type' typerepr='<<NULL>>'))))))
+        (return_stmt implicit)))
+    (func_decl implicit "__derived_struct_equals(_:_:)" interface type='(NoInheritance.Type) -> (NoInheritance, NoInheritance) -> Bool' access=internal type
+      (parameter "self")
+      (parameter_list
+        (parameter "a" type='NoInheritance' interface type='NoInheritance')
+        (parameter "b" type='NoInheritance' interface type='NoInheritance'))
+      (brace_stmt implicit
+        (guard_stmt implicit
+          (binary_expr implicit type='Bool' nothrow
+            (dot_syntax_call_expr implicit type='(Int, Int) -> Bool' nothrow
+              (declref_expr implicit type='(Int.Type) -> (Int, Int) -> Bool' decl=Swift.(file).Int.== function_ref=single)
+              (type_expr implicit type='Int.Type' typerepr='<<NULL>>'))
+            (tuple_expr implicit type='(Int, Int)'
+              (member_ref_expr implicit type='Int' decl=Main.(file).NoInheritance.x@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:35:6
+                (declref_expr implicit type='NoInheritance' decl=Main.(file).NoInheritance.__derived_struct_equals(_:_:).a function_ref=unapplied))
+              (member_ref_expr implicit type='Int' decl=Main.(file).NoInheritance.x@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:35:6
+                (declref_expr implicit type='NoInheritance' decl=Main.(file).NoInheritance.__derived_struct_equals(_:_:).b function_ref=unapplied))))
+          (brace_stmt implicit
+            (return_stmt implicit
+              (boolean_literal_expr implicit type='Bool' value=false builtin_initializer=Swift.(file).Bool extension.init(_builtinBooleanLiteral:) initializer=**NULL**))))
+        (guard_stmt implicit
+          (binary_expr implicit type='Bool' nothrow
+            (dot_syntax_call_expr implicit type='(Int, Int) -> Bool' nothrow
+              (declref_expr implicit type='(Int.Type) -> (Int, Int) -> Bool' decl=Swift.(file).Int.== function_ref=single)
+              (type_expr implicit type='Int.Type' typerepr='<<NULL>>'))
+            (tuple_expr implicit type='(Int, Int)'
+              (member_ref_expr implicit type='Int' decl=Main.(file).NoInheritance.y@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:36:6
+                (declref_expr implicit type='NoInheritance' decl=Main.(file).NoInheritance.__derived_struct_equals(_:_:).a function_ref=unapplied))
+              (member_ref_expr implicit type='Int' decl=Main.(file).NoInheritance.y@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:36:6
+                (declref_expr implicit type='NoInheritance' decl=Main.(file).NoInheritance.__derived_struct_equals(_:_:).b function_ref=unapplied))))
+          (brace_stmt implicit
+            (return_stmt implicit
+              (boolean_literal_expr implicit type='Bool' value=false builtin_initializer=Swift.(file).Bool extension.init(_builtinBooleanLiteral:) initializer=**NULL**))))
+        (return_stmt implicit
+          (boolean_literal_expr implicit type='Bool' value=true builtin_initializer=Swift.(file).Bool extension.init(_builtinBooleanLiteral:) initializer=**NULL**))))
+    (func_decl implicit "encode(to:)" interface type='(NoInheritance) -> (Encoder) throws -> ()' access=internal
+      (parameter "self" type='NoInheritance' interface type='NoInheritance')
+      (parameter_list
+        (parameter "encoder" apiName=to type='Encoder' interface type='Encoder'))
+      (brace_stmt implicit
+        (pattern_binding_decl implicit
+          (pattern_named implicit type='KeyedEncodingContainer<NoInheritance.CodingKeys>' 'container')
+          Processed init:
+          (open_existential_expr implicit type='KeyedEncodingContainer<NoInheritance.CodingKeys>'
+            (opaque_value_expr implicit type='Encoder' @ 0x1084ba328)
+            (declref_expr implicit type='Encoder' decl=Main.(file).NoInheritance.encode(to:).encoder function_ref=unapplied)
+            (call_expr implicit type='KeyedEncodingContainer<NoInheritance.CodingKeys>' nothrow arg_labels=keyedBy:
+              (dot_syntax_call_expr implicit type='(NoInheritance.CodingKeys.Type) -> KeyedEncodingContainer<NoInheritance.CodingKeys>' nothrow
+                (declref_expr implicit type='(Encoder) -> (NoInheritance.CodingKeys.Type) -> KeyedEncodingContainer<NoInheritance.CodingKeys>' decl=Swift.(file).Encoder.container(keyedBy:) [with (substitution_map generic_signature=<Self, Key where Self : Encoder, Key : CodingKey> (substitution Self -> @opened("5AFCFD2A-CA36-11EC-BFF1-ACBC327994F5") Encoder) (substitution Key -> NoInheritance.CodingKeys))] function_ref=single)
+                (opaque_value_expr implicit type='Encoder' @ 0x1084ba328))
+              (tuple_expr implicit type='(keyedBy: NoInheritance.CodingKeys.Type)' names=keyedBy
+                (dot_self_expr type='NoInheritance.CodingKeys.Type'
+                  (type_expr implicit type='NoInheritance.CodingKeys.Type' typerepr='CodingKeys'))))))
+
+        (var_decl implicit "container" type='KeyedEncodingContainer<NoInheritance.CodingKeys>' interface type='KeyedEncodingContainer<NoInheritance.CodingKeys>' access=private readImpl=stored writeImpl=stored readWriteImpl=stored)
+
+        (try_expr implicit type='()'
+          (call_expr implicit type='()' throws arg_labels=_:forKey:
+            (dot_syntax_call_expr implicit type='(Int, NoInheritance.CodingKeys) throws -> ()' nothrow
+              (declref_expr implicit type='(inout KeyedEncodingContainer<NoInheritance.CodingKeys>) -> (Int, NoInheritance.CodingKeys) throws -> ()' decl=Swift.(file).KeyedEncodingContainer.encode(_:forKey:) [with (substitution_map generic_signature=<K where K : CodingKey> (substitution K -> NoInheritance.CodingKeys))] function_ref=single)
+              (inout_expr implicit type='inout KeyedEncodingContainer<NoInheritance.CodingKeys>'
+                (declref_expr implicit type='@lvalue KeyedEncodingContainer<NoInheritance.CodingKeys>' decl=Main.(file).NoInheritance.encode(to:).container function_ref=unapplied)))
+            (tuple_expr implicit type='(Int, forKey: NoInheritance.CodingKeys)' names='',forKey
+              (member_ref_expr implicit type='Int' decl=Main.(file).NoInheritance.x@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:35:6
+                (declref_expr implicit type='NoInheritance' decl=Main.(file).NoInheritance.encode(to:).self function_ref=unapplied))
+              (dot_syntax_call_expr implicit type='NoInheritance.CodingKeys' nothrow
+                (declref_expr implicit type='(NoInheritance.CodingKeys.Type) -> NoInheritance.CodingKeys' decl=Main.(file).NoInheritance.CodingKeys.x function_ref=double)
+                (type_expr implicit type='NoInheritance.CodingKeys.Type' typerepr='<<NULL>>')))))
+        (try_expr implicit type='()'
+          (call_expr implicit type='()' throws arg_labels=_:forKey:
+            (dot_syntax_call_expr implicit type='(Int, NoInheritance.CodingKeys) throws -> ()' nothrow
+              (declref_expr implicit type='(inout KeyedEncodingContainer<NoInheritance.CodingKeys>) -> (Int, NoInheritance.CodingKeys) throws -> ()' decl=Swift.(file).KeyedEncodingContainer.encode(_:forKey:) [with (substitution_map generic_signature=<K where K : CodingKey> (substitution K -> NoInheritance.CodingKeys))] function_ref=single)
+              (inout_expr implicit type='inout KeyedEncodingContainer<NoInheritance.CodingKeys>'
+                (declref_expr implicit type='@lvalue KeyedEncodingContainer<NoInheritance.CodingKeys>' decl=Main.(file).NoInheritance.encode(to:).container function_ref=unapplied)))
+            (tuple_expr implicit type='(Int, forKey: NoInheritance.CodingKeys)' names='',forKey
+              (member_ref_expr implicit type='Int' decl=Main.(file).NoInheritance.y@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:36:6
+                (declref_expr implicit type='NoInheritance' decl=Main.(file).NoInheritance.encode(to:).self function_ref=unapplied))
+              (dot_syntax_call_expr implicit type='NoInheritance.CodingKeys' nothrow
+                (declref_expr implicit type='(NoInheritance.CodingKeys.Type) -> NoInheritance.CodingKeys' decl=Main.(file).NoInheritance.CodingKeys.y function_ref=double)
+                (type_expr implicit type='NoInheritance.CodingKeys.Type' typerepr='<<NULL>>'))))))))
+  (struct_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:39:1 - line:51:1] "SingleExpressionMembers" interface type='SingleExpressionMembers.Type' access=internal non-resilient
+    (pattern_binding_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:40:2 - line:40:26]
+      (pattern_typed type='Int'
+        (pattern_named type='Int' 'oneParameter')
+        (type_ident
+          (component id='Int' bind=Swift.(file).Int)))
+      Original init:
+      (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:40:26 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:40:26 - line:40:26] value=0 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**)
+      Processed init:
+      (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:40:26 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:40:26 - line:40:26] value=0 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**))
+    (var_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:40:6 - line:40:6] "oneParameter" type='Int' interface type='Int' access=internal let readImpl=stored immutable
+      (accessor_decl implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:40:6 - line:40:6] 'anonname=0x10847a868' interface type='(SingleExpressionMembers) -> () -> Int' access=internal get_for=oneParameter
+        (parameter "self" type='SingleExpressionMembers' interface type='SingleExpressionMembers')
+        (parameter_list)
+        (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:40:6 - line:40:6]
+          (return_stmt implicit
+            (member_ref_expr implicit type='Int' decl=Main.(file).SingleExpressionMembers.oneParameter@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:40:6 direct_to_storage
+              (declref_expr implicit type='SingleExpressionMembers' decl=Main.(file).SingleExpressionMembers.<anonymous>.self@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:40:6 function_ref=unapplied))))))
+    (pattern_binding_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:42:2 - line:44:2]
+      (pattern_typed type='Int'
+        (pattern_named type='Int' 'one')
+        (type_ident
+          (component id='Int' bind=Swift.(file).Int))))
+    (var_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:42:6 - line:42:6] "one" type='Int' interface type='Int' access=internal readImpl=getter immutable
+      (accessor_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:42:15 - line:44:2] 'anonname=0x1080fe650' interface type='(SingleExpressionMembers) -> () -> Int' access=internal get_for=one
+        (parameter "self")
+        (parameter_list)
+        (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:43:3 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:43:3 - line:43:3] value=10 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**)))
+    (pattern_binding_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:46:2 - line:50:2]
+      (pattern_typed type='Int'
+        (pattern_named type='Int' 'two')
+        (type_ident
+          (component id='Int' bind=Swift.(file).Int))))
+    (var_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:46:6 - line:46:6] "two" type='Int' interface type='Int' access=internal readImpl=getter immutable
+      (accessor_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:47:3 - line:49:3] 'anonname=0x1080fea20' interface type='(SingleExpressionMembers) -> () -> Int' access=internal get_for=two
+        (parameter "self")
+        (parameter_list)
+        (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:48:4 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:48:4 - line:48:4] value=20 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**)))
+    (constructor_decl implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:39:8 - line:39:8] "init()" interface type='(SingleExpressionMembers.Type) -> () -> SingleExpressionMembers' access=internal designated
+      (parameter "self")
+      (parameter_list)
+      (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:39:8 - line:39:8]
+        (return_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:39:8 - line:39:8]))))
+  (top_level_code_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:53:1 - line:53:25]
+    (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:53:1 - line:53:25]
+      (pattern_binding_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:53:1 - line:53:25]
+        (pattern_named type='SupportedStruct' 'a')
+        Original init:
+        (call_expr type='SupportedStruct' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:53:9 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:53:9 - line:53:25] nothrow arg_labels=
+          (constructor_ref_call_expr type='() -> SupportedStruct' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:53:9 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:53:9 - line:53:9] nothrow
+            (declref_expr implicit type='(SupportedStruct.Type) -> () -> SupportedStruct' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:53:9 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:53:9 - line:53:9] decl=Main.(file).SupportedStruct.init()@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:24:8 function_ref=single)
+            (type_expr type='SupportedStruct.Type' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:53:9 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:53:9 - line:53:9] typerepr='SupportedStruct'))
+          (tuple_expr type='()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:53:24 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:53:24 - line:53:25]))
+        Processed init:
+        (call_expr type='SupportedStruct' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:53:9 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:53:9 - line:53:25] nothrow arg_labels=
+          (constructor_ref_call_expr type='() -> SupportedStruct' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:53:9 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:53:9 - line:53:9] nothrow
+            (declref_expr implicit type='(SupportedStruct.Type) -> () -> SupportedStruct' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:53:9 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:53:9 - line:53:9] decl=Main.(file).SupportedStruct.init()@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:24:8 function_ref=single)
+            (type_expr type='SupportedStruct.Type' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:53:9 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:53:9 - line:53:9] typerepr='SupportedStruct'))
+          (tuple_expr type='()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:53:24 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:53:24 - line:53:25])))
+))
+  (var_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:53:5 - line:53:5] "a" type='SupportedStruct' interface type='SupportedStruct' access=internal let readImpl=stored immutable)
+  (top_level_code_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:54:1 - line:54:42]
+    (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:54:1 - line:54:42]
+      (pattern_binding_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:54:1 - line:54:42]
+        (pattern_named type='OtherSupportedStruct' 'b')
+        Original init:
+        (call_expr type='OtherSupportedStruct' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:54:9 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:54:9 - line:54:42] nothrow arg_labels=x:y:
+          (constructor_ref_call_expr type='(Int, Int) -> OtherSupportedStruct' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:54:9 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:54:9 - line:54:9] nothrow
+            (declref_expr implicit type='(OtherSupportedStruct.Type) -> (Int, Int) -> OtherSupportedStruct' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:54:9 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:54:9 - line:54:9] decl=Main.(file).OtherSupportedStruct.init(x:y:)@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:29:8 function_ref=single)
+            (type_expr type='OtherSupportedStruct.Type' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:54:9 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:54:9 - line:54:9] typerepr='OtherSupportedStruct'))
+          (tuple_expr type='(x: Int, y: Int)' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:54:29 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:54:29 - line:54:42] names=x,y
+            (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:54:33 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:54:33 - line:54:33] value=10 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**)
+            (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:54:40 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:54:40 - line:54:40] value=20 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**)))
+        Processed init:
+        (call_expr type='OtherSupportedStruct' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:54:9 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:54:9 - line:54:42] nothrow arg_labels=x:y:
+          (constructor_ref_call_expr type='(Int, Int) -> OtherSupportedStruct' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:54:9 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:54:9 - line:54:9] nothrow
+            (declref_expr implicit type='(OtherSupportedStruct.Type) -> (Int, Int) -> OtherSupportedStruct' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:54:9 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:54:9 - line:54:9] decl=Main.(file).OtherSupportedStruct.init(x:y:)@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:29:8 function_ref=single)
+            (type_expr type='OtherSupportedStruct.Type' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:54:9 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:54:9 - line:54:9] typerepr='OtherSupportedStruct'))
+          (tuple_expr type='(x: Int, y: Int)' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:54:29 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:54:29 - line:54:42] names=x,y
+            (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:54:33 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:54:33 - line:54:33] value=10 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**)
+            (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:54:40 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:54:40 - line:54:40] value=20 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**))))
+))
+  (var_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:54:5 - line:54:5] "b" type='OtherSupportedStruct' interface type='OtherSupportedStruct' access=internal let readImpl=stored immutable)
+  (top_level_code_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:55:1 - line:55:33]
+    (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:55:1 - line:55:33]
+      (pattern_binding_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:55:1 - line:55:33]
+        (pattern_named type='SingleExpressionMembers' 'c')
+        Original init:
+        (call_expr type='SingleExpressionMembers' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:55:9 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:55:9 - line:55:33] nothrow arg_labels=
+          (constructor_ref_call_expr type='() -> SingleExpressionMembers' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:55:9 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:55:9 - line:55:9] nothrow
+            (declref_expr implicit type='(SingleExpressionMembers.Type) -> () -> SingleExpressionMembers' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:55:9 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:55:9 - line:55:9] decl=Main.(file).SingleExpressionMembers.init()@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:39:8 function_ref=single)
+            (type_expr type='SingleExpressionMembers.Type' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:55:9 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:55:9 - line:55:9] typerepr='SingleExpressionMembers'))
+          (tuple_expr type='()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:55:32 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:55:32 - line:55:33]))
+        Processed init:
+        (call_expr type='SingleExpressionMembers' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:55:9 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:55:9 - line:55:33] nothrow arg_labels=
+          (constructor_ref_call_expr type='() -> SingleExpressionMembers' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:55:9 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:55:9 - line:55:9] nothrow
+            (declref_expr implicit type='(SingleExpressionMembers.Type) -> () -> SingleExpressionMembers' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:55:9 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:55:9 - line:55:9] decl=Main.(file).SingleExpressionMembers.init()@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:39:8 function_ref=single)
+            (type_expr type='SingleExpressionMembers.Type' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:55:9 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:55:9 - line:55:9] typerepr='SingleExpressionMembers'))
+          (tuple_expr type='()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:55:32 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:55:32 - line:55:33])))
+))
+  (var_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:55:5 - line:55:5] "c" type='SingleExpressionMembers' interface type='SingleExpressionMembers' access=internal let readImpl=stored immutable)
+  (top_level_code_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:57:1 - line:57:10]
+    (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:57:1 - line:57:10]
+      (call_expr type='()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:57:1 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:57:1 - line:57:10] nothrow arg_labels=_:
+        (declref_expr type='(Any..., String, String) -> ()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:57:1 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:57:1 - line:57:1] decl=Swift.(file).print(_:separator:terminator:) function_ref=single)
+        (tuple_expr type='(Any..., separator: String, terminator: String)' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:57:6 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:57:6 - line:57:10] names='',separator,terminator
+          (vararg_expansion_expr implicit type='[Any]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:57:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:57:7 - line:57:9]
+            (array_expr implicit type='[Any]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:57:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:57:7 - line:57:9] initializer=**NULL**
+              (erasure_expr implicit type='Any' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:57:9 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:57:7 - line:57:9]
+                (member_ref_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:57:9 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:57:7 - line:57:9] decl=Main.(file).SupportedStruct.x@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:25:6
+                  (declref_expr type='SupportedStruct' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:57:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:57:7 - line:57:7] decl=Main.(file).a@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:53:5 function_ref=unapplied)))))
+          (default_argument_expr implicit type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:57:6 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:57:6 - line:57:6] default_args_owner=Swift.(file).print(_:separator:terminator:) param=1)
+          (default_argument_expr implicit type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:57:6 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:57:6 - line:57:6] default_args_owner=Swift.(file).print(_:separator:terminator:) param=2)))))
+  (top_level_code_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:58:1 - line:58:10]
+    (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:58:1 - line:58:10]
+      (call_expr type='()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:58:1 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:58:1 - line:58:10] nothrow arg_labels=_:
+        (declref_expr type='(Any..., String, String) -> ()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:58:1 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:58:1 - line:58:1] decl=Swift.(file).print(_:separator:terminator:) function_ref=single)
+        (tuple_expr type='(Any..., separator: String, terminator: String)' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:58:6 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:58:6 - line:58:10] names='',separator,terminator
+          (vararg_expansion_expr implicit type='[Any]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:58:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:58:7 - line:58:9]
+            (array_expr implicit type='[Any]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:58:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:58:7 - line:58:9] initializer=**NULL**
+              (erasure_expr implicit type='Any' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:58:9 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:58:7 - line:58:9]
+                (member_ref_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:58:9 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:58:7 - line:58:9] decl=Main.(file).SupportedStruct.y@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:26:6
+                  (declref_expr type='SupportedStruct' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:58:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:58:7 - line:58:7] decl=Main.(file).a@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:53:5 function_ref=unapplied)))))
+          (default_argument_expr implicit type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:58:6 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:58:6 - line:58:6] default_args_owner=Swift.(file).print(_:separator:terminator:) param=1)
+          (default_argument_expr implicit type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:58:6 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:58:6 - line:58:6] default_args_owner=Swift.(file).print(_:separator:terminator:) param=2)))))
+  (top_level_code_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:59:1 - line:59:10]
+    (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:59:1 - line:59:10]
+      (call_expr type='()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:59:1 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:59:1 - line:59:10] nothrow arg_labels=_:
+        (declref_expr type='(Any..., String, String) -> ()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:59:1 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:59:1 - line:59:1] decl=Swift.(file).print(_:separator:terminator:) function_ref=single)
+        (tuple_expr type='(Any..., separator: String, terminator: String)' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:59:6 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:59:6 - line:59:10] names='',separator,terminator
+          (vararg_expansion_expr implicit type='[Any]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:59:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:59:7 - line:59:9]
+            (array_expr implicit type='[Any]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:59:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:59:7 - line:59:9] initializer=**NULL**
+              (erasure_expr implicit type='Any' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:59:9 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:59:7 - line:59:9]
+                (member_ref_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:59:9 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:59:7 - line:59:9] decl=Main.(file).OtherSupportedStruct.x@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:30:6
+                  (declref_expr type='OtherSupportedStruct' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:59:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:59:7 - line:59:7] decl=Main.(file).b@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:54:5 function_ref=unapplied)))))
+          (default_argument_expr implicit type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:59:6 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:59:6 - line:59:6] default_args_owner=Swift.(file).print(_:separator:terminator:) param=1)
+          (default_argument_expr implicit type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:59:6 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:59:6 - line:59:6] default_args_owner=Swift.(file).print(_:separator:terminator:) param=2)))))
+  (top_level_code_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:60:1 - line:60:10]
+    (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:60:1 - line:60:10]
+      (call_expr type='()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:60:1 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:60:1 - line:60:10] nothrow arg_labels=_:
+        (declref_expr type='(Any..., String, String) -> ()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:60:1 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:60:1 - line:60:1] decl=Swift.(file).print(_:separator:terminator:) function_ref=single)
+        (tuple_expr type='(Any..., separator: String, terminator: String)' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:60:6 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:60:6 - line:60:10] names='',separator,terminator
+          (vararg_expansion_expr implicit type='[Any]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:60:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:60:7 - line:60:9]
+            (array_expr implicit type='[Any]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:60:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:60:7 - line:60:9] initializer=**NULL**
+              (erasure_expr implicit type='Any' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:60:9 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:60:7 - line:60:9]
+                (member_ref_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:60:9 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:60:7 - line:60:9] decl=Main.(file).OtherSupportedStruct.y@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:31:6
+                  (declref_expr type='OtherSupportedStruct' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:60:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:60:7 - line:60:7] decl=Main.(file).b@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:54:5 function_ref=unapplied)))))
+          (default_argument_expr implicit type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:60:6 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:60:6 - line:60:6] default_args_owner=Swift.(file).print(_:separator:terminator:) param=1)
+          (default_argument_expr implicit type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:60:6 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:60:6 - line:60:6] default_args_owner=Swift.(file).print(_:separator:terminator:) param=2)))))
+  (top_level_code_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:61:1 - line:61:21]
+    (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:61:1 - line:61:21]
+      (call_expr type='()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:61:1 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:61:1 - line:61:21] nothrow arg_labels=_:
+        (declref_expr type='(Any..., String, String) -> ()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:61:1 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:61:1 - line:61:1] decl=Swift.(file).print(_:separator:terminator:) function_ref=single)
+        (tuple_expr type='(Any..., separator: String, terminator: String)' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:61:6 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:61:6 - line:61:21] names='',separator,terminator
+          (vararg_expansion_expr implicit type='[Any]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:61:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:61:7 - line:61:9]
+            (array_expr implicit type='[Any]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:61:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:61:7 - line:61:9] initializer=**NULL**
+              (erasure_expr implicit type='Any' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:61:9 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:61:7 - line:61:9]
+                (member_ref_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:61:9 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:61:7 - line:61:9] decl=Main.(file).SingleExpressionMembers.oneParameter@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:40:6
+                  (declref_expr type='SingleExpressionMembers' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:61:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:61:7 - line:61:7] decl=Main.(file).c@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:55:5 function_ref=unapplied)))))
+          (default_argument_expr implicit type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:61:6 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:61:6 - line:61:6] default_args_owner=Swift.(file).print(_:separator:terminator:) param=1)
+          (default_argument_expr implicit type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:61:6 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:61:6 - line:61:6] default_args_owner=Swift.(file).print(_:separator:terminator:) param=2)))))
+  (top_level_code_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:62:1 - line:62:12]
+    (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:62:1 - line:62:12]
+      (call_expr type='()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:62:1 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:62:1 - line:62:12] nothrow arg_labels=_:
+        (declref_expr type='(Any..., String, String) -> ()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:62:1 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:62:1 - line:62:1] decl=Swift.(file).print(_:separator:terminator:) function_ref=single)
+        (tuple_expr type='(Any..., separator: String, terminator: String)' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:62:6 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:62:6 - line:62:12] names='',separator,terminator
+          (vararg_expansion_expr implicit type='[Any]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:62:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:62:7 - line:62:9]
+            (array_expr implicit type='[Any]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:62:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:62:7 - line:62:9] initializer=**NULL**
+              (erasure_expr implicit type='Any' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:62:9 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:62:7 - line:62:9]
+                (member_ref_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:62:9 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:62:7 - line:62:9] decl=Main.(file).SingleExpressionMembers.one@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:42:6
+                  (declref_expr type='SingleExpressionMembers' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:62:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:62:7 - line:62:7] decl=Main.(file).c@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:55:5 function_ref=unapplied)))))
+          (default_argument_expr implicit type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:62:6 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:62:6 - line:62:6] default_args_owner=Swift.(file).print(_:separator:terminator:) param=1)
+          (default_argument_expr implicit type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:62:6 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:62:6 - line:62:6] default_args_owner=Swift.(file).print(_:separator:terminator:) param=2)))))
+  (top_level_code_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:63:1 - line:63:12]
+    (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:63:1 - line:63:12]
+      (call_expr type='()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:63:1 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:63:1 - line:63:12] nothrow arg_labels=_:
+        (declref_expr type='(Any..., String, String) -> ()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:63:1 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:63:1 - line:63:1] decl=Swift.(file).print(_:separator:terminator:) function_ref=single)
+        (tuple_expr type='(Any..., separator: String, terminator: String)' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:63:6 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:63:6 - line:63:12] names='',separator,terminator
+          (vararg_expansion_expr implicit type='[Any]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:63:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:63:7 - line:63:9]
+            (array_expr implicit type='[Any]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:63:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:63:7 - line:63:9] initializer=**NULL**
+              (erasure_expr implicit type='Any' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:63:9 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:63:7 - line:63:9]
+                (member_ref_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:63:9 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:63:7 - line:63:9] decl=Main.(file).SingleExpressionMembers.two@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:46:6
+                  (declref_expr type='SingleExpressionMembers' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:63:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:63:7 - line:63:7] decl=Main.(file).c@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:55:5 function_ref=unapplied)))))
+          (default_argument_expr implicit type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:63:6 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:63:6 - line:63:6] default_args_owner=Swift.(file).print(_:separator:terminator:) param=1)
+          (default_argument_expr implicit type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:63:6 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/structs.swift:63:6 - line:63:6] default_args_owner=Swift.(file).print(_:separator:terminator:) param=2))))))

@@ -1,0 +1,747 @@
+(source_file "/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift"
+  (import_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:37:1 - line:37:8] 'Foundation')
+  (top_level_code_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:40:1 - line:40:20]
+    (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:40:1 - line:40:20]
+      (pattern_binding_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:40:1 - line:40:20]
+        (pattern_named type='String' 'languageName')
+        Original init:
+        (string_literal_expr type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:40:20 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:40:20 - line:40:20] encoding=utf8 value="swift" builtin_initializer=Swift.(file).String extension.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**)
+        Processed init:
+        (string_literal_expr type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:40:20 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:40:20 - line:40:20] encoding=utf8 value="swift" builtin_initializer=Swift.(file).String extension.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**))
+))
+  (var_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:40:5 - line:40:5] "languageName" type='String' interface type='String' access=internal let readImpl=stored immutable)
+  (top_level_code_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:41:1 - line:41:36]
+    (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:41:1 - line:41:36]
+      (call_expr type='()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:41:1 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:41:1 - line:41:36] nothrow arg_labels=_:
+        (declref_expr type='(Any..., String, String) -> ()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:41:1 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:41:1 - line:41:1] decl=Swift.(file).print(_:separator:terminator:) function_ref=single)
+        (tuple_expr type='(Any..., separator: String, terminator: String)' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:41:6 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:41:6 - line:41:36] names='',separator,terminator
+          (vararg_expansion_expr implicit type='[Any]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:41:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:41:7 - line:41:7]
+            (array_expr implicit type='[Any]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:41:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:41:7 - line:41:7] initializer=**NULL**
+              (erasure_expr implicit type='Any' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:41:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:41:7 - line:41:7]
+                (interpolated_string_literal_expr type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:41:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:41:7 - line:41:7] trailing_quote_loc=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:41:35 literal_capacity=12 interpolation_count=1 builder_init=Swift.(file).DefaultStringInterpolation.init(literalCapacity:interpolationCount:) result_init=Swift.(file).String extension.init(stringInterpolation:)
+                  (tap_expr implicit type='String.StringInterpolation' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:41:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:41:7 - line:41:7] var=Main.(file).top-level code.$interpolation
+                    (opaque_value_expr implicit type='String.StringInterpolation' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:41:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:41:7 - line:41:7] @ 0x10a468fe0)
+                    (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:41:7 - line:41:7]
+                      (var_decl implicit "$interpolation" type='String.StringInterpolation' interface type='String.StringInterpolation' access=fileprivate readImpl=stored writeImpl=stored readWriteImpl=stored)
+
+                      (call_expr implicit type='()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:41:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:41:8 - line:41:7] nothrow arg_labels=_:
+                        (dot_syntax_call_expr implicit type='(String) -> ()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:41:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:41:8 - line:41:8] nothrow
+                          (declref_expr implicit type='(inout DefaultStringInterpolation) -> (String) -> ()' decl=Swift.(file).DefaultStringInterpolation.appendLiteral function_ref=double)
+                          (inout_expr implicit type='inout DefaultStringInterpolation' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:41:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:41:8 - line:41:8]
+                            (declref_expr implicit type='@lvalue String.StringInterpolation' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:41:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:41:8 - line:41:8] decl=Main.(file).top-level code.$interpolation function_ref=unapplied)))
+                        (paren_expr implicit type='(String)' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:41:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:41:7 - line:41:7]
+                          (string_literal_expr type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:41:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:41:7 - line:41:7] encoding=utf8 value="Hello from " builtin_initializer=Swift.(file).String extension.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**)))
+                      (call_expr type='()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:41:20 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:41:20 - line:41:33] nothrow arg_labels=_:
+                        (dot_syntax_call_expr implicit type='(String) -> ()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:41:20 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:41:20 - line:41:20] nothrow
+                          (declref_expr implicit type='(inout DefaultStringInterpolation) -> (String) -> ()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:41:20 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:41:20 - line:41:20] decl=Swift.(file).DefaultStringInterpolation.appendInterpolation [with (substitution_map generic_signature=<T where T : CustomStringConvertible, T : TextOutputStreamable> (substitution T -> String))] function_ref=double)
+                          (inout_expr implicit type='inout DefaultStringInterpolation' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:41:20 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:41:20 - line:41:20]
+                            (declref_expr implicit type='@lvalue String.StringInterpolation' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:41:20 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:41:20 - line:41:20] decl=Main.(file).top-level code.$interpolation function_ref=unapplied)))
+                        (paren_expr type='(String)' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:41:21 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:41:20 - line:41:33]
+                          (declref_expr type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:41:21 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:41:21 - line:41:21] decl=Main.(file).languageName@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:40:5 function_ref=unapplied)))
+                      (call_expr implicit type='()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:41:34 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:41:34 - line:41:34] nothrow arg_labels=_:
+                        (dot_syntax_call_expr implicit type='(String) -> ()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:41:34 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:41:34 - line:41:34] nothrow
+                          (declref_expr implicit type='(inout DefaultStringInterpolation) -> (String) -> ()' decl=Swift.(file).DefaultStringInterpolation.appendLiteral function_ref=double)
+                          (inout_expr implicit type='inout DefaultStringInterpolation' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:41:34 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:41:34 - line:41:34]
+                            (declref_expr implicit type='@lvalue String.StringInterpolation' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:41:34 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:41:34 - line:41:34] decl=Main.(file).top-level code.$interpolation function_ref=unapplied)))
+                        (paren_expr implicit type='(String)' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:41:34 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:41:34 - line:41:34]
+                          (string_literal_expr type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:41:34 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:41:34 - line:41:34] encoding=utf8 value="!" builtin_initializer=Swift.(file).String extension.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**)))))))))
+          (default_argument_expr implicit type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:41:6 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:41:6 - line:41:6] default_args_owner=Swift.(file).print(_:separator:terminator:) param=1)
+          (default_argument_expr implicit type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:41:6 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:41:6 - line:41:6] default_args_owner=Swift.(file).print(_:separator:terminator:) param=2)))))
+  (top_level_code_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:43:1 - line:44:2]
+    (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:43:1 - line:44:2]
+      (pattern_binding_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:43:1 - line:44:2]
+        (pattern_typed type='Int'
+          (pattern_named type='Int' 'magicNumber')
+          (type_ident
+            (component id='Int' bind=Swift.(file).Int)))
+        Original init:
+        (sequence_expr type='<null>'
+          (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:43:24 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:43:24 - line:43:24] value=40 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**)
+          (overloaded_decl_ref_expr type='<null>' name=+ number_of_decls=46 function_ref=single decls=[
+            Swift.(file).String extension.+,
+            Swift.(file).Float extension.+,
+            Swift.(file).Double extension.+,
+            Swift.(file).Float80 extension.+,
+            Swift.(file).UInt8 extension.+,
+            Swift.(file).Int8 extension.+,
+            Swift.(file).UInt16 extension.+,
+            Swift.(file).Int16 extension.+,
+            Swift.(file).UInt32 extension.+,
+            Swift.(file).Int32 extension.+,
+            Swift.(file).UInt64 extension.+,
+            Swift.(file).Int64 extension.+,
+            Swift.(file).UInt extension.+,
+            Swift.(file).Int extension.+,
+            Foundation.(file).IndexPath.+,
+            Foundation.(file).OperationQueue extension.SchedulerTimeType.Stride.+,
+            Foundation.(file).Decimal extension.+,
+            Foundation.(file).AttributedString.+,
+            Foundation.(file).Date.+,
+            Foundation.(file).RunLoop extension.SchedulerTimeType.Stride.+,
+            Dispatch.(file).+,
+            Dispatch.(file).+,
+            Dispatch.(file).+,
+            Dispatch.(file).+,
+            Dispatch.(file).DispatchQueue extension.SchedulerTimeType.Stride.+,
+            CoreGraphics.(file).CGFloat extension.+,
+            Swift.(file).Array extension.+,
+            Swift.(file).FloatingPoint.+,
+            Swift.(file).AdditiveArithmetic.+,
+            Swift.(file).BinaryInteger.+,
+            Swift.(file).Strideable extension.+,
+            Swift.(file).Strideable extension.+,
+            Swift.(file).Sequence extension.+,
+            Swift.(file).Sequence extension.+,
+            Swift.(file).SIMD extension.+,
+            Swift.(file).SIMD extension.+,
+            Swift.(file).SIMD extension.+,
+            Swift.(file).SIMD extension.+,
+            Swift.(file).SIMD extension.+,
+            Swift.(file).SIMD extension.+,
+            Foundation.(file).Measurement extension.+,
+            Foundation.(file).Measurement extension.+,
+            Foundation.(file).AttributedString.+,
+            Swift.(file).RangeReplaceableCollection extension.+,
+            Swift.(file).RangeReplaceableCollection extension.+,
+            Swift.(file).RangeReplaceableCollection extension.+])
+          (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:44:2 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:44:2 - line:44:2] value=2 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**))
+        Processed init:
+        (binary_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:43:27 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:43:24 - line:44:2] nothrow
+          (dot_syntax_call_expr implicit type='(Int, Int) -> Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:43:27 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:43:27 - line:43:27] nothrow
+            (declref_expr type='(Int.Type) -> (Int, Int) -> Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:43:27 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:43:27 - line:43:27] decl=Swift.(file).Int extension.+ function_ref=single)
+            (type_expr implicit type='Int.Type' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:43:27 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:43:27 - line:43:27] typerepr='Int'))
+          (tuple_expr implicit type='(Int, Int)' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:43:24 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:43:24 - line:44:2]
+            (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:43:24 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:43:24 - line:43:24] value=40 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**)
+            (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:44:2 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:44:2 - line:44:2] value=2 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**))))
+))
+  (var_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:43:5 - line:43:5] "magicNumber" type='Int' interface type='Int' access=internal let readImpl=stored immutable)
+  (top_level_code_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:45:1 - line:45:18]
+    (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:45:1 - line:45:18]
+      (call_expr type='()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:45:1 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:45:1 - line:45:18] nothrow arg_labels=_:
+        (declref_expr type='(Any..., String, String) -> ()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:45:1 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:45:1 - line:45:1] decl=Swift.(file).print(_:separator:terminator:) function_ref=single)
+        (tuple_expr type='(Any..., separator: String, terminator: String)' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:45:6 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:45:6 - line:45:18] names='',separator,terminator
+          (vararg_expansion_expr implicit type='[Any]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:45:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:45:7 - line:45:7]
+            (array_expr implicit type='[Any]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:45:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:45:7 - line:45:7] initializer=**NULL**
+              (erasure_expr implicit type='Any' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:45:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:45:7 - line:45:7]
+                (declref_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:45:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:45:7 - line:45:7] decl=Main.(file).magicNumber@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:43:5 function_ref=unapplied))))
+          (default_argument_expr implicit type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:45:6 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:45:6 - line:45:6] default_args_owner=Swift.(file).print(_:separator:terminator:) param=1)
+          (default_argument_expr implicit type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:45:6 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:45:6 - line:45:6] default_args_owner=Swift.(file).print(_:separator:terminator:) param=2)))))
+  (func_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:47:1 - line:51:1] "f(a:b:)" interface type='(Int, Int) -> ()' access=internal
+    (parameter_list range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:47:7 - line:49:2]
+      (parameter "a" apiName=a type='Int' interface type='Int' default_arg=normal expression=
+        (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:47:17 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:47:17 - line:47:17] value=0 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**))
+      (parameter "b" apiName=b type='Int' interface type='Int' default_arg=normal expression=
+        (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:48:14 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:48:14 - line:48:14] value=0 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**)))
+    (call_expr type='()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:50:2 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:50:2 - line:50:13] nothrow arg_labels=_:
+      (declref_expr type='(Any..., String, String) -> ()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:50:2 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:50:2 - line:50:2] decl=Swift.(file).print(_:separator:terminator:) function_ref=single)
+      (tuple_expr type='(Any..., separator: String, terminator: String)' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:50:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:50:7 - line:50:13] names='',separator,terminator
+        (vararg_expansion_expr implicit type='[Any]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:50:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:50:8 - line:50:12]
+          (array_expr implicit type='[Any]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:50:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:50:8 - line:50:12] initializer=**NULL**
+            (erasure_expr implicit type='Any' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:50:10 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:50:8 - line:50:12]
+              (binary_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:50:10 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:50:8 - line:50:12] nothrow
+                (dot_syntax_call_expr implicit type='(Int, Int) -> Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:50:10 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:50:10 - line:50:10] nothrow
+                  (declref_expr type='(Int.Type) -> (Int, Int) -> Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:50:10 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:50:10 - line:50:10] decl=Swift.(file).Int extension.+ function_ref=single)
+                  (type_expr implicit type='Int.Type' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:50:10 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:50:10 - line:50:10] typerepr='Int'))
+                (tuple_expr implicit type='(Int, Int)' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:50:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:50:8 - line:50:12]
+                  (declref_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:50:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:50:8 - line:50:8] decl=Main.(file).f(a:b:).a@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:47:8 function_ref=unapplied)
+                  (declref_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:50:12 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:50:12 - line:50:12] decl=Main.(file).f(a:b:).b@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:48:5 function_ref=unapplied))))))
+        (default_argument_expr implicit type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:50:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:50:7 - line:50:7] default_args_owner=Swift.(file).print(_:separator:terminator:) param=1)
+        (default_argument_expr implicit type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:50:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:50:7 - line:50:7] default_args_owner=Swift.(file).print(_:separator:terminator:) param=2))))
+  (top_level_code_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:53:1 - line:55:1]
+    (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:53:1 - line:55:1]
+      (call_expr type='()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:53:1 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:53:1 - line:55:1] nothrow arg_labels=a:b:
+        (declref_expr type='(Int, Int) -> ()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:53:1 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:53:1 - line:53:1] decl=Main.(file).f(a:b:)@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:47:6 function_ref=single)
+        (tuple_expr type='(a: Int, b: Int)' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:53:2 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:53:2 - line:55:1] names=a,b
+          (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:53:6 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:53:6 - line:53:6] value=0 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**)
+          (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:54:6 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:54:6 - line:54:6] value=0 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**)))))
+  (top_level_code_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:66:1 - line:66:58]
+    (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:66:1 - line:66:58]
+      (call_expr type='()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:66:1 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:66:1 - line:66:58] nothrow arg_labels=_:
+        (declref_expr type='(Any..., String, String) -> ()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:66:1 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:66:1 - line:66:1] decl=Swift.(file).print(_:separator:terminator:) function_ref=single)
+        (tuple_expr type='(Any..., separator: String, terminator: String)' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:66:6 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:66:6 - line:66:58] names='',separator,terminator
+          (vararg_expansion_expr implicit type='[Any]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:66:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:66:7 - line:66:7]
+            (array_expr implicit type='[Any]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:66:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:66:7 - line:66:7] initializer=**NULL**
+              (erasure_expr implicit type='Any' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:66:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:66:7 - line:66:7]
+                (string_literal_expr type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:66:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:66:7 - line:66:7] encoding=utf8 value="This will be ignored by kotlin, but not by swift." builtin_initializer=Swift.(file).String extension.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**))))
+          (default_argument_expr implicit type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:66:6 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:66:6 - line:66:6] default_args_owner=Swift.(file).print(_:separator:terminator:) param=1)
+          (default_argument_expr implicit type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:66:6 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:66:6 - line:66:6] default_args_owner=Swift.(file).print(_:separator:terminator:) param=2)))))
+  (top_level_code_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:70:1 - line:70:24]
+    (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:70:1 - line:70:24]
+      (pattern_binding_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:70:1 - line:70:24]
+        (pattern_named type='Double' 'squareRoot')
+        Original init:
+        (call_expr type='Double' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:70:18 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:70:18 - line:70:24] nothrow arg_labels=_:
+          (declref_expr type='(Double) -> Double' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:70:18 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:70:18 - line:70:18] decl=Darwin.(file).sqrt function_ref=single)
+          (paren_expr type='(Double)' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:70:23 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:70:22 - line:70:24]
+            (integer_literal_expr type='Double' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:70:23 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:70:23 - line:70:23] value=9 builtin_initializer=Swift.(file).Double extension.init(_builtinIntegerLiteral:) initializer=**NULL**)))
+        Processed init:
+        (call_expr type='Double' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:70:18 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:70:18 - line:70:24] nothrow arg_labels=_:
+          (declref_expr type='(Double) -> Double' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:70:18 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:70:18 - line:70:18] decl=Darwin.(file).sqrt function_ref=single)
+          (paren_expr type='(Double)' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:70:23 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:70:22 - line:70:24]
+            (integer_literal_expr type='Double' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:70:23 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:70:23 - line:70:23] value=9 builtin_initializer=Swift.(file).Double extension.init(_builtinIntegerLiteral:) initializer=**NULL**))))
+))
+  (var_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:70:5 - line:70:5] "squareRoot" type='Double' interface type='Double' access=internal let readImpl=stored immutable)
+  (top_level_code_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:71:1 - line:71:17]
+    (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:71:1 - line:71:17]
+      (call_expr type='()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:71:1 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:71:1 - line:71:17] nothrow arg_labels=_:
+        (declref_expr type='(Any..., String, String) -> ()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:71:1 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:71:1 - line:71:1] decl=Swift.(file).print(_:separator:terminator:) function_ref=single)
+        (tuple_expr type='(Any..., separator: String, terminator: String)' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:71:6 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:71:6 - line:71:17] names='',separator,terminator
+          (vararg_expansion_expr implicit type='[Any]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:71:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:71:7 - line:71:7]
+            (array_expr implicit type='[Any]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:71:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:71:7 - line:71:7] initializer=**NULL**
+              (erasure_expr implicit type='Any' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:71:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:71:7 - line:71:7]
+                (declref_expr type='Double' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:71:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:71:7 - line:71:7] decl=Main.(file).squareRoot@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:70:5 function_ref=unapplied))))
+          (default_argument_expr implicit type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:71:6 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:71:6 - line:71:6] default_args_owner=Swift.(file).print(_:separator:terminator:) param=1)
+          (default_argument_expr implicit type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:71:6 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:71:6 - line:71:6] default_args_owner=Swift.(file).print(_:separator:terminator:) param=2)))))
+  (class_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:75:1 - line:77:1] "IgnoredClass" interface type='IgnoredClass.Type' access=internal non-resilient
+    (destructor_decl implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:75:7 - line:75:7] "deinit" interface type='(IgnoredClass) -> () -> ()' access=internal
+      (parameter "self")
+      (parameter_list)
+      (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:75:7 - line:75:7]))
+    (constructor_decl implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:75:7 - line:75:7] "init()" interface type='(IgnoredClass.Type) -> () -> IgnoredClass' access=internal designated
+      (parameter "self")
+      (parameter_list)
+      (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:75:7 - line:75:7]
+        (return_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:75:7 - line:75:7]))))
+  (enum_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:78:1 - line:80:1] "IgnoredEnum" interface type='IgnoredEnum.Type' access=internal non-resilient)
+  (enum_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:81:1 - line:83:1] "IgnoredStruct" interface type='IgnoredStruct.Type' access=internal non-resilient)
+  (func_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:85:1 - line:86:1] "a()" interface type='() -> ()' access=internal
+    (parameter_list range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:85:7 - line:85:8])
+    (brace_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:85:10 - line:86:1]))
+  (protocol range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:90:1 - line:95:1] "A" interface type='A.Protocol' access=internal non-resilient requirement signature=<Self>
+    (pattern_binding_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:91:2 - line:91:19]
+      (pattern_typed type='Int'
+        (pattern_named type='Int' 'x')
+        (type_ident
+          (component id='Int' bind=Swift.(file).Int))))
+    (var_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:91:6 - line:91:6] "x" type='Int' interface type='Int' access=internal readImpl=getter immutable
+      (accessor_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:91:15 - line:91:15] 'anonname=0x1080e99b0' interface type='<Self where Self : A> (Self) -> () -> Int' access=internal get_for=x
+        (parameter "self")
+        (parameter_list)))
+    (pattern_binding_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:92:2 - line:92:19]
+      (pattern_typed type='Int'
+        (pattern_named type='Int' 'y')
+        (type_ident
+          (component id='Int' bind=Swift.(file).Int))))
+    (var_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:92:6 - line:92:6] "y" type='Int' interface type='Int' access=internal readImpl=getter immutable
+      (accessor_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:92:15 - line:92:15] 'anonname=0x1080e9c58' interface type='<Self where Self : A> (Self) -> () -> Int' access=internal get_for=y
+        (parameter "self")
+        (parameter_list)))
+    (func_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:94:2 - line:94:11] "foo()" interface type='<Self where Self : A> (Self) -> () -> ()' access=internal
+      (parameter "self")
+      (parameter_list range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:94:10 - line:94:11])))
+  (class_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:97:1 - line:104:1] "B" interface type='B.Type' access=internal non-resilient inherits: A
+    (pattern_binding_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:98:2 - line:98:15]
+      (pattern_typed type='Int'
+        (pattern_named type='Int' 'x')
+        (type_ident
+          (component id='Int' bind=Swift.(file).Int)))
+      Original init:
+      (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:98:15 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:98:15 - line:98:15] value=1 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**)
+      Processed init:
+      (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:98:15 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:98:15 - line:98:15] value=1 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**))
+    (var_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:98:6 - line:98:6] "x" type='Int' interface type='Int' access=internal readImpl=stored writeImpl=stored readWriteImpl=stored
+      (accessor_decl implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:98:6 - line:98:6] 'anonname=0x107b0f618' interface type='(B) -> () -> Int' access=internal get_for=x
+        (parameter "self" type='B' interface type='B')
+        (parameter_list)
+        (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:98:6 - line:98:6]
+          (return_stmt implicit
+            (member_ref_expr implicit type='Int' decl=Main.(file).B.x@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:98:6 direct_to_storage
+              (declref_expr implicit type='B' decl=Main.(file).B.<anonymous>.self@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:98:6 function_ref=unapplied)))))
+      (accessor_decl implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:98:6 - line:98:6] 'anonname=0x107b0f838' interface type='(B) -> (Int) -> ()' access=internal set_for=x
+        (parameter "self" type='B' interface type='B')
+        (parameter_list range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:98:6 - line:98:6]
+          (parameter "value" type='Int' interface type='Int'))
+        (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:98:6 - line:98:6]
+          (assign_expr implicit type='()'
+            (member_ref_expr implicit type='@lvalue Int' decl=Main.(file).B.x@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:98:6 direct_to_storage
+              (declref_expr implicit type='B' decl=Main.(file).B.<anonymous>.self@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:98:6 function_ref=unapplied))
+            (declref_expr implicit type='Int' decl=Main.(file).B.<anonymous>.value@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:98:6 function_ref=unapplied))))
+      (accessor_decl implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:98:6 - line:98:6] 'anonname=0x107b0f9f8' interface type='(B) -> () -> ()' access=internal _modify_for=x
+        (parameter "self" type='B' interface type='B')
+        (parameter_list)
+        (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:98:6 - line:98:6]
+          (yield_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:98:6 - line:98:6]
+            (inout_expr implicit type='inout Int'
+              (member_ref_expr implicit type='@lvalue Int' decl=Main.(file).B.x@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:98:6 direct_to_impl
+                (declref_expr implicit type='B' decl=Main.(file).B.<anonymous>.self@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:98:6 function_ref=unapplied)))))))
+    (pattern_binding_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:99:2 - line:100:3]
+      (pattern_typed type='Int'
+        (pattern_named type='Int' 'y')
+        (type_ident
+          (component id='Int' bind=Swift.(file).Int)))
+      Original init:
+      (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:100:3 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:100:3 - line:100:3] value=2 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**)
+      Processed init:
+      (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:100:3 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:100:3 - line:100:3] value=2 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**))
+    (var_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:99:6 - line:99:6] "y" type='Int' interface type='Int' access=internal readImpl=stored writeImpl=stored readWriteImpl=stored
+      (accessor_decl implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:99:6 - line:99:6] 'anonname=0x107b2f020' interface type='(B) -> () -> Int' access=internal get_for=y
+        (parameter "self" type='B' interface type='B')
+        (parameter_list)
+        (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:99:6 - line:99:6]
+          (return_stmt implicit
+            (member_ref_expr implicit type='Int' decl=Main.(file).B.y@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:99:6 direct_to_storage
+              (declref_expr implicit type='B' decl=Main.(file).B.<anonymous>.self@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:99:6 function_ref=unapplied)))))
+      (accessor_decl implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:99:6 - line:99:6] 'anonname=0x107b2f200' interface type='(B) -> (Int) -> ()' access=internal set_for=y
+        (parameter "self" type='B' interface type='B')
+        (parameter_list range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:99:6 - line:99:6]
+          (parameter "value" type='Int' interface type='Int'))
+        (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:99:6 - line:99:6]
+          (assign_expr implicit type='()'
+            (member_ref_expr implicit type='@lvalue Int' decl=Main.(file).B.y@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:99:6 direct_to_storage
+              (declref_expr implicit type='B' decl=Main.(file).B.<anonymous>.self@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:99:6 function_ref=unapplied))
+            (declref_expr implicit type='Int' decl=Main.(file).B.<anonymous>.value@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:99:6 function_ref=unapplied))))
+      (accessor_decl implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:99:6 - line:99:6] 'anonname=0x107b2f300' interface type='(B) -> () -> ()' access=internal _modify_for=y
+        (parameter "self" type='B' interface type='B')
+        (parameter_list)
+        (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:99:6 - line:99:6]
+          (yield_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:99:6 - line:99:6]
+            (inout_expr implicit type='inout Int'
+              (member_ref_expr implicit type='@lvalue Int' decl=Main.(file).B.y@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:99:6 direct_to_impl
+                (declref_expr implicit type='B' decl=Main.(file).B.<anonymous>.self@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:99:6 function_ref=unapplied)))))))
+    (pattern_binding_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:101:2 - line:101:15]
+      (pattern_typed type='Int'
+        (pattern_named type='Int' 'z')
+        (type_ident
+          (component id='Int' bind=Swift.(file).Int)))
+      Original init:
+      (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:101:15 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:101:15 - line:101:15] value=0 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**)
+      Processed init:
+      (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:101:15 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:101:15 - line:101:15] value=0 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**))
+    (var_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:101:6 - line:101:6] "z" type='Int' interface type='Int' access=internal readImpl=stored writeImpl=stored readWriteImpl=stored
+      (accessor_decl implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:101:6 - line:101:6] 'anonname=0x107b2f450' interface type='(B) -> () -> Int' access=internal get_for=z
+        (parameter "self" type='B' interface type='B')
+        (parameter_list)
+        (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:101:6 - line:101:6]
+          (return_stmt implicit
+            (member_ref_expr implicit type='Int' decl=Main.(file).B.z@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:101:6 direct_to_storage
+              (declref_expr implicit type='B' decl=Main.(file).B.<anonymous>.self@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:101:6 function_ref=unapplied)))))
+      (accessor_decl implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:101:6 - line:101:6] 'anonname=0x107b2f630' interface type='(B) -> (Int) -> ()' access=internal set_for=z
+        (parameter "self" type='B' interface type='B')
+        (parameter_list range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:101:6 - line:101:6]
+          (parameter "value" type='Int' interface type='Int'))
+        (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:101:6 - line:101:6]
+          (assign_expr implicit type='()'
+            (member_ref_expr implicit type='@lvalue Int' decl=Main.(file).B.z@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:101:6 direct_to_storage
+              (declref_expr implicit type='B' decl=Main.(file).B.<anonymous>.self@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:101:6 function_ref=unapplied))
+            (declref_expr implicit type='Int' decl=Main.(file).B.<anonymous>.value@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:101:6 function_ref=unapplied))))
+      (accessor_decl implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:101:6 - line:101:6] 'anonname=0x107b2f730' interface type='(B) -> () -> ()' access=internal _modify_for=z
+        (parameter "self" type='B' interface type='B')
+        (parameter_list)
+        (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:101:6 - line:101:6]
+          (yield_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:101:6 - line:101:6]
+            (inout_expr implicit type='inout Int'
+              (member_ref_expr implicit type='@lvalue Int' decl=Main.(file).B.z@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:101:6 direct_to_impl
+                (declref_expr implicit type='B' decl=Main.(file).B.<anonymous>.self@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:101:6 function_ref=unapplied)))))))
+    (func_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:103:2 - line:103:15] "foo()" interface type='(B) -> () -> ()' access=internal
+      (parameter "self")
+      (parameter_list range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:103:10 - line:103:11])
+      (brace_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:103:13 - line:103:15]))
+    (destructor_decl implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:97:7 - line:97:7] "deinit" interface type='(B) -> () -> ()' access=internal
+      (parameter "self")
+      (parameter_list)
+      (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:97:7 - line:97:7]))
+    (constructor_decl implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:97:7 - line:97:7] "init()" interface type='(B.Type) -> () -> B' access=internal designated
+      (parameter "self")
+      (parameter_list)
+      (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:97:7 - line:97:7]
+        (return_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:97:7 - line:97:7]))))
+  (top_level_code_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:106:1 - line:106:12]
+    (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:106:1 - line:106:12]
+      (call_expr type='()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:106:1 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:106:1 - line:106:12] nothrow arg_labels=_:
+        (declref_expr type='(Any..., String, String) -> ()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:106:1 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:106:1 - line:106:1] decl=Swift.(file).print(_:separator:terminator:) function_ref=single)
+        (tuple_expr type='(Any..., separator: String, terminator: String)' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:106:6 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:106:6 - line:106:12] names='',separator,terminator
+          (vararg_expansion_expr implicit type='[Any]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:106:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:106:7 - line:106:11]
+            (array_expr implicit type='[Any]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:106:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:106:7 - line:106:11] initializer=**NULL**
+              (erasure_expr implicit type='Any' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:106:11 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:106:7 - line:106:11]
+                (load_expr implicit type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:106:11 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:106:7 - line:106:11]
+                  (member_ref_expr type='@lvalue Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:106:11 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:106:7 - line:106:11] decl=Main.(file).B.x@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:98:6
+                    (call_expr type='B' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:106:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:106:7 - line:106:9] nothrow arg_labels=
+                      (constructor_ref_call_expr type='() -> B' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:106:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:106:7 - line:106:7] nothrow
+                        (declref_expr implicit type='(B.Type) -> () -> B' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:106:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:106:7 - line:106:7] decl=Main.(file).B.init()@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:97:7 function_ref=single)
+                        (type_expr type='B.Type' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:106:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:106:7 - line:106:7] typerepr='B'))
+                      (tuple_expr type='()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:106:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:106:8 - line:106:9])))))))
+          (default_argument_expr implicit type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:106:6 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:106:6 - line:106:6] default_args_owner=Swift.(file).print(_:separator:terminator:) param=1)
+          (default_argument_expr implicit type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:106:6 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:106:6 - line:106:6] default_args_owner=Swift.(file).print(_:separator:terminator:) param=2)))))
+  (top_level_code_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:107:1 - line:107:12]
+    (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:107:1 - line:107:12]
+      (call_expr type='()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:107:1 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:107:1 - line:107:12] nothrow arg_labels=_:
+        (declref_expr type='(Any..., String, String) -> ()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:107:1 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:107:1 - line:107:1] decl=Swift.(file).print(_:separator:terminator:) function_ref=single)
+        (tuple_expr type='(Any..., separator: String, terminator: String)' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:107:6 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:107:6 - line:107:12] names='',separator,terminator
+          (vararg_expansion_expr implicit type='[Any]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:107:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:107:7 - line:107:11]
+            (array_expr implicit type='[Any]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:107:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:107:7 - line:107:11] initializer=**NULL**
+              (erasure_expr implicit type='Any' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:107:11 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:107:7 - line:107:11]
+                (load_expr implicit type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:107:11 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:107:7 - line:107:11]
+                  (member_ref_expr type='@lvalue Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:107:11 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:107:7 - line:107:11] decl=Main.(file).B.y@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:99:6
+                    (call_expr type='B' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:107:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:107:7 - line:107:9] nothrow arg_labels=
+                      (constructor_ref_call_expr type='() -> B' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:107:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:107:7 - line:107:7] nothrow
+                        (declref_expr implicit type='(B.Type) -> () -> B' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:107:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:107:7 - line:107:7] decl=Main.(file).B.init()@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:97:7 function_ref=single)
+                        (type_expr type='B.Type' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:107:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:107:7 - line:107:7] typerepr='B'))
+                      (tuple_expr type='()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:107:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:107:8 - line:107:9])))))))
+          (default_argument_expr implicit type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:107:6 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:107:6 - line:107:6] default_args_owner=Swift.(file).print(_:separator:terminator:) param=1)
+          (default_argument_expr implicit type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:107:6 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:107:6 - line:107:6] default_args_owner=Swift.(file).print(_:separator:terminator:) param=2)))))
+  (protocol range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:109:1 - line:110:1] "C" interface type='C.Protocol' access=internal non-resilient requirement signature=<Self>)
+  (enum_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:112:1 - line:114:1] "D" interface type='D.Type' access=internal non-resilient
+    (enum_case_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:113:2 - line:113:7]
+      (enum_element_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:113:7 - line:113:7] "a" interface type='(D.Type) -> D' access=internal))
+    (enum_element_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:113:7 - line:113:7] "a" interface type='(D.Type) -> D' access=internal)
+    (func_decl implicit "__derived_enum_equals(_:_:)" interface type='(D.Type) -> (D, D) -> Bool' access=internal type
+      (parameter "self")
+      (parameter_list
+        (parameter "a" type='D' interface type='D')
+        (parameter "b" type='D' interface type='D'))
+      (brace_stmt implicit
+        (pattern_binding_decl implicit
+          (pattern_typed implicit type='Int'
+            (pattern_named implicit type='Int' 'index_a')))
+
+        (switch_stmt implicit
+          (declref_expr implicit type='D' decl=Main.(file).D.__derived_enum_equals(_:_:).a function_ref=unapplied)
+          (case_stmt implicit
+            (case_label_item
+            (pattern_enum_element implicit type='D' D._))
+            (brace_stmt implicit
+              (assign_expr implicit type='()'
+                (declref_expr implicit type='@lvalue Int' decl=Main.(file).D.__derived_enum_equals(_:_:).index_a function_ref=unapplied)
+                (integer_literal_expr implicit type='Int' value=0 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**)))))
+        (pattern_binding_decl implicit
+          (pattern_typed implicit type='Int'
+            (pattern_named implicit type='Int' 'index_b')))
+
+        (switch_stmt implicit
+          (declref_expr implicit type='D' decl=Main.(file).D.__derived_enum_equals(_:_:).b function_ref=unapplied)
+          (case_stmt implicit
+            (case_label_item
+            (pattern_enum_element implicit type='D' D._))
+            (brace_stmt implicit
+              (assign_expr implicit type='()'
+                (declref_expr implicit type='@lvalue Int' decl=Main.(file).D.__derived_enum_equals(_:_:).index_b function_ref=unapplied)
+                (integer_literal_expr implicit type='Int' value=0 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**)))))
+        (return_stmt implicit
+          (binary_expr implicit type='Bool' nothrow
+            (dot_syntax_call_expr implicit type='(Int, Int) -> Bool' nothrow
+              (declref_expr implicit type='(Int.Type) -> (Int, Int) -> Bool' decl=Swift.(file).Int.== function_ref=unapplied)
+              (type_expr implicit type='Int.Type' typerepr='<<NULL>>'))
+            (tuple_expr implicit type='(Int, Int)'
+              (declref_expr implicit type='Int' decl=Main.(file).D.__derived_enum_equals(_:_:).index_a function_ref=unapplied)
+              (declref_expr implicit type='Int' decl=Main.(file).D.__derived_enum_equals(_:_:).index_b function_ref=unapplied))))))
+    (var_decl implicit "hashValue" type='Int' interface type='Int' access=internal readImpl=getter immutable
+      (accessor_decl implicit 'anonname=0x10e1d30c0' interface type='(D) -> () -> Int' access=internal get_for=hashValue
+        (parameter "self" type='D' interface type='D')
+        (parameter_list)
+        (brace_stmt implicit
+          (return_stmt implicit
+            (call_expr implicit type='Int' nothrow arg_labels=for:
+              (declref_expr implicit type='(D) -> Int' decl=Swift.(file)._hashValue(for:) [with (substitution_map generic_signature=<H where H : Hashable> (substitution H -> D))] function_ref=unapplied)
+              (tuple_expr implicit type='(for: D)' names=for
+                (declref_expr implicit type='D' decl=Main.(file).D.<anonymous>.self function_ref=unapplied)))))))
+    (pattern_binding_decl implicit
+      (pattern_typed implicit type='Int'
+        (pattern_named implicit type='Int' 'hashValue')))
+    (func_decl implicit "hash(into:)" interface type='(D) -> (inout Hasher) -> ()' access=internal
+      (parameter "self" type='D' interface type='D')
+      (parameter_list
+        (parameter "hasher" apiName=into type='Hasher' interface type='Hasher' inout))
+      (brace_stmt implicit
+        (pattern_binding_decl implicit
+          (pattern_typed implicit type='Int'
+            (pattern_named implicit type='Int' 'discriminator')))
+
+        (switch_stmt implicit
+          (declref_expr implicit type='D' decl=Main.(file).D.hash(into:).self function_ref=unapplied)
+          (case_stmt implicit
+            (case_label_item
+            (pattern_enum_element implicit type='D' D._))
+            (brace_stmt implicit
+              (assign_expr implicit type='()'
+                (declref_expr implicit type='@lvalue Int' decl=Main.(file).D.hash(into:).discriminator function_ref=unapplied)
+                (integer_literal_expr implicit type='Int' value=0 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**)))))
+        (call_expr implicit type='()' nothrow arg_labels=_:
+          (dot_syntax_call_expr implicit type='(Int) -> ()' nothrow
+            (declref_expr implicit type='(inout Hasher) -> (Int) -> ()' decl=Swift.(file).Hasher.combine [with (substitution_map generic_signature=<H where H : Hashable> (substitution H -> Int))] function_ref=single)
+            (inout_expr implicit type='inout Hasher'
+              (declref_expr implicit type='@lvalue Hasher' decl=Main.(file).D.hash(into:).hasher function_ref=unapplied)))
+          (paren_expr implicit type='(Int)'
+            (load_expr implicit type='Int'
+              (declref_expr implicit type='@lvalue Int' decl=Main.(file).D.hash(into:).discriminator function_ref=unapplied)))))))
+  (struct_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:116:1 - line:118:1] "E" interface type='E.Type' access=internal non-resilient
+    (pattern_binding_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:117:2 - line:117:15]
+      (pattern_typed type='Int'
+        (pattern_named type='Int' 'a')
+        (type_ident
+          (component id='Int' bind=Swift.(file).Int)))
+      Original init:
+      (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:117:15 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:117:15 - line:117:15] value=0 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**)
+      Processed init:
+      (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:117:15 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:117:15 - line:117:15] value=0 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**))
+    (var_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:117:6 - line:117:6] "a" type='Int' interface type='Int' access=internal let readImpl=stored immutable
+      (accessor_decl implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:117:6 - line:117:6] 'anonname=0x10e1d3c10' interface type='(E) -> () -> Int' access=internal get_for=a
+        (parameter "self" type='E' interface type='E')
+        (parameter_list)
+        (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:117:6 - line:117:6]
+          (return_stmt implicit
+            (member_ref_expr implicit type='Int' decl=Main.(file).E.a@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:117:6 direct_to_storage
+              (declref_expr implicit type='E' decl=Main.(file).E.<anonymous>.self@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:117:6 function_ref=unapplied))))))
+    (constructor_decl implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:116:8 - line:116:8] "init()" interface type='(E.Type) -> () -> E' access=internal designated
+      (parameter "self")
+      (parameter_list)
+      (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:116:8 - line:116:8]
+        (return_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:116:8 - line:116:8]))))
+  (top_level_code_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:122:1 - line:128:1]
+    (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:122:1 - line:128:1]
+      (if_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:122:1 - line:128:1]
+        (boolean_literal_expr type='Bool' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:122:4 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:122:4 - line:122:4] value=true builtin_initializer=Swift.(file).Bool extension.init(_builtinBooleanLiteral:) initializer=**NULL**)
+        (brace_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:122:9 - line:128:1]
+          (call_expr type='()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:124:2 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:124:2 - line:124:14] nothrow arg_labels=_:
+            (declref_expr type='(Any..., String, String) -> ()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:124:2 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:124:2 - line:124:2] decl=Swift.(file).print(_:separator:terminator:) function_ref=single)
+            (tuple_expr type='(Any..., separator: String, terminator: String)' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:124:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:124:7 - line:124:14] names='',separator,terminator
+              (vararg_expansion_expr implicit type='[Any]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:124:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:124:8 - line:124:8]
+                (array_expr implicit type='[Any]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:124:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:124:8 - line:124:8] initializer=**NULL**
+                  (erasure_expr implicit type='Any' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:124:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:124:8 - line:124:8]
+                    (string_literal_expr type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:124:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:124:8 - line:124:8] encoding=utf8 value="if 2" builtin_initializer=Swift.(file).String extension.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**))))
+              (default_argument_expr implicit type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:124:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:124:7 - line:124:7] default_args_owner=Swift.(file).print(_:separator:terminator:) param=1)
+              (default_argument_expr implicit type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:124:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:124:7 - line:124:7] default_args_owner=Swift.(file).print(_:separator:terminator:) param=2)))
+          (call_expr type='()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:126:2 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:126:2 - line:126:14] nothrow arg_labels=_:
+            (declref_expr type='(Any..., String, String) -> ()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:126:2 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:126:2 - line:126:2] decl=Swift.(file).print(_:separator:terminator:) function_ref=single)
+            (tuple_expr type='(Any..., separator: String, terminator: String)' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:126:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:126:7 - line:126:14] names='',separator,terminator
+              (vararg_expansion_expr implicit type='[Any]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:126:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:126:8 - line:126:8]
+                (array_expr implicit type='[Any]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:126:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:126:8 - line:126:8] initializer=**NULL**
+                  (erasure_expr implicit type='Any' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:126:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:126:8 - line:126:8]
+                    (string_literal_expr type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:126:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:126:8 - line:126:8] encoding=utf8 value="if 4" builtin_initializer=Swift.(file).String extension.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**))))
+              (default_argument_expr implicit type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:126:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:126:7 - line:126:7] default_args_owner=Swift.(file).print(_:separator:terminator:) param=1)
+              (default_argument_expr implicit type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:126:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:126:7 - line:126:7] default_args_owner=Swift.(file).print(_:separator:terminator:) param=2)))))))
+  (top_level_code_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:130:1 - line:136:1]
+    (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:130:1 - line:136:1]
+      (for_each_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:130:1 - line:136:1]
+        (pattern_named type='Int' 'i')
+        (pattern_named type='Int' 'i')
+        (array_expr type='[Int]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:130:10 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:130:10 - line:130:12] initializer=Swift.(file).Array extension.init(arrayLiteral:) [with (substitution_map generic_signature=<Element> (substitution Element -> Int))]
+          (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:130:11 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:130:11 - line:130:11] value=1 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**))
+        (var_decl implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:130:7 - line:130:7] "$i$generator" type='Array<Int>.Iterator' interface type='Array<Int>.Iterator' access=fileprivate readImpl=stored writeImpl=stored readWriteImpl=stored)
+
+        (declref_expr implicit type='@lvalue Array<Int>.Iterator' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:130:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:130:7 - line:130:7] decl=Main.(file).top-level code.$i$generator@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:130:7 function_ref=unapplied)
+        (brace_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:130:14 - line:136:1]
+          (call_expr type='()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:132:2 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:132:2 - line:132:15] nothrow arg_labels=_:
+            (declref_expr type='(Any..., String, String) -> ()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:132:2 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:132:2 - line:132:2] decl=Swift.(file).print(_:separator:terminator:) function_ref=single)
+            (tuple_expr type='(Any..., separator: String, terminator: String)' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:132:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:132:7 - line:132:15] names='',separator,terminator
+              (vararg_expansion_expr implicit type='[Any]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:132:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:132:8 - line:132:8]
+                (array_expr implicit type='[Any]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:132:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:132:8 - line:132:8] initializer=**NULL**
+                  (erasure_expr implicit type='Any' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:132:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:132:8 - line:132:8]
+                    (string_literal_expr type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:132:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:132:8 - line:132:8] encoding=utf8 value="for 2" builtin_initializer=Swift.(file).String extension.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**))))
+              (default_argument_expr implicit type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:132:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:132:7 - line:132:7] default_args_owner=Swift.(file).print(_:separator:terminator:) param=1)
+              (default_argument_expr implicit type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:132:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:132:7 - line:132:7] default_args_owner=Swift.(file).print(_:separator:terminator:) param=2)))
+          (call_expr type='()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:134:2 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:134:2 - line:134:15] nothrow arg_labels=_:
+            (declref_expr type='(Any..., String, String) -> ()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:134:2 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:134:2 - line:134:2] decl=Swift.(file).print(_:separator:terminator:) function_ref=single)
+            (tuple_expr type='(Any..., separator: String, terminator: String)' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:134:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:134:7 - line:134:15] names='',separator,terminator
+              (vararg_expansion_expr implicit type='[Any]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:134:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:134:8 - line:134:8]
+                (array_expr implicit type='[Any]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:134:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:134:8 - line:134:8] initializer=**NULL**
+                  (erasure_expr implicit type='Any' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:134:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:134:8 - line:134:8]
+                    (string_literal_expr type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:134:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:134:8 - line:134:8] encoding=utf8 value="for 4" builtin_initializer=Swift.(file).String extension.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**))))
+              (default_argument_expr implicit type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:134:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:134:7 - line:134:7] default_args_owner=Swift.(file).print(_:separator:terminator:) param=1)
+              (default_argument_expr implicit type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:134:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:134:7 - line:134:7] default_args_owner=Swift.(file).print(_:separator:terminator:) param=2)))))))
+  (func_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:138:1 - line:144:1] "insertFunction()" interface type='() -> ()' access=internal
+    (parameter_list range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:138:20 - line:138:21])
+    (brace_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:138:23 - line:144:1]
+      (call_expr type='()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:140:2 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:140:2 - line:140:16] nothrow arg_labels=_:
+        (declref_expr type='(Any..., String, String) -> ()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:140:2 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:140:2 - line:140:2] decl=Swift.(file).print(_:separator:terminator:) function_ref=single)
+        (tuple_expr type='(Any..., separator: String, terminator: String)' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:140:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:140:7 - line:140:16] names='',separator,terminator
+          (vararg_expansion_expr implicit type='[Any]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:140:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:140:8 - line:140:8]
+            (array_expr implicit type='[Any]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:140:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:140:8 - line:140:8] initializer=**NULL**
+              (erasure_expr implicit type='Any' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:140:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:140:8 - line:140:8]
+                (string_literal_expr type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:140:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:140:8 - line:140:8] encoding=utf8 value="func 2" builtin_initializer=Swift.(file).String extension.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**))))
+          (default_argument_expr implicit type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:140:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:140:7 - line:140:7] default_args_owner=Swift.(file).print(_:separator:terminator:) param=1)
+          (default_argument_expr implicit type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:140:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:140:7 - line:140:7] default_args_owner=Swift.(file).print(_:separator:terminator:) param=2)))
+      (call_expr type='()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:142:2 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:142:2 - line:142:16] nothrow arg_labels=_:
+        (declref_expr type='(Any..., String, String) -> ()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:142:2 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:142:2 - line:142:2] decl=Swift.(file).print(_:separator:terminator:) function_ref=single)
+        (tuple_expr type='(Any..., separator: String, terminator: String)' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:142:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:142:7 - line:142:16] names='',separator,terminator
+          (vararg_expansion_expr implicit type='[Any]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:142:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:142:8 - line:142:8]
+            (array_expr implicit type='[Any]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:142:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:142:8 - line:142:8] initializer=**NULL**
+              (erasure_expr implicit type='Any' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:142:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:142:8 - line:142:8]
+                (string_literal_expr type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:142:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:142:8 - line:142:8] encoding=utf8 value="func 4" builtin_initializer=Swift.(file).String extension.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**))))
+          (default_argument_expr implicit type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:142:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:142:7 - line:142:7] default_args_owner=Swift.(file).print(_:separator:terminator:) param=1)
+          (default_argument_expr implicit type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:142:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:142:7 - line:142:7] default_args_owner=Swift.(file).print(_:separator:terminator:) param=2)))))
+  (top_level_code_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:145:1 - line:145:16]
+    (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:145:1 - line:145:16]
+      (call_expr type='()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:145:1 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:145:1 - line:145:16] nothrow arg_labels=
+        (declref_expr type='() -> ()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:145:1 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:145:1 - line:145:1] decl=Main.(file).insertFunction()@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:138:6 function_ref=single)
+        (tuple_expr type='()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:145:15 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:145:15 - line:145:16]))))
+  (top_level_code_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:147:1 - line:153:1]
+    (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:147:1 - line:153:1]
+      (pattern_binding_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:147:1 - line:153:1]
+        (pattern_named type='() -> ()' 'closure')
+        Original init:
+        (closure_expr type='() -> ()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:147:15 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:147:15 - line:153:1] discriminator=0 escaping
+          (parameter_list range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:147:15 - line:147:15])
+          (brace_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:147:15 - line:153:1]
+            (call_expr type='()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:149:2 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:149:2 - line:149:19] nothrow arg_labels=_:
+              (declref_expr type='(Any..., String, String) -> ()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:149:2 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:149:2 - line:149:2] decl=Swift.(file).print(_:separator:terminator:) function_ref=single)
+              (tuple_expr type='(Any..., separator: String, terminator: String)' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:149:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:149:7 - line:149:19] names='',separator,terminator
+                (vararg_expansion_expr implicit type='[Any]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:149:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:149:8 - line:149:8]
+                  (array_expr implicit type='[Any]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:149:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:149:8 - line:149:8] initializer=**NULL**
+                    (erasure_expr implicit type='Any' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:149:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:149:8 - line:149:8]
+                      (string_literal_expr type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:149:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:149:8 - line:149:8] encoding=utf8 value="closure 2" builtin_initializer=Swift.(file).String extension.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**))))
+                (default_argument_expr implicit type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:149:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:149:7 - line:149:7] default_args_owner=Swift.(file).print(_:separator:terminator:) param=1)
+                (default_argument_expr implicit type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:149:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:149:7 - line:149:7] default_args_owner=Swift.(file).print(_:separator:terminator:) param=2)))
+            (call_expr type='()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:151:2 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:151:2 - line:151:19] nothrow arg_labels=_:
+              (declref_expr type='(Any..., String, String) -> ()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:151:2 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:151:2 - line:151:2] decl=Swift.(file).print(_:separator:terminator:) function_ref=single)
+              (tuple_expr type='(Any..., separator: String, terminator: String)' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:151:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:151:7 - line:151:19] names='',separator,terminator
+                (vararg_expansion_expr implicit type='[Any]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:151:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:151:8 - line:151:8]
+                  (array_expr implicit type='[Any]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:151:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:151:8 - line:151:8] initializer=**NULL**
+                    (erasure_expr implicit type='Any' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:151:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:151:8 - line:151:8]
+                      (string_literal_expr type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:151:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:151:8 - line:151:8] encoding=utf8 value="closure 4" builtin_initializer=Swift.(file).String extension.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**))))
+                (default_argument_expr implicit type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:151:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:151:7 - line:151:7] default_args_owner=Swift.(file).print(_:separator:terminator:) param=1)
+                (default_argument_expr implicit type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:151:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:151:7 - line:151:7] default_args_owner=Swift.(file).print(_:separator:terminator:) param=2)))))
+        Processed init:
+        (closure_expr type='() -> ()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:147:15 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:147:15 - line:153:1] discriminator=0 escaping
+          (parameter_list range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:147:15 - line:147:15])
+          (brace_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:147:15 - line:153:1]
+            (call_expr type='()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:149:2 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:149:2 - line:149:19] nothrow arg_labels=_:
+              (declref_expr type='(Any..., String, String) -> ()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:149:2 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:149:2 - line:149:2] decl=Swift.(file).print(_:separator:terminator:) function_ref=single)
+              (tuple_expr type='(Any..., separator: String, terminator: String)' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:149:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:149:7 - line:149:19] names='',separator,terminator
+                (vararg_expansion_expr implicit type='[Any]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:149:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:149:8 - line:149:8]
+                  (array_expr implicit type='[Any]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:149:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:149:8 - line:149:8] initializer=**NULL**
+                    (erasure_expr implicit type='Any' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:149:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:149:8 - line:149:8]
+                      (string_literal_expr type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:149:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:149:8 - line:149:8] encoding=utf8 value="closure 2" builtin_initializer=Swift.(file).String extension.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**))))
+                (default_argument_expr implicit type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:149:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:149:7 - line:149:7] default_args_owner=Swift.(file).print(_:separator:terminator:) param=1)
+                (default_argument_expr implicit type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:149:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:149:7 - line:149:7] default_args_owner=Swift.(file).print(_:separator:terminator:) param=2)))
+            (call_expr type='()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:151:2 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:151:2 - line:151:19] nothrow arg_labels=_:
+              (declref_expr type='(Any..., String, String) -> ()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:151:2 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:151:2 - line:151:2] decl=Swift.(file).print(_:separator:terminator:) function_ref=single)
+              (tuple_expr type='(Any..., separator: String, terminator: String)' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:151:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:151:7 - line:151:19] names='',separator,terminator
+                (vararg_expansion_expr implicit type='[Any]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:151:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:151:8 - line:151:8]
+                  (array_expr implicit type='[Any]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:151:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:151:8 - line:151:8] initializer=**NULL**
+                    (erasure_expr implicit type='Any' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:151:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:151:8 - line:151:8]
+                      (string_literal_expr type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:151:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:151:8 - line:151:8] encoding=utf8 value="closure 4" builtin_initializer=Swift.(file).String extension.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**))))
+                (default_argument_expr implicit type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:151:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:151:7 - line:151:7] default_args_owner=Swift.(file).print(_:separator:terminator:) param=1)
+                (default_argument_expr implicit type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:151:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:151:7 - line:151:7] default_args_owner=Swift.(file).print(_:separator:terminator:) param=2))))))
+))
+  (var_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:147:5 - line:147:5] "closure" type='() -> ()' interface type='() -> ()' access=internal readImpl=stored writeImpl=stored readWriteImpl=stored)
+  (top_level_code_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:154:1 - line:154:9]
+    (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:154:1 - line:154:9]
+      (call_expr type='()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:154:1 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:154:1 - line:154:9] nothrow arg_labels=
+        (load_expr implicit type='() -> ()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:154:1 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:154:1 - line:154:1]
+          (declref_expr type='@lvalue () -> ()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:154:1 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:154:1 - line:154:1] decl=Main.(file).closure@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:147:5 function_ref=single))
+        (tuple_expr type='()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:154:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:154:8 - line:154:9]))))
+  (class_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:156:1 - line:170:1] "InsertClass" interface type='InsertClass.Type' access=internal non-resilient
+    (pattern_binding_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:158:2 - line:158:18]
+      (pattern_typed type='String'
+        (pattern_named type='String' 'b')
+        (type_ident
+          (component id='String' bind=Swift.(file).String)))
+      Original init:
+      (string_literal_expr type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:158:18 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:158:18 - line:158:18] encoding=utf8 value="class b" builtin_initializer=Swift.(file).String extension.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**)
+      Processed init:
+      (string_literal_expr type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:158:18 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:158:18 - line:158:18] encoding=utf8 value="class b" builtin_initializer=Swift.(file).String extension.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**))
+    (var_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:158:6 - line:158:6] "b" type='String' interface type='String' access=internal readImpl=stored writeImpl=stored readWriteImpl=stored
+      (accessor_decl implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:158:6 - line:158:6] 'anonname=0x107b4e118' interface type='(InsertClass) -> () -> String' access=internal get_for=b
+        (parameter "self" type='InsertClass' interface type='InsertClass')
+        (parameter_list)
+        (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:158:6 - line:158:6]
+          (return_stmt implicit
+            (member_ref_expr implicit type='String' decl=Main.(file).InsertClass.b@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:158:6 direct_to_storage
+              (declref_expr implicit type='InsertClass' decl=Main.(file).InsertClass.<anonymous>.self@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:158:6 function_ref=unapplied)))))
+      (accessor_decl implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:158:6 - line:158:6] 'anonname=0x107b4e358' interface type='(InsertClass) -> (String) -> ()' access=internal set_for=b
+        (parameter "self" type='InsertClass' interface type='InsertClass')
+        (parameter_list range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:158:6 - line:158:6]
+          (parameter "value" type='String' interface type='String'))
+        (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:158:6 - line:158:6]
+          (assign_expr implicit type='()'
+            (member_ref_expr implicit type='@lvalue String' decl=Main.(file).InsertClass.b@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:158:6 direct_to_storage
+              (declref_expr implicit type='InsertClass' decl=Main.(file).InsertClass.<anonymous>.self@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:158:6 function_ref=unapplied))
+            (declref_expr implicit type='String' decl=Main.(file).InsertClass.<anonymous>.value@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:158:6 function_ref=unapplied))))
+      (accessor_decl implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:158:6 - line:158:6] 'anonname=0x107b4e498' interface type='(InsertClass) -> () -> ()' access=internal _modify_for=b
+        (parameter "self" type='InsertClass' interface type='InsertClass')
+        (parameter_list)
+        (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:158:6 - line:158:6]
+          (yield_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:158:6 - line:158:6]
+            (inout_expr implicit type='inout String'
+              (member_ref_expr implicit type='@lvalue String' decl=Main.(file).InsertClass.b@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:158:6 direct_to_impl
+                (declref_expr implicit type='InsertClass' decl=Main.(file).InsertClass.<anonymous>.self@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:158:6 function_ref=unapplied)))))))
+    (pattern_binding_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:160:2 - line:160:18]
+      (pattern_typed type='String'
+        (pattern_named type='String' 'd')
+        (type_ident
+          (component id='String' bind=Swift.(file).String)))
+      Original init:
+      (string_literal_expr type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:160:18 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:160:18 - line:160:18] encoding=utf8 value="class d" builtin_initializer=Swift.(file).String extension.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**)
+      Processed init:
+      (string_literal_expr type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:160:18 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:160:18 - line:160:18] encoding=utf8 value="class d" builtin_initializer=Swift.(file).String extension.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**))
+    (var_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:160:6 - line:160:6] "d" type='String' interface type='String' access=internal readImpl=stored writeImpl=stored readWriteImpl=stored
+      (accessor_decl implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:160:6 - line:160:6] 'anonname=0x107b4e628' interface type='(InsertClass) -> () -> String' access=internal get_for=d
+        (parameter "self" type='InsertClass' interface type='InsertClass')
+        (parameter_list)
+        (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:160:6 - line:160:6]
+          (return_stmt implicit
+            (member_ref_expr implicit type='String' decl=Main.(file).InsertClass.d@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:160:6 direct_to_storage
+              (declref_expr implicit type='InsertClass' decl=Main.(file).InsertClass.<anonymous>.self@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:160:6 function_ref=unapplied)))))
+      (accessor_decl implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:160:6 - line:160:6] 'anonname=0x107b4e808' interface type='(InsertClass) -> (String) -> ()' access=internal set_for=d
+        (parameter "self" type='InsertClass' interface type='InsertClass')
+        (parameter_list range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:160:6 - line:160:6]
+          (parameter "value" type='String' interface type='String'))
+        (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:160:6 - line:160:6]
+          (assign_expr implicit type='()'
+            (member_ref_expr implicit type='@lvalue String' decl=Main.(file).InsertClass.d@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:160:6 direct_to_storage
+              (declref_expr implicit type='InsertClass' decl=Main.(file).InsertClass.<anonymous>.self@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:160:6 function_ref=unapplied))
+            (declref_expr implicit type='String' decl=Main.(file).InsertClass.<anonymous>.value@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:160:6 function_ref=unapplied))))
+      (accessor_decl implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:160:6 - line:160:6] 'anonname=0x107b4e908' interface type='(InsertClass) -> () -> ()' access=internal _modify_for=d
+        (parameter "self" type='InsertClass' interface type='InsertClass')
+        (parameter_list)
+        (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:160:6 - line:160:6]
+          (yield_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:160:6 - line:160:6]
+            (inout_expr implicit type='inout String'
+              (member_ref_expr implicit type='@lvalue String' decl=Main.(file).InsertClass.d@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:160:6 direct_to_impl
+                (declref_expr implicit type='InsertClass' decl=Main.(file).InsertClass.<anonymous>.self@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:160:6 function_ref=unapplied)))))))
+    (func_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:163:2 - line:169:2] "insertMethod()" interface type='(InsertClass) -> () -> ()' access=internal
+      (parameter "self")
+      (parameter_list range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:163:19 - line:163:20])
+      (brace_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:163:22 - line:169:2]
+        (call_expr type='()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:165:3 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:165:3 - line:165:19] nothrow arg_labels=_:
+          (declref_expr type='(Any..., String, String) -> ()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:165:3 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:165:3 - line:165:3] decl=Swift.(file).print(_:separator:terminator:) function_ref=single)
+          (tuple_expr type='(Any..., separator: String, terminator: String)' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:165:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:165:8 - line:165:19] names='',separator,terminator
+            (vararg_expansion_expr implicit type='[Any]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:165:9 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:165:9 - line:165:9]
+              (array_expr implicit type='[Any]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:165:9 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:165:9 - line:165:9] initializer=**NULL**
+                (erasure_expr implicit type='Any' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:165:9 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:165:9 - line:165:9]
+                  (string_literal_expr type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:165:9 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:165:9 - line:165:9] encoding=utf8 value="method 2" builtin_initializer=Swift.(file).String extension.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**))))
+            (default_argument_expr implicit type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:165:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:165:8 - line:165:8] default_args_owner=Swift.(file).print(_:separator:terminator:) param=1)
+            (default_argument_expr implicit type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:165:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:165:8 - line:165:8] default_args_owner=Swift.(file).print(_:separator:terminator:) param=2)))
+        (call_expr type='()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:167:3 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:167:3 - line:167:19] nothrow arg_labels=_:
+          (declref_expr type='(Any..., String, String) -> ()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:167:3 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:167:3 - line:167:3] decl=Swift.(file).print(_:separator:terminator:) function_ref=single)
+          (tuple_expr type='(Any..., separator: String, terminator: String)' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:167:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:167:8 - line:167:19] names='',separator,terminator
+            (vararg_expansion_expr implicit type='[Any]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:167:9 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:167:9 - line:167:9]
+              (array_expr implicit type='[Any]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:167:9 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:167:9 - line:167:9] initializer=**NULL**
+                (erasure_expr implicit type='Any' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:167:9 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:167:9 - line:167:9]
+                  (string_literal_expr type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:167:9 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:167:9 - line:167:9] encoding=utf8 value="method 4" builtin_initializer=Swift.(file).String extension.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**))))
+            (default_argument_expr implicit type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:167:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:167:8 - line:167:8] default_args_owner=Swift.(file).print(_:separator:terminator:) param=1)
+            (default_argument_expr implicit type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:167:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:167:8 - line:167:8] default_args_owner=Swift.(file).print(_:separator:terminator:) param=2)))))
+    (destructor_decl implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:156:7 - line:156:7] "deinit" interface type='(InsertClass) -> () -> ()' access=internal
+      (parameter "self")
+      (parameter_list)
+      (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:156:7 - line:156:7]))
+    (constructor_decl implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:156:7 - line:156:7] "init()" interface type='(InsertClass.Type) -> () -> InsertClass' access=internal designated
+      (parameter "self")
+      (parameter_list)
+      (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:156:7 - line:156:7]
+        (return_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:156:7 - line:156:7]))))
+  (top_level_code_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:171:1 - line:171:31]
+    (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:171:1 - line:171:31]
+      (pattern_binding_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:171:1 - line:171:31]
+        (pattern_named type='InsertClass' 'insertClass')
+        Original init:
+        (call_expr type='InsertClass' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:171:19 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:171:19 - line:171:31] nothrow arg_labels=
+          (constructor_ref_call_expr type='() -> InsertClass' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:171:19 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:171:19 - line:171:19] nothrow
+            (declref_expr implicit type='(InsertClass.Type) -> () -> InsertClass' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:171:19 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:171:19 - line:171:19] decl=Main.(file).InsertClass.init()@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:156:7 function_ref=single)
+            (type_expr type='InsertClass.Type' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:171:19 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:171:19 - line:171:19] typerepr='InsertClass'))
+          (tuple_expr type='()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:171:30 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:171:30 - line:171:31]))
+        Processed init:
+        (call_expr type='InsertClass' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:171:19 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:171:19 - line:171:31] nothrow arg_labels=
+          (constructor_ref_call_expr type='() -> InsertClass' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:171:19 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:171:19 - line:171:19] nothrow
+            (declref_expr implicit type='(InsertClass.Type) -> () -> InsertClass' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:171:19 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:171:19 - line:171:19] decl=Main.(file).InsertClass.init()@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:156:7 function_ref=single)
+            (type_expr type='InsertClass.Type' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:171:19 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:171:19 - line:171:19] typerepr='InsertClass'))
+          (tuple_expr type='()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:171:30 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:171:30 - line:171:31])))
+))
+  (var_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:171:5 - line:171:5] "insertClass" type='InsertClass' interface type='InsertClass' access=internal let readImpl=stored immutable)
+  (top_level_code_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:177:1 - line:177:26]
+    (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:177:1 - line:177:26]
+      (call_expr type='()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:177:13 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:177:1 - line:177:26] nothrow arg_labels=
+        (dot_syntax_call_expr type='() -> ()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:177:13 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:177:1 - line:177:13] nothrow
+          (declref_expr type='(InsertClass) -> () -> ()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:177:13 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:177:13 - line:177:13] decl=Main.(file).InsertClass.insertMethod()@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:163:7 function_ref=single)
+          (declref_expr type='InsertClass' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:177:1 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:177:1 - line:177:1] decl=Main.(file).insertClass@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:171:5 function_ref=unapplied))
+        (tuple_expr type='()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:177:25 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/kotlinLiterals.swift:177:25 - line:177:26])))))

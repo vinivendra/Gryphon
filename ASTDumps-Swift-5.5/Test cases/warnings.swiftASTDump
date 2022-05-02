@@ -1,0 +1,436 @@
+(source_file "/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift"
+  (struct_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:25:1 - line:35:1] "UnsupportedStruct" interface type='UnsupportedStruct.Type' access=internal non-resilient
+    (pattern_binding_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:26:2 - line:26:26]
+      (pattern_named type='Int' 'immutableVariable')
+      Original init:
+      (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:26:26 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:26:26 - line:26:26] value=0 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**)
+      Processed init:
+      (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:26:26 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:26:26 - line:26:26] value=0 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**))
+    (var_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:26:6 - line:26:6] "immutableVariable" type='Int' interface type='Int' access=internal let readImpl=stored immutable
+      (accessor_decl implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:26:6 - line:26:6] 'anonname=0x10793a038' interface type='(UnsupportedStruct) -> () -> Int' access=internal get_for=immutableVariable
+        (parameter "self" type='UnsupportedStruct' interface type='UnsupportedStruct')
+        (parameter_list)
+        (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:26:6 - line:26:6]
+          (return_stmt implicit
+            (member_ref_expr implicit type='Int' decl=Main.(file).UnsupportedStruct.immutableVariable@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:26:6 direct_to_storage
+              (declref_expr implicit type='UnsupportedStruct' decl=Main.(file).UnsupportedStruct.<anonymous>.self@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:26:6 function_ref=unapplied))))))
+    (pattern_binding_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:27:2 - line:27:24]
+      (pattern_named type='Int' 'mutableVariable')
+      Original init:
+      (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:27:24 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:27:24 - line:27:24] value=0 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**)
+      Processed init:
+      (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:27:24 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:27:24 - line:27:24] value=0 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**))
+    (var_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:27:6 - line:27:6] "mutableVariable" type='Int' interface type='Int' access=internal readImpl=stored writeImpl=stored readWriteImpl=stored
+      (accessor_decl implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:27:6 - line:27:6] 'anonname=0x10793a2b8' interface type='(UnsupportedStruct) -> () -> Int' access=internal get_for=mutableVariable
+        (parameter "self" type='UnsupportedStruct' interface type='UnsupportedStruct')
+        (parameter_list)
+        (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:27:6 - line:27:6]
+          (return_stmt implicit
+            (member_ref_expr implicit type='Int' decl=Main.(file).UnsupportedStruct.mutableVariable@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:27:6 direct_to_storage
+              (declref_expr implicit type='UnsupportedStruct' decl=Main.(file).UnsupportedStruct.<anonymous>.self@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:27:6 function_ref=unapplied)))))
+      (accessor_decl implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:27:6 - line:27:6] 'anonname=0x107942ed8' interface type='(inout UnsupportedStruct) -> (Int) -> ()' access=internal set_for=mutableVariable
+        (parameter "self" type='UnsupportedStruct' interface type='UnsupportedStruct')
+        (parameter_list range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:27:6 - line:27:6]
+          (parameter "value" type='Int' interface type='Int'))
+        (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:27:6 - line:27:6]
+          (assign_expr implicit type='()'
+            (member_ref_expr implicit type='@lvalue Int' decl=Main.(file).UnsupportedStruct.mutableVariable@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:27:6 direct_to_storage
+              (declref_expr implicit type='@lvalue UnsupportedStruct' decl=Main.(file).UnsupportedStruct.<anonymous>.self@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:27:6 function_ref=unapplied))
+            (declref_expr implicit type='Int' decl=Main.(file).UnsupportedStruct.<anonymous>.value@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:27:6 function_ref=unapplied))))
+      (accessor_decl implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:27:6 - line:27:6] 'anonname=0x107943098' interface type='(inout UnsupportedStruct) -> () -> ()' access=internal _modify_for=mutableVariable
+        (parameter "self" type='UnsupportedStruct' interface type='UnsupportedStruct')
+        (parameter_list)
+        (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:27:6 - line:27:6]
+          (yield_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:27:6 - line:27:6]
+            (inout_expr implicit type='inout Int'
+              (member_ref_expr implicit type='@lvalue Int' decl=Main.(file).UnsupportedStruct.mutableVariable@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:27:6 direct_to_impl
+                (declref_expr implicit type='@lvalue UnsupportedStruct' decl=Main.(file).UnsupportedStruct.<anonymous>.self@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:27:6 function_ref=unapplied)))))))
+    (func_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:29:2 - line:29:24] "pureFunction()" interface type='(UnsupportedStruct) -> () -> ()' access=internal
+      (parameter "self")
+      (parameter_list range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:29:19 - line:29:20])
+      (brace_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:29:22 - line:29:24]))
+    (func_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:30:11 - line:30:37] "mutatingFunction()" interface type='(inout UnsupportedStruct) -> () -> ()' access=internal
+      (parameter "self")
+      (parameter_list range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:30:32 - line:30:33])
+      (brace_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:30:35 - line:30:37]))
+    (pattern_binding_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:32:2 - line:34:2]
+      (pattern_typed type='Int'
+        (pattern_named type='Int' 'computedVarIsOK')
+        (type_ident
+          (component id='Int' bind=Swift.(file).Int))))
+    (var_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:32:6 - line:32:6] "computedVarIsOK" type='Int' interface type='Int' access=internal readImpl=getter immutable
+      (accessor_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:32:27 - line:34:2] 'anonname=0x10791a1a8' interface type='(UnsupportedStruct) -> () -> Int' access=internal get_for=computedVarIsOK
+        (parameter "self")
+        (parameter_list)
+        (brace_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:32:27 - line:34:2]
+          (return_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:33:3 - line:33:10]
+            (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:33:10 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:33:10 - line:33:10] value=0 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**)))))
+    (constructor_decl implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:25:8 - line:25:8] "init(mutableVariable:)" interface type='(UnsupportedStruct.Type) -> (Int) -> UnsupportedStruct' access=internal designated
+      (parameter "self")
+      (parameter_list range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:25:8 - line:25:8]
+        (parameter "mutableVariable" apiName=mutableVariable type='Int' interface type='Int' default_arg=stored property)))
+    (constructor_decl implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:25:8 - line:25:8] "init()" interface type='(UnsupportedStruct.Type) -> () -> UnsupportedStruct' access=internal designated
+      (parameter "self")
+      (parameter_list)
+      (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:25:8 - line:25:8]
+        (return_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:25:8 - line:25:8]))))
+  (enum_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:37:1 - line:45:1] "UnsupportedEnum" interface type='UnsupportedEnum.Type' access=internal non-resilient
+    (enum_case_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:38:2 - line:38:17]
+      (enum_element_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:38:7 - line:38:17] "a(int:)" interface type='(UnsupportedEnum.Type) -> (Int) -> UnsupportedEnum' access=internal
+        (parameter_list range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:38:8 - line:38:17]
+          (parameter "int" apiName=int type='Int' interface type='Int'))))
+    (enum_element_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:38:7 - line:38:17] "a(int:)" interface type='(UnsupportedEnum.Type) -> (Int) -> UnsupportedEnum' access=internal
+      (parameter_list range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:38:8 - line:38:17]
+        (parameter "int" apiName=int type='Int' interface type='Int')))
+    (func_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:40:11 - line:40:37] "mutatingFunction()" interface type='(inout UnsupportedEnum) -> () -> ()' access=internal
+      (parameter "self")
+      (parameter_list range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:40:32 - line:40:33])
+      (brace_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:40:35 - line:40:37]))
+    (pattern_binding_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:42:2 - line:44:2]
+      (pattern_typed type='Int'
+        (pattern_named type='Int' 'computedVarIsOK')
+        (type_ident
+          (component id='Int' bind=Swift.(file).Int))))
+    (var_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:42:6 - line:42:6] "computedVarIsOK" type='Int' interface type='Int' access=internal readImpl=getter immutable
+      (accessor_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:42:27 - line:44:2] 'anonname=0x10791a938' interface type='(UnsupportedEnum) -> () -> Int' access=internal get_for=computedVarIsOK
+        (parameter "self")
+        (parameter_list)
+        (brace_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:42:27 - line:44:2]
+          (return_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:43:3 - line:43:10]
+            (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:43:10 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:43:10 - line:43:10] value=0 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**))))))
+  (top_level_code_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:48:1 - line:48:27]
+    (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:48:1 - line:48:27]
+      (pattern_binding_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:48:1 - line:48:27]
+        (pattern_typed type='[Int]'
+          (pattern_named type='[Int]' 'nativeArray')
+          (type_array
+            (type_ident
+              (component id='Int' bind=Swift.(file).Int))))
+        Original init:
+        (array_expr type='[Int]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:48:26 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:48:26 - line:48:27] initializer=Swift.(file).Array extension.init(arrayLiteral:) [with (substitution_map generic_signature=<Element> (substitution Element -> Int))])
+        Processed init:
+        (array_expr type='[Int]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:48:26 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:48:26 - line:48:27] initializer=Swift.(file).Array extension.init(arrayLiteral:) [with (substitution_map generic_signature=<Element> (substitution Element -> Int))]))
+))
+  (var_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:48:5 - line:48:5] "nativeArray" type='[Int]' interface type='[Int]' access=internal let readImpl=stored immutable)
+  (top_level_code_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:49:1 - line:49:38]
+    (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:49:1 - line:49:38]
+      (pattern_binding_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:49:1 - line:49:38]
+        (pattern_typed type='[Int : Int]'
+          (pattern_named type='[Int : Int]' 'nativeDictionary')
+          (type_dictionary
+            (type_ident
+              (component id='Int' bind=Swift.(file).Int))
+            (type_ident
+              (component id='Int' bind=Swift.(file).Int))))
+        Original init:
+        (dictionary_expr type='[Int : Int]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:49:36 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:49:36 - line:49:38] initializer=Swift.(file).Dictionary extension.init(dictionaryLiteral:) [with (substitution_map generic_signature=<Key, Value where Key : Hashable> (substitution Key -> Int) (substitution Value -> Int))])
+        Processed init:
+        (dictionary_expr type='[Int : Int]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:49:36 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:49:36 - line:49:38] initializer=Swift.(file).Dictionary extension.init(dictionaryLiteral:) [with (substitution_map generic_signature=<Key, Value where Key : Hashable> (substitution Key -> Int) (substitution Value -> Int))]))
+))
+  (var_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:49:5 - line:49:5] "nativeDictionary" type='[Int : Int]' interface type='[Int : Int]' access=internal let readImpl=stored immutable)
+  (class_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:52:1 - line:54:1] "MyClass" interface type='MyClass.Type' access=internal non-resilient
+    (pattern_binding_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:53:14 - line:53:45]
+      (pattern_typed type='Int'
+        (pattern_named type='Int' 'filePrivateVariable')
+        (type_ident
+          (component id='Int' bind=Swift.(file).Int)))
+      Original init:
+      (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:53:45 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:53:45 - line:53:45] value=0 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**)
+      Processed init:
+      (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:53:45 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:53:45 - line:53:45] value=0 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**))
+    (var_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:53:18 - line:53:18] "filePrivateVariable" type='Int' interface type='Int' access=fileprivate readImpl=stored writeImpl=stored readWriteImpl=stored
+      (accessor_decl implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:53:18 - line:53:18] 'anonname=0x107968888' interface type='(MyClass) -> () -> Int' access=fileprivate get_for=filePrivateVariable
+        (parameter "self" type='MyClass' interface type='MyClass')
+        (parameter_list)
+        (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:53:18 - line:53:18]
+          (return_stmt implicit
+            (member_ref_expr implicit type='Int' decl=Main.(file).MyClass.filePrivateVariable@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:53:18 direct_to_storage
+              (declref_expr implicit type='MyClass' decl=Main.(file).MyClass.<anonymous>.self@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:53:18 function_ref=unapplied)))))
+      (accessor_decl implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:53:18 - line:53:18] 'anonname=0x1079602d8' interface type='(MyClass) -> (Int) -> ()' access=fileprivate set_for=filePrivateVariable
+        (parameter "self" type='MyClass' interface type='MyClass')
+        (parameter_list range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:53:18 - line:53:18]
+          (parameter "value" type='Int' interface type='Int'))
+        (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:53:18 - line:53:18]
+          (assign_expr implicit type='()'
+            (member_ref_expr implicit type='@lvalue Int' decl=Main.(file).MyClass.filePrivateVariable@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:53:18 direct_to_storage
+              (declref_expr implicit type='MyClass' decl=Main.(file).MyClass.<anonymous>.self@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:53:18 function_ref=unapplied))
+            (declref_expr implicit type='Int' decl=Main.(file).MyClass.<anonymous>.value@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:53:18 function_ref=unapplied))))
+      (accessor_decl implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:53:18 - line:53:18] 'anonname=0x107960418' interface type='(MyClass) -> () -> ()' access=fileprivate _modify_for=filePrivateVariable
+        (parameter "self" type='MyClass' interface type='MyClass')
+        (parameter_list)
+        (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:53:18 - line:53:18]
+          (yield_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:53:18 - line:53:18]
+            (inout_expr implicit type='inout Int'
+              (member_ref_expr implicit type='@lvalue Int' decl=Main.(file).MyClass.filePrivateVariable@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:53:18 direct_to_impl
+                (declref_expr implicit type='MyClass' decl=Main.(file).MyClass.<anonymous>.self@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:53:18 function_ref=unapplied)))))))
+    (destructor_decl implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:52:7 - line:52:7] "deinit" interface type='(MyClass) -> () -> ()' access=internal
+      (parameter "self")
+      (parameter_list)
+      (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:52:7 - line:52:7]))
+    (constructor_decl implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:52:7 - line:52:7] "init()" interface type='(MyClass.Type) -> () -> MyClass' access=internal designated
+      (parameter "self")
+      (parameter_list)
+      (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:52:7 - line:52:7]
+        (return_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:52:7 - line:52:7]))))
+  (func_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:57:1 - line:57:33] "f()" interface type='() -> Bool?' access=internal
+    (parameter_list range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:57:7 - line:57:8])
+    (result
+      (type_optional
+        (type_ident
+          (component id='Bool' bind=Swift.(file).Bool))))
+    (brace_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:57:19 - line:57:33]
+      (return_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:57:21 - line:57:28]
+        (inject_into_optional implicit type='Bool?' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:57:28 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:57:28 - line:57:28]
+          (boolean_literal_expr type='Bool' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:57:28 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:57:28 - line:57:28] value=true builtin_initializer=Swift.(file).Bool extension.init(_builtinBooleanLiteral:) initializer=**NULL**)))))
+  (func_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:58:1 - line:58:33] "g()" interface type='() -> Bool?' access=internal
+    (parameter_list range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:58:7 - line:58:8])
+    (result
+      (type_optional
+        (type_ident
+          (component id='Bool' bind=Swift.(file).Bool))))
+    (brace_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:58:19 - line:58:33]
+      (return_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:58:21 - line:58:28]
+        (inject_into_optional implicit type='Bool?' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:58:28 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:58:28 - line:58:28]
+          (boolean_literal_expr type='Bool' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:58:28 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:58:28 - line:58:28] value=true builtin_initializer=Swift.(file).Bool extension.init(_builtinBooleanLiteral:) initializer=**NULL**)))))
+  (top_level_code_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:60:1 - line:60:33]
+    (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:60:1 - line:60:33]
+      (if_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:60:1 - line:60:33]
+        (pattern
+          (pattern_optional_some implicit type='Bool?'
+            (pattern_let implicit type='Bool'
+              (pattern_named type='Bool' 'a1')))
+          (call_expr type='Bool?' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:60:13 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:60:13 - line:60:15] nothrow arg_labels=
+            (declref_expr type='() -> Bool?' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:60:13 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:60:13 - line:60:13] decl=Main.(file).f()@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:57:6 function_ref=single)
+            (tuple_expr type='()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:60:14 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:60:14 - line:60:15])))        (pattern
+          (pattern_optional_some implicit type='Bool?'
+            (pattern_let implicit type='Bool'
+              (pattern_named type='Bool' 'a2')))
+          (call_expr type='Bool?' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:60:27 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:60:27 - line:60:29] nothrow arg_labels=
+            (declref_expr type='() -> Bool?' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:60:27 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:60:27 - line:60:27] decl=Main.(file).g()@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:58:6 function_ref=single)
+            (tuple_expr type='()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:60:28 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:60:28 - line:60:29])))
+        (brace_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:60:31 - line:60:33]))))
+  (top_level_code_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:61:1 - line:61:33]
+    (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:61:1 - line:61:33]
+      (if_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:61:1 - line:61:33]
+        (pattern
+          (pattern_optional_some implicit type='Bool?'
+            (pattern_let implicit type='Bool'
+              (pattern_named type='Bool' 'a4')))
+          (call_expr type='Bool?' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:61:13 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:61:13 - line:61:15] nothrow arg_labels=
+            (declref_expr type='() -> Bool?' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:61:13 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:61:13 - line:61:13] decl=Main.(file).g()@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:58:6 function_ref=single)
+            (tuple_expr type='()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:61:14 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:61:14 - line:61:15])))        (pattern
+          (pattern_optional_some implicit type='Bool?'
+            (pattern_let implicit type='Bool'
+              (pattern_named type='Bool' 'a3')))
+          (call_expr type='Bool?' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:61:27 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:61:27 - line:61:29] nothrow arg_labels=
+            (declref_expr type='() -> Bool?' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:61:27 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:61:27 - line:61:27] decl=Main.(file).f()@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:57:6 function_ref=single)
+            (tuple_expr type='()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:61:28 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:61:28 - line:61:29])))
+        (brace_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:61:31 - line:61:33]))))
+  (top_level_code_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:62:1 - line:62:25]
+    (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:62:1 - line:62:25]
+      (if_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:62:1 - line:62:25]
+        (boolean_literal_expr type='Bool' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:62:4 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:62:4 - line:62:4] value=true builtin_initializer=Swift.(file).Bool extension.init(_builtinBooleanLiteral:) initializer=**NULL**)        (pattern
+          (pattern_optional_some implicit type='Bool?'
+            (pattern_let implicit type='Bool'
+              (pattern_named type='Bool' 'a5')))
+          (call_expr type='Bool?' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:62:19 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:62:19 - line:62:21] nothrow arg_labels=
+            (declref_expr type='() -> Bool?' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:62:19 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:62:19 - line:62:19] decl=Main.(file).g()@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:58:6 function_ref=single)
+            (tuple_expr type='()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:62:20 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:62:20 - line:62:21])))
+        (brace_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:62:23 - line:62:25]))))
+  (top_level_code_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:63:1 - line:63:25]
+    (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:63:1 - line:63:25]
+      (if_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:63:1 - line:63:25]
+        (boolean_literal_expr type='Bool' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:63:4 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:63:4 - line:63:4] value=true builtin_initializer=Swift.(file).Bool extension.init(_builtinBooleanLiteral:) initializer=**NULL**)        (pattern
+          (pattern_optional_some implicit type='Bool?'
+            (pattern_let implicit type='Bool'
+              (pattern_named type='Bool' 'a6')))
+          (call_expr type='Bool?' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:63:19 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:63:19 - line:63:21] nothrow arg_labels=
+            (declref_expr type='() -> Bool?' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:63:19 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:63:19 - line:63:19] decl=Main.(file).f()@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:57:6 function_ref=single)
+            (tuple_expr type='()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:63:20 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:63:20 - line:63:21])))
+        (brace_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:63:23 - line:63:25]))))
+  (top_level_code_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:66:1 - line:66:23]
+    (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:66:1 - line:66:23]
+      (pattern_binding_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:66:1 - line:66:23]
+        (pattern_typed type='Int??'
+          (pattern_named type='Int??' 'maybeInt')
+          (type_optional
+            (type_optional
+              (type_ident
+                (component id='Int' bind=Swift.(file).Int)))))
+        Original init:
+        (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:66:23 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:66:23 - line:66:23] value=0 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**)
+        Processed init:
+        (inject_into_optional implicit type='Int??' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:66:23 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:66:23 - line:66:23]
+          (inject_into_optional implicit type='Int?' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:66:23 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:66:23 - line:66:23]
+            (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:66:23 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:66:23 - line:66:23] value=0 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**))))
+))
+  (var_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:66:5 - line:66:5] "maybeInt" type='Int??' interface type='Int??' access=internal let readImpl=stored immutable)
+  (top_level_code_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:67:1 - line:67:16]
+    (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:67:1 - line:67:16]
+      (pattern_binding_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:67:1 - line:67:16]
+        (pattern_named type='Int??' 'whatever')
+        Original init:
+        (unresolved_decl_ref_expr type='<null>' name=maybeInt function_ref=unapplied)
+        Processed init:
+        (declref_expr type='Int??' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:67:16 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:67:16 - line:67:16] decl=Main.(file).maybeInt@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:66:5 function_ref=unapplied))
+))
+  (var_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:67:5 - line:67:5] "whatever" type='Int??' interface type='Int??' access=internal let readImpl=stored immutable)
+  (class_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:70:1 - line:76:1] "A" interface type='A.Type' access=internal non-resilient
+    (pattern_binding_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:71:2 - line:71:10]
+      (pattern_named type='Int' 'x')
+      Original init:
+      (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:71:10 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:71:10 - line:71:10] value=0 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**)
+      Processed init:
+      (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:71:10 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:71:10 - line:71:10] value=0 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**))
+    (var_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:71:6 - line:71:6] "x" type='Int' interface type='Int' access=internal readImpl=stored writeImpl=stored readWriteImpl=stored
+      (accessor_decl implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:71:6 - line:71:6] 'anonname=0x108018ec0' interface type='(A) -> () -> Int' access=internal get_for=x
+        (parameter "self" type='A' interface type='A')
+        (parameter_list)
+        (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:71:6 - line:71:6]
+          (return_stmt implicit
+            (member_ref_expr implicit type='Int' decl=Main.(file).A.x@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:71:6 direct_to_storage
+              (declref_expr implicit type='A' decl=Main.(file).A.<anonymous>.self@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:71:6 function_ref=unapplied)))))
+      (accessor_decl implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:71:6 - line:71:6] 'anonname=0x1080190e0' interface type='(A) -> (Int) -> ()' access=internal set_for=x
+        (parameter "self" type='A' interface type='A')
+        (parameter_list range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:71:6 - line:71:6]
+          (parameter "value" type='Int' interface type='Int'))
+        (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:71:6 - line:71:6]
+          (assign_expr implicit type='()'
+            (member_ref_expr implicit type='@lvalue Int' decl=Main.(file).A.x@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:71:6 direct_to_storage
+              (declref_expr implicit type='A' decl=Main.(file).A.<anonymous>.self@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:71:6 function_ref=unapplied))
+            (declref_expr implicit type='Int' decl=Main.(file).A.<anonymous>.value@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:71:6 function_ref=unapplied))))
+      (accessor_decl implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:71:6 - line:71:6] 'anonname=0x108019220' interface type='(A) -> () -> ()' access=internal _modify_for=x
+        (parameter "self" type='A' interface type='A')
+        (parameter_list)
+        (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:71:6 - line:71:6]
+          (yield_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:71:6 - line:71:6]
+            (inout_expr implicit type='inout Int'
+              (member_ref_expr implicit type='@lvalue Int' decl=Main.(file).A.x@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:71:6 direct_to_impl
+                (declref_expr implicit type='A' decl=Main.(file).A.<anonymous>.self@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:71:6 function_ref=unapplied)))))))
+    (constructor_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:73:2 - line:75:2] "init(x:)" interface type='(A.Type) -> (Int) -> A' access=internal designated
+      (parameter "self" type='A' interface type='A')
+      (parameter_list range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:73:6 - line:73:13]
+        (parameter "x" apiName=x type='Int' interface type='Int'))
+      (brace_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:73:15 - line:75:2]
+        (assign_expr type='()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:74:10 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:74:3 - line:74:12]
+          (member_ref_expr type='@lvalue Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:74:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:74:3 - line:74:8] decl=Main.(file).A.x@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:71:6 direct_to_storage
+            (declref_expr type='A' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:74:3 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:74:3 - line:74:3] decl=Main.(file).A.init(x:).self@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:73:2 function_ref=unapplied))
+          (declref_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:74:12 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:74:12 - line:74:12] decl=Main.(file).A.init(x:).x@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:73:7 function_ref=unapplied))
+        (return_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:75:2 - line:75:2])))
+    (destructor_decl implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:70:7 - line:70:7] "deinit" interface type='(A) -> () -> ()' access=internal
+      (parameter "self")
+      (parameter_list)
+      (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:70:7 - line:70:7])))
+  (class_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:78:1 - line:87:1] "B" interface type='B.Type' access=internal non-resilient inherits: A
+    (constructor_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:79:2 - line:86:2] "init(y:)" interface type='(B.Type) -> (Int) -> B' access=internal designated
+      (parameter "self" type='B' interface type='B')
+      (parameter_list range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:79:6 - line:79:13]
+        (parameter "y" apiName=y type='Int' interface type='Int'))
+      (brace_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:79:15 - line:86:2]
+        (if_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:80:3 - line:85:3]
+          (binary_expr type='Bool' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:80:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:80:6 - line:80:11] nothrow
+            (dot_syntax_call_expr implicit type='(Int, Int) -> Bool' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:80:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:80:8 - line:80:8] nothrow
+              (declref_expr type='(Int.Type) -> (Int, Int) -> Bool' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:80:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:80:8 - line:80:8] decl=Swift.(file).Int.== function_ref=single)
+              (type_expr implicit type='Int.Type' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:80:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:80:8 - line:80:8] typerepr='Int'))
+            (tuple_expr implicit type='(Int, Int)' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:80:6 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:80:6 - line:80:11]
+              (declref_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:80:6 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:80:6 - line:80:6] decl=Main.(file).B.init(y:).y@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:79:7 function_ref=unapplied)
+              (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:80:11 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:80:11 - line:80:11] value=10 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**)))
+          (brace_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:80:14 - line:82:3]
+            (rebind_self_in_constructor_expr implicit type='()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:81:10 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:81:4 - line:81:19]
+              (call_expr type='A' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:81:10 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:81:4 - line:81:19] nothrow arg_labels=x:
+                (dot_syntax_call_expr type='(Int) -> A' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:81:10 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:81:4 - line:81:10] super nothrow
+                  (other_constructor_ref_expr type='(A) -> (Int) -> A' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:81:10 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:81:10 - line:81:10] decl=Main.(file).A.init(x:)@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:73:2)
+                  (super_ref_expr type='A' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:81:4 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:81:4 - line:81:4]))
+                (tuple_expr type='(x: Int)' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:81:14 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:81:14 - line:81:19] names=x
+                  (declref_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:81:18 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:81:18 - line:81:18] decl=Main.(file).B.init(y:).y@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:79:7 function_ref=unapplied)))))
+          (brace_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:83:8 - line:85:3]
+            (rebind_self_in_constructor_expr implicit type='()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:84:10 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:84:4 - line:84:19]
+              (call_expr type='A' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:84:10 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:84:4 - line:84:19] nothrow arg_labels=x:
+                (dot_syntax_call_expr type='(Int) -> A' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:84:10 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:84:4 - line:84:10] super nothrow
+                  (other_constructor_ref_expr type='(A) -> (Int) -> A' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:84:10 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:84:10 - line:84:10] decl=Main.(file).A.init(x:)@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:73:2)
+                  (super_ref_expr type='A' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:84:4 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:84:4 - line:84:4]))
+                (tuple_expr type='(x: Int)' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:84:14 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:84:14 - line:84:19] names=x
+                  (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:84:18 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:84:18 - line:84:18] value=0 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**))))))
+        (return_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:86:2 - line:86:2])))
+    (destructor_decl implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:78:7 - line:78:7] "deinit" interface type='(B) -> () -> ()' access=internal
+      (parameter "self")
+      (parameter_list)
+      (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:78:7 - line:78:7]))
+    (constructor_decl implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:78:12 - line:78:12] "init(x:)" interface type='(B.Type) -> (Int) -> B' access=internal override=Main.(file).A.init(x:)@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:73:2 designated
+      (parameter "self")
+      (parameter_list
+        (parameter "x" apiName=x type='Int' interface type='Int'))
+      (brace_stmt implicit
+        (call_expr implicit type='Never' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:78:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:78:7 - line:78:7] nothrow arg_labels=_:_:_:_:_:
+          (declref_expr implicit type='(StaticString, StaticString, StaticString, UInt, UInt) -> Never' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:78:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:78:7 - line:78:7] decl=Swift.(file)._unimplementedInitializer(className:initName:file:line:column:) function_ref=unapplied)
+          (tuple_expr implicit type='(StaticString, StaticString, StaticString, UInt, UInt)' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:78:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:78:7 - line:78:7] names='','','','',''
+            (string_literal_expr implicit type='StaticString' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:78:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:78:7 - line:78:7] encoding=utf8 value="Main.B" builtin_initializer=Swift.(file).StaticString extension.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**)
+            (magic_identifier_literal_expr implicit type='StaticString' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:78:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:78:7 - line:78:7] kind=#function encoding=utf8 builtin_initializer=Swift.(file).StaticString extension.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**)
+            (magic_identifier_literal_expr implicit type='StaticString' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:78:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:78:7 - line:78:7] kind=#fileID encoding=utf8 builtin_initializer=Swift.(file).StaticString extension.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**)
+            (magic_identifier_literal_expr implicit type='UInt' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:78:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:78:7 - line:78:7] kind=#line builtin_initializer=Swift.(file).UInt.init(_builtinIntegerLiteral:) initializer=**NULL**)
+            (magic_identifier_literal_expr implicit type='UInt' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:78:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:78:7 - line:78:7] kind=#column builtin_initializer=Swift.(file).UInt.init(_builtinIntegerLiteral:) initializer=**NULL**)))
+        (return_stmt implicit))))
+  (struct_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:90:1 - line:94:1] "C" interface type='C.Type' access=internal non-resilient
+    (pattern_binding_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:91:2 - line:91:10]
+      (pattern_named type='Int' 'c')
+      Original init:
+      (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:91:10 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:91:10 - line:91:10] value=0 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**)
+      Processed init:
+      (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:91:10 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:91:10 - line:91:10] value=0 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**))
+    (var_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:91:6 - line:91:6] "c" type='Int' interface type='Int' access=internal let readImpl=stored immutable
+      (accessor_decl implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:91:6 - line:91:6] 'anonname=0x108017148' interface type='(C) -> () -> Int' access=internal get_for=c
+        (parameter "self" type='C' interface type='C')
+        (parameter_list)
+        (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:91:6 - line:91:6]
+          (return_stmt implicit
+            (member_ref_expr implicit type='Int' decl=Main.(file).C.c@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:91:6 direct_to_storage
+              (declref_expr implicit type='C' decl=Main.(file).C.<anonymous>.self@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:91:6 function_ref=unapplied))))))
+    (constructor_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:93:2 - line:93:11] "init()" interface type='(C.Type) -> () -> C' access=internal designated
+      (parameter "self")
+      (parameter_list range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:93:6 - line:93:7])
+      (brace_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:93:9 - line:93:11]
+        (return_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:93:11 - line:93:11]))))
+  (struct_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:96:1 - line:102:1] "D" interface type='D.Type' access=internal non-resilient
+    (pattern_binding_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:97:2 - line:97:10]
+      (pattern_named type='Int' 'd')
+      Original init:
+      (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:97:10 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:97:10 - line:97:10] value=0 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**)
+      Processed init:
+      (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:97:10 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:97:10 - line:97:10] value=0 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**))
+    (var_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:97:6 - line:97:6] "d" type='Int' interface type='Int' access=internal let readImpl=stored immutable
+      (accessor_decl implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:97:6 - line:97:6] 'anonname=0x107969b90' interface type='(D) -> () -> Int' access=internal get_for=d
+        (parameter "self" type='D' interface type='D')
+        (parameter_list)
+        (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:97:6 - line:97:6]
+          (return_stmt implicit
+            (member_ref_expr implicit type='Int' decl=Main.(file).D.d@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:97:6 direct_to_storage
+              (declref_expr implicit type='D' decl=Main.(file).D.<anonymous>.self@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:97:6 function_ref=unapplied))))))
+    (class_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:99:2 - line:101:2] "E" interface type='D.E.Type' access=internal non-resilient
+      (constructor_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:100:3 - line:100:12] "init()" interface type='(D.E.Type) -> () -> D.E' access=internal designated
+        (parameter "self")
+        (parameter_list range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:100:7 - line:100:8])
+        (brace_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:100:10 - line:100:12]
+          (return_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:100:12 - line:100:12])))
+      (destructor_decl implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:99:8 - line:99:8] "deinit" interface type='(D.E) -> () -> ()' access=internal
+        (parameter "self")
+        (parameter_list)
+        (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:99:8 - line:99:8])))
+    (constructor_decl implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:96:8 - line:96:8] "init()" interface type='(D.Type) -> () -> D' access=internal designated
+      (parameter "self")
+      (parameter_list)
+      (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:96:8 - line:96:8]
+        (return_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:96:8 - line:96:8]))))
+  (top_level_code_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:105:1 - line:105:26]
+    (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:105:1 - line:105:26]
+      (pattern_binding_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:105:1 - line:105:26]
+        (pattern_typed type='[Int]'
+          (pattern_named type='[Int]' 'noWarnings')
+          (type_array
+            (type_ident
+              (component id='Int' bind=Swift.(file).Int))))
+        Original init:
+        (array_expr type='[Int]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:105:25 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:105:25 - line:105:26] initializer=Swift.(file).Array extension.init(arrayLiteral:) [with (substitution_map generic_signature=<Element> (substitution Element -> Int))])
+        Processed init:
+        (array_expr type='[Int]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:105:25 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:105:25 - line:105:26] initializer=Swift.(file).Array extension.init(arrayLiteral:) [with (substitution_map generic_signature=<Element> (substitution Element -> Int))]))
+))
+  (var_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/warnings.swift:105:5 - line:105:5] "noWarnings" type='[Int]' interface type='[Int]' access=internal let readImpl=stored immutable))

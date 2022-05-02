@@ -1,0 +1,444 @@
+(source_file "/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift"
+  (class_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:25:1 - line:54:1] "A" interface type='A.Type' access=internal non-resilient
+    (pattern_binding_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:27:2 - line:27:11]
+      (pattern_named type='Int' 'a1')
+      Original init:
+      (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:27:11 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:27:11 - line:27:11] value=0 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**)
+      Processed init:
+      (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:27:11 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:27:11 - line:27:11] value=0 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**))
+    (var_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:27:6 - line:27:6] "a1" type='Int' interface type='Int' access=internal readImpl=stored writeImpl=stored readWriteImpl=stored
+      (accessor_decl implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:27:6 - line:27:6] 'anonname=0x10811a028' interface type='(A) -> () -> Int' access=internal get_for=a1
+        (parameter "self" type='A' interface type='A')
+        (parameter_list)
+        (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:27:6 - line:27:6]
+          (return_stmt implicit
+            (member_ref_expr implicit type='Int' decl=Main.(file).A.a1@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:27:6 direct_to_storage
+              (declref_expr implicit type='A' decl=Main.(file).A.<anonymous>.self@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:27:6 function_ref=unapplied)))))
+      (accessor_decl implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:27:6 - line:27:6] 'anonname=0x10811a280' interface type='(A) -> (Int) -> ()' access=internal set_for=a1
+        (parameter "self" type='A' interface type='A')
+        (parameter_list range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:27:6 - line:27:6]
+          (parameter "value" type='Int' interface type='Int'))
+        (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:27:6 - line:27:6]
+          (assign_expr implicit type='()'
+            (member_ref_expr implicit type='@lvalue Int' decl=Main.(file).A.a1@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:27:6 direct_to_storage
+              (declref_expr implicit type='A' decl=Main.(file).A.<anonymous>.self@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:27:6 function_ref=unapplied))
+            (declref_expr implicit type='Int' decl=Main.(file).A.<anonymous>.value@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:27:6 function_ref=unapplied))))
+      (accessor_decl implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:27:6 - line:27:6] 'anonname=0x10811a440' interface type='(A) -> () -> ()' access=internal _modify_for=a1
+        (parameter "self" type='A' interface type='A')
+        (parameter_list)
+        (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:27:6 - line:27:6]
+          (yield_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:27:6 - line:27:6]
+            (inout_expr implicit type='inout Int'
+              (member_ref_expr implicit type='@lvalue Int' decl=Main.(file).A.a1@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:27:6 direct_to_impl
+                (declref_expr implicit type='A' decl=Main.(file).A.<anonymous>.self@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:27:6 function_ref=unapplied)))))))
+    (func_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:28:2 - line:28:14] "b1()" interface type='(A) -> () -> ()' access=internal
+      (parameter "self")
+      (parameter_list range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:28:9 - line:28:10])
+      (brace_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:28:12 - line:28:14]))
+    (pattern_binding_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:31:2 - line:31:11]
+      (pattern_named type='Int' 'a2')
+      Original init:
+      (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:31:11 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:31:11 - line:31:11] value=0 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**)
+      Processed init:
+      (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:31:11 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:31:11 - line:31:11] value=0 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**))
+    (var_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:31:6 - line:31:6] "a2" type='Int' interface type='Int' access=internal readImpl=stored writeImpl=stored readWriteImpl=stored
+      (accessor_decl implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:31:6 - line:31:6] 'anonname=0x10811a5d0' interface type='(A) -> () -> Int' access=internal get_for=a2
+        (parameter "self" type='A' interface type='A')
+        (parameter_list)
+        (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:31:6 - line:31:6]
+          (return_stmt implicit
+            (member_ref_expr implicit type='Int' decl=Main.(file).A.a2@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:31:6 direct_to_storage
+              (declref_expr implicit type='A' decl=Main.(file).A.<anonymous>.self@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:31:6 function_ref=unapplied)))))
+      (accessor_decl implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:31:6 - line:31:6] 'anonname=0x108120c20' interface type='(A) -> (Int) -> ()' access=internal set_for=a2
+        (parameter "self" type='A' interface type='A')
+        (parameter_list range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:31:6 - line:31:6]
+          (parameter "value" type='Int' interface type='Int'))
+        (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:31:6 - line:31:6]
+          (assign_expr implicit type='()'
+            (member_ref_expr implicit type='@lvalue Int' decl=Main.(file).A.a2@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:31:6 direct_to_storage
+              (declref_expr implicit type='A' decl=Main.(file).A.<anonymous>.self@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:31:6 function_ref=unapplied))
+            (declref_expr implicit type='Int' decl=Main.(file).A.<anonymous>.value@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:31:6 function_ref=unapplied))))
+      (accessor_decl implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:31:6 - line:31:6] 'anonname=0x108120d20' interface type='(A) -> () -> ()' access=internal _modify_for=a2
+        (parameter "self" type='A' interface type='A')
+        (parameter_list)
+        (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:31:6 - line:31:6]
+          (yield_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:31:6 - line:31:6]
+            (inout_expr implicit type='inout Int'
+              (member_ref_expr implicit type='@lvalue Int' decl=Main.(file).A.a2@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:31:6 direct_to_impl
+                (declref_expr implicit type='A' decl=Main.(file).A.<anonymous>.self@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:31:6 function_ref=unapplied)))))))
+    (func_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:32:2 - line:32:14] "b2()" interface type='(A) -> () -> ()' access=internal
+      (parameter "self")
+      (parameter_list range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:32:9 - line:32:10])
+      (brace_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:32:12 - line:32:14]))
+    (pattern_binding_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:34:2 - line:34:11]
+      (pattern_named type='Int' 'a3')
+      Original init:
+      (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:34:11 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:34:11 - line:34:11] value=0 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**)
+      Processed init:
+      (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:34:11 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:34:11 - line:34:11] value=0 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**))
+    (var_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:34:6 - line:34:6] "a3" type='Int' interface type='Int' access=internal readImpl=stored writeImpl=stored readWriteImpl=stored
+      (accessor_decl implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:34:6 - line:34:6] 'anonname=0x108120e70' interface type='(A) -> () -> Int' access=internal get_for=a3
+        (parameter "self" type='A' interface type='A')
+        (parameter_list)
+        (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:34:6 - line:34:6]
+          (return_stmt implicit
+            (member_ref_expr implicit type='Int' decl=Main.(file).A.a3@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:34:6 direct_to_storage
+              (declref_expr implicit type='A' decl=Main.(file).A.<anonymous>.self@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:34:6 function_ref=unapplied)))))
+      (accessor_decl implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:34:6 - line:34:6] 'anonname=0x108121050' interface type='(A) -> (Int) -> ()' access=internal set_for=a3
+        (parameter "self" type='A' interface type='A')
+        (parameter_list range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:34:6 - line:34:6]
+          (parameter "value" type='Int' interface type='Int'))
+        (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:34:6 - line:34:6]
+          (assign_expr implicit type='()'
+            (member_ref_expr implicit type='@lvalue Int' decl=Main.(file).A.a3@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:34:6 direct_to_storage
+              (declref_expr implicit type='A' decl=Main.(file).A.<anonymous>.self@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:34:6 function_ref=unapplied))
+            (declref_expr implicit type='Int' decl=Main.(file).A.<anonymous>.value@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:34:6 function_ref=unapplied))))
+      (accessor_decl implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:34:6 - line:34:6] 'anonname=0x108121150' interface type='(A) -> () -> ()' access=internal _modify_for=a3
+        (parameter "self" type='A' interface type='A')
+        (parameter_list)
+        (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:34:6 - line:34:6]
+          (yield_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:34:6 - line:34:6]
+            (inout_expr implicit type='inout Int'
+              (member_ref_expr implicit type='@lvalue Int' decl=Main.(file).A.a3@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:34:6 direct_to_impl
+                (declref_expr implicit type='A' decl=Main.(file).A.<anonymous>.self@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:34:6 function_ref=unapplied)))))))
+    (func_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:35:2 - line:35:14] "b3()" interface type='(A) -> () -> ()' access=internal
+      (parameter "self")
+      (parameter_list range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:35:9 - line:35:10])
+      (brace_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:35:12 - line:35:14]))
+    (pattern_binding_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:38:7 - line:38:16]
+      (pattern_named type='Int' 'a4')
+      Original init:
+      (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:38:16 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:38:16 - line:38:16] value=0 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**)
+      Processed init:
+      (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:38:16 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:38:16 - line:38:16] value=0 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**))
+    (var_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:38:11 - line:38:11] "a4" type='Int' interface type='Int' access=open readImpl=stored writeImpl=stored readWriteImpl=stored
+      (accessor_decl implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:38:11 - line:38:11] 'anonname=0x1081212a0' interface type='(A) -> () -> Int' access=open get_for=a4
+        (parameter "self" type='A' interface type='A')
+        (parameter_list)
+        (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:38:11 - line:38:11]
+          (return_stmt implicit
+            (member_ref_expr implicit type='Int' decl=Main.(file).A.a4@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:38:11 direct_to_storage
+              (declref_expr implicit type='A' decl=Main.(file).A.<anonymous>.self@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:38:11 function_ref=unapplied)))))
+      (accessor_decl implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:38:11 - line:38:11] 'anonname=0x108121480' interface type='(A) -> (Int) -> ()' access=open set_for=a4
+        (parameter "self" type='A' interface type='A')
+        (parameter_list range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:38:11 - line:38:11]
+          (parameter "value" type='Int' interface type='Int'))
+        (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:38:11 - line:38:11]
+          (assign_expr implicit type='()'
+            (member_ref_expr implicit type='@lvalue Int' decl=Main.(file).A.a4@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:38:11 direct_to_storage
+              (declref_expr implicit type='A' decl=Main.(file).A.<anonymous>.self@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:38:11 function_ref=unapplied))
+            (declref_expr implicit type='Int' decl=Main.(file).A.<anonymous>.value@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:38:11 function_ref=unapplied))))
+      (accessor_decl implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:38:11 - line:38:11] 'anonname=0x108121580' interface type='(A) -> () -> ()' access=open _modify_for=a4
+        (parameter "self" type='A' interface type='A')
+        (parameter_list)
+        (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:38:11 - line:38:11]
+          (yield_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:38:11 - line:38:11]
+            (inout_expr implicit type='inout Int'
+              (member_ref_expr implicit type='@lvalue Int' decl=Main.(file).A.a4@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:38:11 direct_to_impl
+                (declref_expr implicit type='A' decl=Main.(file).A.<anonymous>.self@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:38:11 function_ref=unapplied)))))))
+    (func_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:39:7 - line:39:19] "b4()" interface type='(A) -> () -> ()' access=open
+      (parameter "self")
+      (parameter_list range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:39:14 - line:39:15])
+      (brace_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:39:17 - line:39:19]))
+    (pattern_binding_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:41:8 - line:41:17]
+      (pattern_named type='Int' 'a5')
+      Original init:
+      (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:41:17 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:41:17 - line:41:17] value=0 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**)
+      Processed init:
+      (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:41:17 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:41:17 - line:41:17] value=0 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**))
+    (var_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:41:12 - line:41:12] "a5" type='Int' interface type='Int' access=internal final readImpl=stored writeImpl=stored readWriteImpl=stored
+      (accessor_decl implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:41:12 - line:41:12] 'anonname=0x1081216d0' interface type='(A) -> () -> Int' access=internal get_for=a5
+        (parameter "self" type='A' interface type='A')
+        (parameter_list)
+        (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:41:12 - line:41:12]
+          (return_stmt implicit
+            (member_ref_expr implicit type='Int' decl=Main.(file).A.a5@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:41:12 direct_to_storage
+              (declref_expr implicit type='A' decl=Main.(file).A.<anonymous>.self@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:41:12 function_ref=unapplied)))))
+      (accessor_decl implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:41:12 - line:41:12] 'anonname=0x1081218b0' interface type='(A) -> (Int) -> ()' access=internal set_for=a5
+        (parameter "self" type='A' interface type='A')
+        (parameter_list range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:41:12 - line:41:12]
+          (parameter "value" type='Int' interface type='Int'))
+        (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:41:12 - line:41:12]
+          (assign_expr implicit type='()'
+            (member_ref_expr implicit type='@lvalue Int' decl=Main.(file).A.a5@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:41:12 direct_to_storage
+              (declref_expr implicit type='A' decl=Main.(file).A.<anonymous>.self@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:41:12 function_ref=unapplied))
+            (declref_expr implicit type='Int' decl=Main.(file).A.<anonymous>.value@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:41:12 function_ref=unapplied))))
+      (accessor_decl implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:41:12 - line:41:12] 'anonname=0x1081219b0' interface type='(A) -> () -> ()' access=internal _modify_for=a5
+        (parameter "self" type='A' interface type='A')
+        (parameter_list)
+        (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:41:12 - line:41:12]
+          (yield_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:41:12 - line:41:12]
+            (inout_expr implicit type='inout Int'
+              (member_ref_expr implicit type='@lvalue Int' decl=Main.(file).A.a5@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:41:12 direct_to_impl
+                (declref_expr implicit type='A' decl=Main.(file).A.<anonymous>.self@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:41:12 function_ref=unapplied)))))))
+    (func_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:42:8 - line:42:20] "b5()" interface type='(A) -> () -> ()' access=internal final
+      (parameter "self")
+      (parameter_list range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:42:15 - line:42:16])
+      (brace_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:42:18 - line:42:20]))
+    (pattern_binding_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:45:10 - line:45:19]
+      (pattern_named type='Int' 'a6')
+      Original init:
+      (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:45:19 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:45:19 - line:45:19] value=0 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**)
+      Processed init:
+      (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:45:19 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:45:19 - line:45:19] value=0 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**))
+    (var_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:45:14 - line:45:14] "a6" type='Int' interface type='Int' access=private readImpl=stored writeImpl=stored readWriteImpl=stored
+      (accessor_decl implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:45:14 - line:45:14] 'anonname=0x108121b00' interface type='(A) -> () -> Int' access=private get_for=a6
+        (parameter "self" type='A' interface type='A')
+        (parameter_list)
+        (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:45:14 - line:45:14]
+          (return_stmt implicit
+            (member_ref_expr implicit type='Int' decl=Main.(file).A.a6@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:45:14 direct_to_storage
+              (declref_expr implicit type='A' decl=Main.(file).A.<anonymous>.self@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:45:14 function_ref=unapplied)))))
+      (accessor_decl implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:45:14 - line:45:14] 'anonname=0x108121d18' interface type='(A) -> (Int) -> ()' access=private set_for=a6
+        (parameter "self" type='A' interface type='A')
+        (parameter_list range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:45:14 - line:45:14]
+          (parameter "value" type='Int' interface type='Int'))
+        (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:45:14 - line:45:14]
+          (assign_expr implicit type='()'
+            (member_ref_expr implicit type='@lvalue Int' decl=Main.(file).A.a6@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:45:14 direct_to_storage
+              (declref_expr implicit type='A' decl=Main.(file).A.<anonymous>.self@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:45:14 function_ref=unapplied))
+            (declref_expr implicit type='Int' decl=Main.(file).A.<anonymous>.value@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:45:14 function_ref=unapplied))))
+      (accessor_decl implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:45:14 - line:45:14] 'anonname=0x108121e18' interface type='(A) -> () -> ()' access=private _modify_for=a6
+        (parameter "self" type='A' interface type='A')
+        (parameter_list)
+        (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:45:14 - line:45:14]
+          (yield_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:45:14 - line:45:14]
+            (inout_expr implicit type='inout Int'
+              (member_ref_expr implicit type='@lvalue Int' decl=Main.(file).A.a6@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:45:14 direct_to_impl
+                (declref_expr implicit type='A' decl=Main.(file).A.<anonymous>.self@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:45:14 function_ref=unapplied)))))))
+    (func_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:46:10 - line:46:22] "b6()" interface type='(A) -> () -> ()' access=private
+      (parameter "self")
+      (parameter_list range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:46:17 - line:46:18])
+      (brace_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:46:20 - line:46:22]))
+    (pattern_binding_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:49:2 - line:49:18]
+      (pattern_named type='Int' 'a7')
+      Original init:
+      (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:49:18 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:49:18 - line:49:18] value=0 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**)
+      Processed init:
+      (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:49:18 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:49:18 - line:49:18] value=0 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**))
+    (var_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:49:13 - line:49:13] "a7" type='Int' interface type='Int' access=internal final type readImpl=stored writeImpl=stored readWriteImpl=stored
+      (accessor_decl implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:49:13 - line:49:13] 'anonname=0x108121f68' interface type='(A.Type) -> () -> Int' access=internal type get_for=a7
+        (parameter "self" type='A.Type' interface type='A.Type')
+        (parameter_list)
+        (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:49:13 - line:49:13]
+          (return_stmt implicit
+            (member_ref_expr implicit type='Int' decl=Main.(file).A.a7@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:49:13 direct_to_storage
+              (declref_expr implicit type='A.Type' decl=Main.(file).A.<anonymous>.self@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:49:13 function_ref=unapplied)))))
+      (accessor_decl implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:49:13 - line:49:13] 'anonname=0x1081221b0' interface type='(A.Type) -> (Int) -> ()' access=internal type set_for=a7
+        (parameter "self" type='A.Type' interface type='A.Type')
+        (parameter_list range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:49:13 - line:49:13]
+          (parameter "value" type='Int' interface type='Int'))
+        (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:49:13 - line:49:13]
+          (assign_expr implicit type='()'
+            (member_ref_expr implicit type='@lvalue Int' decl=Main.(file).A.a7@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:49:13 direct_to_storage
+              (declref_expr implicit type='A.Type' decl=Main.(file).A.<anonymous>.self@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:49:13 function_ref=unapplied))
+            (declref_expr implicit type='Int' decl=Main.(file).A.<anonymous>.value@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:49:13 function_ref=unapplied))))
+      (accessor_decl implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:49:13 - line:49:13] 'anonname=0x1081222f0' interface type='(A.Type) -> () -> ()' access=internal type _modify_for=a7
+        (parameter "self" type='A.Type' interface type='A.Type')
+        (parameter_list)
+        (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:49:13 - line:49:13]
+          (yield_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:49:13 - line:49:13]
+            (inout_expr implicit type='inout Int'
+              (member_ref_expr implicit type='@lvalue Int' decl=Main.(file).A.a7@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:49:13 direct_to_impl
+                (declref_expr implicit type='A.Type' decl=Main.(file).A.<anonymous>.self@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:49:13 function_ref=unapplied)))))))
+    (func_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:50:2 - line:50:21] "b7()" interface type='(A.Type) -> () -> ()' access=internal final type
+      (parameter "self")
+      (parameter_list range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:50:16 - line:50:17])
+      (brace_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:50:19 - line:50:21]))
+    (pattern_binding_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:53:2 - line:53:11]
+      (pattern_named type='Int' 'a8')
+      Original init:
+      (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:53:11 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:53:11 - line:53:11] value=0 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**)
+      Processed init:
+      (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:53:11 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:53:11 - line:53:11] value=0 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**))
+    (var_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:53:6 - line:53:6] "a8" type='Int' interface type='Int' access=internal let readImpl=stored immutable
+      (accessor_decl implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:53:6 - line:53:6] 'anonname=0x1081224a8' interface type='(A) -> () -> Int' access=internal get_for=a8
+        (parameter "self" type='A' interface type='A')
+        (parameter_list)
+        (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:53:6 - line:53:6]
+          (return_stmt implicit
+            (member_ref_expr implicit type='Int' decl=Main.(file).A.a8@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:53:6 direct_to_storage
+              (declref_expr implicit type='A' decl=Main.(file).A.<anonymous>.self@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:53:6 function_ref=unapplied))))))
+    (destructor_decl implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:25:7 - line:25:7] "deinit" interface type='(A) -> () -> ()' access=internal
+      (parameter "self")
+      (parameter_list)
+      (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:25:7 - line:25:7]))
+    (constructor_decl implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:25:7 - line:25:7] "init()" interface type='(A.Type) -> () -> A' access=internal designated
+      (parameter "self")
+      (parameter_list)
+      (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:25:7 - line:25:7]
+        (return_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:25:7 - line:25:7]))))
+  (class_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:59:1 - line:59:12] "A1" interface type='A1.Type' access=internal non-resilient
+    (destructor_decl implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:59:7 - line:59:7] "deinit" interface type='(A1) -> () -> ()' access=internal
+      (parameter "self")
+      (parameter_list)
+      (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:59:7 - line:59:7]))
+    (constructor_decl implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:59:7 - line:59:7] "init()" interface type='(A1.Type) -> () -> A1' access=internal designated
+      (parameter "self")
+      (parameter_list)
+      (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:59:7 - line:59:7]
+        (return_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:59:7 - line:59:7]))))
+  (class_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:62:1 - line:62:12] "A2" interface type='A2.Type' access=internal non-resilient
+    (destructor_decl implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:62:7 - line:62:7] "deinit" interface type='(A2) -> () -> ()' access=internal
+      (parameter "self")
+      (parameter_list)
+      (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:62:7 - line:62:7]))
+    (constructor_decl implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:62:7 - line:62:7] "init()" interface type='(A2.Type) -> () -> A2' access=internal designated
+      (parameter "self")
+      (parameter_list)
+      (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:62:7 - line:62:7]
+        (return_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:62:7 - line:62:7]))))
+  (class_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:63:1 - line:63:12] "A3" interface type='A3.Type' access=internal non-resilient
+    (destructor_decl implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:63:7 - line:63:7] "deinit" interface type='(A3) -> () -> ()' access=internal
+      (parameter "self")
+      (parameter_list)
+      (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:63:7 - line:63:7]))
+    (constructor_decl implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:63:7 - line:63:7] "init()" interface type='(A3.Type) -> () -> A3' access=internal designated
+      (parameter "self")
+      (parameter_list)
+      (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:63:7 - line:63:7]
+        (return_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:63:7 - line:63:7]))))
+  (class_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:66:9 - line:66:20] "A4" interface type='A4.Type' access=private non-resilient
+    (destructor_decl implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:66:15 - line:66:15] "deinit" interface type='(A4) -> () -> ()' access=fileprivate
+      (parameter "self")
+      (parameter_list)
+      (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:66:15 - line:66:15]))
+    (constructor_decl implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:66:15 - line:66:15] "init()" interface type='(A4.Type) -> () -> A4' access=internal designated
+      (parameter "self")
+      (parameter_list)
+      (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:66:15 - line:66:15]
+        (return_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:66:15 - line:66:15]))))
+  (struct_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:69:1 - line:81:1] "B" interface type='B.Type' access=internal non-resilient
+    (pattern_binding_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:71:2 - line:71:11]
+      (pattern_named type='Int' 'a1')
+      Original init:
+      (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:71:11 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:71:11 - line:71:11] value=0 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**)
+      Processed init:
+      (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:71:11 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:71:11 - line:71:11] value=0 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**))
+    (var_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:71:6 - line:71:6] "a1" type='Int' interface type='Int' access=internal let readImpl=stored immutable
+      (accessor_decl implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:71:6 - line:71:6] 'anonname=0x108127cc0' interface type='(B) -> () -> Int' access=internal get_for=a1
+        (parameter "self" type='B' interface type='B')
+        (parameter_list)
+        (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:71:6 - line:71:6]
+          (return_stmt implicit
+            (member_ref_expr implicit type='Int' decl=Main.(file).B.a1@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:71:6 direct_to_storage
+              (declref_expr implicit type='B' decl=Main.(file).B.<anonymous>.self@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:71:6 function_ref=unapplied))))))
+    (func_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:72:2 - line:72:14] "b1()" interface type='(B) -> () -> ()' access=internal
+      (parameter "self")
+      (parameter_list range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:72:9 - line:72:10])
+      (brace_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:72:12 - line:72:14]))
+    (pattern_binding_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:75:2 - line:75:11]
+      (pattern_named type='Int' 'a2')
+      Original init:
+      (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:75:11 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:75:11 - line:75:11] value=0 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**)
+      Processed init:
+      (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:75:11 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:75:11 - line:75:11] value=0 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**))
+    (var_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:75:6 - line:75:6] "a2" type='Int' interface type='Int' access=internal let readImpl=stored immutable
+      (accessor_decl implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:75:6 - line:75:6] 'anonname=0x108127f48' interface type='(B) -> () -> Int' access=internal get_for=a2
+        (parameter "self" type='B' interface type='B')
+        (parameter_list)
+        (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:75:6 - line:75:6]
+          (return_stmt implicit
+            (member_ref_expr implicit type='Int' decl=Main.(file).B.a2@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:75:6 direct_to_storage
+              (declref_expr implicit type='B' decl=Main.(file).B.<anonymous>.self@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:75:6 function_ref=unapplied))))))
+    (func_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:76:2 - line:76:14] "b2()" interface type='(B) -> () -> ()' access=internal
+      (parameter "self")
+      (parameter_list range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:76:9 - line:76:10])
+      (brace_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:76:12 - line:76:14]))
+    (pattern_binding_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:79:2 - line:79:18]
+      (pattern_named type='Int' 'a3')
+      Original init:
+      (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:79:18 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:79:18 - line:79:18] value=0 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**)
+      Processed init:
+      (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:79:18 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:79:18 - line:79:18] value=0 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**))
+    (var_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:79:13 - line:79:13] "a3" type='Int' interface type='Int' access=internal type readImpl=stored writeImpl=stored readWriteImpl=stored
+      (accessor_decl implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:79:13 - line:79:13] 'anonname=0x1081280d8' interface type='(B.Type) -> () -> Int' access=internal type get_for=a3
+        (parameter "self" type='B.Type' interface type='B.Type')
+        (parameter_list)
+        (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:79:13 - line:79:13]
+          (return_stmt implicit
+            (member_ref_expr implicit type='Int' decl=Main.(file).B.a3@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:79:13 direct_to_storage
+              (declref_expr implicit type='B.Type' decl=Main.(file).B.<anonymous>.self@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:79:13 function_ref=unapplied)))))
+      (accessor_decl implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:79:13 - line:79:13] 'anonname=0x1081282f8' interface type='(B.Type) -> (Int) -> ()' access=internal type set_for=a3
+        (parameter "self" type='B.Type' interface type='B.Type')
+        (parameter_list range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:79:13 - line:79:13]
+          (parameter "value" type='Int' interface type='Int'))
+        (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:79:13 - line:79:13]
+          (assign_expr implicit type='()'
+            (member_ref_expr implicit type='@lvalue Int' decl=Main.(file).B.a3@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:79:13 direct_to_storage
+              (declref_expr implicit type='B.Type' decl=Main.(file).B.<anonymous>.self@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:79:13 function_ref=unapplied))
+            (declref_expr implicit type='Int' decl=Main.(file).B.<anonymous>.value@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:79:13 function_ref=unapplied))))
+      (accessor_decl implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:79:13 - line:79:13] 'anonname=0x10812ac38' interface type='(B.Type) -> () -> ()' access=internal type _modify_for=a3
+        (parameter "self" type='B.Type' interface type='B.Type')
+        (parameter_list)
+        (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:79:13 - line:79:13]
+          (yield_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:79:13 - line:79:13]
+            (inout_expr implicit type='inout Int'
+              (member_ref_expr implicit type='@lvalue Int' decl=Main.(file).B.a3@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:79:13 direct_to_impl
+                (declref_expr implicit type='B.Type' decl=Main.(file).B.<anonymous>.self@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:79:13 function_ref=unapplied)))))))
+    (func_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:80:2 - line:80:21] "b3()" interface type='(B.Type) -> () -> ()' access=internal type
+      (parameter "self")
+      (parameter_list range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:80:16 - line:80:17])
+      (brace_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:80:19 - line:80:21]))
+    (constructor_decl implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:69:8 - line:69:8] "init()" interface type='(B.Type) -> () -> B' access=internal designated
+      (parameter "self")
+      (parameter_list)
+      (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:69:8 - line:69:8]
+        (return_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:69:8 - line:69:8]))))
+  (enum_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:83:1 - line:93:1] "C" interface type='C.Type' access=internal non-resilient
+    (func_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:85:2 - line:85:14] "b1()" interface type='(C) -> () -> ()' access=internal
+      (parameter "self")
+      (parameter_list range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:85:9 - line:85:10])
+      (brace_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:85:12 - line:85:14]))
+    (func_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:88:2 - line:88:14] "b2()" interface type='(C) -> () -> ()' access=internal
+      (parameter "self")
+      (parameter_list range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:88:9 - line:88:10])
+      (brace_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:88:12 - line:88:14]))
+    (pattern_binding_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:91:2 - line:91:18]
+      (pattern_named type='Int' 'a3')
+      Original init:
+      (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:91:18 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:91:18 - line:91:18] value=0 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**)
+      Processed init:
+      (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:91:18 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:91:18 - line:91:18] value=0 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**))
+    (var_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:91:13 - line:91:13] "a3" type='Int' interface type='Int' access=internal type readImpl=stored writeImpl=stored readWriteImpl=stored
+      (accessor_decl implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:91:13 - line:91:13] 'anonname=0x1081365c8' interface type='(C.Type) -> () -> Int' access=internal type get_for=a3
+        (parameter "self" type='C.Type' interface type='C.Type')
+        (parameter_list)
+        (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:91:13 - line:91:13]
+          (return_stmt implicit
+            (member_ref_expr implicit type='Int' decl=Main.(file).C.a3@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:91:13 direct_to_storage
+              (declref_expr implicit type='C.Type' decl=Main.(file).C.<anonymous>.self@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:91:13 function_ref=unapplied)))))
+      (accessor_decl implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:91:13 - line:91:13] 'anonname=0x1081367e8' interface type='(C.Type) -> (Int) -> ()' access=internal type set_for=a3
+        (parameter "self" type='C.Type' interface type='C.Type')
+        (parameter_list range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:91:13 - line:91:13]
+          (parameter "value" type='Int' interface type='Int'))
+        (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:91:13 - line:91:13]
+          (assign_expr implicit type='()'
+            (member_ref_expr implicit type='@lvalue Int' decl=Main.(file).C.a3@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:91:13 direct_to_storage
+              (declref_expr implicit type='C.Type' decl=Main.(file).C.<anonymous>.self@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:91:13 function_ref=unapplied))
+            (declref_expr implicit type='Int' decl=Main.(file).C.<anonymous>.value@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:91:13 function_ref=unapplied))))
+      (accessor_decl implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:91:13 - line:91:13] 'anonname=0x108136928' interface type='(C.Type) -> () -> ()' access=internal type _modify_for=a3
+        (parameter "self" type='C.Type' interface type='C.Type')
+        (parameter_list)
+        (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:91:13 - line:91:13]
+          (yield_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:91:13 - line:91:13]
+            (inout_expr implicit type='inout Int'
+              (member_ref_expr implicit type='@lvalue Int' decl=Main.(file).C.a3@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:91:13 direct_to_impl
+                (declref_expr implicit type='C.Type' decl=Main.(file).C.<anonymous>.self@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:91:13 function_ref=unapplied)))))))
+    (func_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:92:2 - line:92:21] "b3()" interface type='(C.Type) -> () -> ()' access=internal type
+      (parameter "self")
+      (parameter_list range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:92:16 - line:92:17])
+      (brace_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:92:19 - line:92:21])))
+  (func_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:96:1 - line:96:13] "b1()" interface type='() -> ()' access=internal
+    (parameter_list range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:96:8 - line:96:9])
+    (brace_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:96:11 - line:96:13]))
+  (top_level_code_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:99:1 - line:99:10]
+    (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:99:1 - line:99:10]
+      (pattern_binding_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:99:1 - line:99:10]
+        (pattern_named type='Int' 'a1')
+        Original init:
+        (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:99:10 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:99:10 - line:99:10] value=0 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**)
+        Processed init:
+        (integer_literal_expr type='Int' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:99:10 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:99:10 - line:99:10] value=0 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**))
+))
+  (var_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/openAndFinal.swift:99:5 - line:99:5] "a1" type='Int' interface type='Int' access=internal readImpl=stored writeImpl=stored readWriteImpl=stored))

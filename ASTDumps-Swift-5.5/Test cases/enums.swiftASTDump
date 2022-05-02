@@ -1,0 +1,547 @@
+(source_file "/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift"
+  (enum_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:24:1 - line:28:1] "CalculatorError" interface type='CalculatorError.Type' access=internal non-resilient inherits: Error
+    (enum_case_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:25:2 - line:25:7]
+      (enum_element_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:25:7 - line:25:7] "invalidCharacter" interface type='(CalculatorError.Type) -> CalculatorError' access=internal))
+    (enum_element_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:25:7 - line:25:7] "invalidCharacter" interface type='(CalculatorError.Type) -> CalculatorError' access=internal)
+    (enum_case_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:26:2 - line:26:7]
+      (enum_element_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:26:7 - line:26:7] "multipleCharacters" interface type='(CalculatorError.Type) -> CalculatorError' access=internal))
+    (enum_element_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:26:7 - line:26:7] "multipleCharacters" interface type='(CalculatorError.Type) -> CalculatorError' access=internal)
+    (enum_case_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:27:2 - line:27:7]
+      (enum_element_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:27:7 - line:27:7] "nilInput" interface type='(CalculatorError.Type) -> CalculatorError' access=internal))
+    (enum_element_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:27:7 - line:27:7] "nilInput" interface type='(CalculatorError.Type) -> CalculatorError' access=internal)
+    (func_decl implicit "__derived_enum_equals(_:_:)" interface type='(CalculatorError.Type) -> (CalculatorError, CalculatorError) -> Bool' access=internal type
+      (parameter "self")
+      (parameter_list
+        (parameter "a" type='CalculatorError' interface type='CalculatorError')
+        (parameter "b" type='CalculatorError' interface type='CalculatorError'))
+      (brace_stmt implicit
+        (pattern_binding_decl implicit
+          (pattern_typed implicit type='Int'
+            (pattern_named implicit type='Int' 'index_a')))
+
+        (switch_stmt implicit
+          (declref_expr implicit type='CalculatorError' decl=Main.(file).CalculatorError.__derived_enum_equals(_:_:).a function_ref=unapplied)
+          (case_stmt implicit
+            (case_label_item
+            (pattern_enum_element implicit type='CalculatorError' CalculatorError._))
+            (brace_stmt implicit
+              (assign_expr implicit type='()'
+                (declref_expr implicit type='@lvalue Int' decl=Main.(file).CalculatorError.__derived_enum_equals(_:_:).index_a function_ref=unapplied)
+                (integer_literal_expr implicit type='Int' value=0 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**))))
+          (case_stmt implicit
+            (case_label_item
+            (pattern_enum_element implicit type='CalculatorError' CalculatorError._))
+            (brace_stmt implicit
+              (assign_expr implicit type='()'
+                (declref_expr implicit type='@lvalue Int' decl=Main.(file).CalculatorError.__derived_enum_equals(_:_:).index_a function_ref=unapplied)
+                (integer_literal_expr implicit type='Int' value=1 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**))))
+          (case_stmt implicit
+            (case_label_item
+            (pattern_enum_element implicit type='CalculatorError' CalculatorError._))
+            (brace_stmt implicit
+              (assign_expr implicit type='()'
+                (declref_expr implicit type='@lvalue Int' decl=Main.(file).CalculatorError.__derived_enum_equals(_:_:).index_a function_ref=unapplied)
+                (integer_literal_expr implicit type='Int' value=2 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**)))))
+        (pattern_binding_decl implicit
+          (pattern_typed implicit type='Int'
+            (pattern_named implicit type='Int' 'index_b')))
+
+        (switch_stmt implicit
+          (declref_expr implicit type='CalculatorError' decl=Main.(file).CalculatorError.__derived_enum_equals(_:_:).b function_ref=unapplied)
+          (case_stmt implicit
+            (case_label_item
+            (pattern_enum_element implicit type='CalculatorError' CalculatorError._))
+            (brace_stmt implicit
+              (assign_expr implicit type='()'
+                (declref_expr implicit type='@lvalue Int' decl=Main.(file).CalculatorError.__derived_enum_equals(_:_:).index_b function_ref=unapplied)
+                (integer_literal_expr implicit type='Int' value=0 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**))))
+          (case_stmt implicit
+            (case_label_item
+            (pattern_enum_element implicit type='CalculatorError' CalculatorError._))
+            (brace_stmt implicit
+              (assign_expr implicit type='()'
+                (declref_expr implicit type='@lvalue Int' decl=Main.(file).CalculatorError.__derived_enum_equals(_:_:).index_b function_ref=unapplied)
+                (integer_literal_expr implicit type='Int' value=1 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**))))
+          (case_stmt implicit
+            (case_label_item
+            (pattern_enum_element implicit type='CalculatorError' CalculatorError._))
+            (brace_stmt implicit
+              (assign_expr implicit type='()'
+                (declref_expr implicit type='@lvalue Int' decl=Main.(file).CalculatorError.__derived_enum_equals(_:_:).index_b function_ref=unapplied)
+                (integer_literal_expr implicit type='Int' value=2 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**)))))
+        (return_stmt implicit
+          (binary_expr implicit type='Bool' nothrow
+            (dot_syntax_call_expr implicit type='(Int, Int) -> Bool' nothrow
+              (declref_expr implicit type='(Int.Type) -> (Int, Int) -> Bool' decl=Swift.(file).Int.== function_ref=unapplied)
+              (type_expr implicit type='Int.Type' typerepr='<<NULL>>'))
+            (tuple_expr implicit type='(Int, Int)'
+              (declref_expr implicit type='Int' decl=Main.(file).CalculatorError.__derived_enum_equals(_:_:).index_a function_ref=unapplied)
+              (declref_expr implicit type='Int' decl=Main.(file).CalculatorError.__derived_enum_equals(_:_:).index_b function_ref=unapplied))))))
+    (var_decl implicit "hashValue" type='Int' interface type='Int' access=internal readImpl=getter immutable
+      (accessor_decl implicit 'anonname=0x107c5e490' interface type='(CalculatorError) -> () -> Int' access=internal get_for=hashValue
+        (parameter "self" type='CalculatorError' interface type='CalculatorError')
+        (parameter_list)
+        (brace_stmt implicit
+          (return_stmt implicit
+            (call_expr implicit type='Int' nothrow arg_labels=for:
+              (declref_expr implicit type='(CalculatorError) -> Int' decl=Swift.(file)._hashValue(for:) [with (substitution_map generic_signature=<H where H : Hashable> (substitution H -> CalculatorError))] function_ref=unapplied)
+              (tuple_expr implicit type='(for: CalculatorError)' names=for
+                (declref_expr implicit type='CalculatorError' decl=Main.(file).CalculatorError.<anonymous>.self function_ref=unapplied)))))))
+    (pattern_binding_decl implicit
+      (pattern_typed implicit type='Int'
+        (pattern_named implicit type='Int' 'hashValue')))
+    (func_decl implicit "hash(into:)" interface type='(CalculatorError) -> (inout Hasher) -> ()' access=internal
+      (parameter "self" type='CalculatorError' interface type='CalculatorError')
+      (parameter_list
+        (parameter "hasher" apiName=into type='Hasher' interface type='Hasher' inout))
+      (brace_stmt implicit
+        (pattern_binding_decl implicit
+          (pattern_typed implicit type='Int'
+            (pattern_named implicit type='Int' 'discriminator')))
+
+        (switch_stmt implicit
+          (declref_expr implicit type='CalculatorError' decl=Main.(file).CalculatorError.hash(into:).self function_ref=unapplied)
+          (case_stmt implicit
+            (case_label_item
+            (pattern_enum_element implicit type='CalculatorError' CalculatorError._))
+            (brace_stmt implicit
+              (assign_expr implicit type='()'
+                (declref_expr implicit type='@lvalue Int' decl=Main.(file).CalculatorError.hash(into:).discriminator function_ref=unapplied)
+                (integer_literal_expr implicit type='Int' value=0 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**))))
+          (case_stmt implicit
+            (case_label_item
+            (pattern_enum_element implicit type='CalculatorError' CalculatorError._))
+            (brace_stmt implicit
+              (assign_expr implicit type='()'
+                (declref_expr implicit type='@lvalue Int' decl=Main.(file).CalculatorError.hash(into:).discriminator function_ref=unapplied)
+                (integer_literal_expr implicit type='Int' value=1 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**))))
+          (case_stmt implicit
+            (case_label_item
+            (pattern_enum_element implicit type='CalculatorError' CalculatorError._))
+            (brace_stmt implicit
+              (assign_expr implicit type='()'
+                (declref_expr implicit type='@lvalue Int' decl=Main.(file).CalculatorError.hash(into:).discriminator function_ref=unapplied)
+                (integer_literal_expr implicit type='Int' value=2 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**)))))
+        (call_expr implicit type='()' nothrow arg_labels=_:
+          (dot_syntax_call_expr implicit type='(Int) -> ()' nothrow
+            (declref_expr implicit type='(inout Hasher) -> (Int) -> ()' decl=Swift.(file).Hasher.combine [with (substitution_map generic_signature=<H where H : Hashable> (substitution H -> Int))] function_ref=single)
+            (inout_expr implicit type='inout Hasher'
+              (declref_expr implicit type='@lvalue Hasher' decl=Main.(file).CalculatorError.hash(into:).hasher function_ref=unapplied)))
+          (paren_expr implicit type='(Int)'
+            (load_expr implicit type='Int'
+              (declref_expr implicit type='@lvalue Int' decl=Main.(file).CalculatorError.hash(into:).discriminator function_ref=unapplied)))))))
+  (enum_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:30:1 - line:34:1] "OtherError" interface type='OtherError.Type' access=internal non-resilient inherits: Error
+    (enum_case_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:31:2 - line:31:22]
+      (enum_element_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:31:7 - line:31:22] "oneInt(int:)" interface type='(OtherError.Type) -> (Int) -> OtherError' access=internal
+        (parameter_list range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:31:13 - line:31:22]
+          (parameter "int" apiName=int type='Int' interface type='Int'))))
+    (enum_element_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:31:7 - line:31:22] "oneInt(int:)" interface type='(OtherError.Type) -> (Int) -> OtherError' access=internal
+      (parameter_list range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:31:13 - line:31:22]
+        (parameter "int" apiName=int type='Int' interface type='Int')))
+    (enum_case_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:32:2 - line:32:34]
+      (enum_element_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:32:7 - line:32:34] "twoInts(int:int2:)" interface type='(OtherError.Type) -> (Int, Int) -> OtherError' access=internal
+        (parameter_list range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:32:14 - line:32:34]
+          (parameter "int" apiName=int type='Int' interface type='Int')
+          (parameter "int2" apiName=int2 type='Int' interface type='Int'))))
+    (enum_element_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:32:7 - line:32:34] "twoInts(int:int2:)" interface type='(OtherError.Type) -> (Int, Int) -> OtherError' access=internal
+      (parameter_list range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:32:14 - line:32:34]
+        (parameter "int" apiName=int type='Int' interface type='Int')
+        (parameter "int2" apiName=int2 type='Int' interface type='Int')))
+    (enum_case_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:33:2 - line:33:44]
+      (enum_element_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:33:7 - line:33:44] "intAndString(int:string:)" interface type='(OtherError.Type) -> (Int, String) -> OtherError' access=internal
+        (parameter_list range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:33:19 - line:33:44]
+          (parameter "int" apiName=int type='Int' interface type='Int')
+          (parameter "string" apiName=string type='String' interface type='String'))))
+    (enum_element_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:33:7 - line:33:44] "intAndString(int:string:)" interface type='(OtherError.Type) -> (Int, String) -> OtherError' access=internal
+      (parameter_list range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:33:19 - line:33:44]
+        (parameter "int" apiName=int type='Int' interface type='Int')
+        (parameter "string" apiName=string type='String' interface type='String'))))
+  (enum_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:36:1 - line:39:1] "NoInheritances" interface type='NoInheritances.Type' access=internal non-resilient inherits: String, Equatable, Codable
+    (enum_case_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:37:2 - line:37:16]
+      (enum_element_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:37:7 - line:37:16] "fooBar" interface type='(NoInheritances.Type) -> NoInheritances' access=internal))
+    (enum_element_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:37:7 - line:37:16] "fooBar" interface type='(NoInheritances.Type) -> NoInheritances' access=internal)
+    (enum_case_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:38:2 - line:38:7]
+      (enum_element_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:38:7 - line:38:7] "barBaz" interface type='(NoInheritances.Type) -> NoInheritances' access=internal))
+    (enum_element_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:38:7 - line:38:7] "barBaz" interface type='(NoInheritances.Type) -> NoInheritances' access=internal)
+    (typealias implicit "RawValue" interface type='NoInheritances.RawValue.Type' access=internal type='String')
+    (constructor_decl implicit "init(rawValue:)" interface type='(NoInheritances.Type) -> (String) -> NoInheritances?' access=internal designated failable=Optional
+      (parameter "self" type='NoInheritances' interface type='NoInheritances' inout)
+      (parameter_list
+        (parameter "rawValue" apiName=rawValue type='String' interface type='String'))
+      (brace_stmt implicit
+        (switch_stmt implicit
+          (call_expr type='Int' nothrow arg_labels=cases:string:
+            (declref_expr implicit type='([StaticString], String) -> Int' decl=Swift.(file)._findStringSwitchCase(cases:string:) function_ref=single)
+            (tuple_expr implicit type='(cases: [StaticString], string: String)' names=cases,string
+              (array_expr type='[StaticString]' initializer=Swift.(file).Array extension.init(arrayLiteral:) [with (substitution_map generic_signature=<Element> (substitution Element -> StaticString))]
+                (string_literal_expr implicit type='Array<StaticString>.ArrayLiteralElement' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:37:16 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:37:16 - line:37:16] encoding=utf8 value="foo-bar" builtin_initializer=Swift.(file).StaticString extension.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**)
+                (string_literal_expr implicit type='Array<StaticString>.ArrayLiteralElement' encoding=utf8 value="barBaz" builtin_initializer=Swift.(file).StaticString extension.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**))
+              (declref_expr implicit type='String' decl=Main.(file).NoInheritances.init(rawValue:).rawValue function_ref=unapplied)))
+          (case_stmt implicit
+            (case_label_item
+            (pattern_expr implicit type='Int'
+              (binary_expr implicit type='Bool' nothrow
+                (declref_expr implicit type='(Int, Int) -> Bool' decl=Swift.(file).~= [with (substitution_map generic_signature=<T where T : Equatable> (substitution T -> Int))] function_ref=compound)
+                (tuple_expr implicit type='(Int, Int)'
+                  (integer_literal_expr implicit type='Int' value=0 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**)
+                  (declref_expr implicit type='Int' decl=Main.(file).NoInheritances.init(rawValue:).$match function_ref=unapplied)))))
+            (brace_stmt implicit
+              (assign_expr implicit type='()'
+                (declref_expr implicit type='@lvalue NoInheritances' decl=Main.(file).NoInheritances.init(rawValue:).self function_ref=unapplied)
+                (dot_syntax_call_expr implicit type='NoInheritances' nothrow
+                  (declref_expr implicit type='(NoInheritances.Type) -> NoInheritances' decl=Main.(file).NoInheritances.fooBar@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:37:7 function_ref=double)
+                  (type_expr implicit type='NoInheritances.Type' typerepr='<<NULL>>')))))
+          (case_stmt implicit
+            (case_label_item
+            (pattern_expr implicit type='Int'
+              (binary_expr implicit type='Bool' nothrow
+                (declref_expr implicit type='(Int, Int) -> Bool' decl=Swift.(file).~= [with (substitution_map generic_signature=<T where T : Equatable> (substitution T -> Int))] function_ref=compound)
+                (tuple_expr implicit type='(Int, Int)'
+                  (integer_literal_expr implicit type='Int' value=1 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**)
+                  (declref_expr implicit type='Int' decl=Main.(file).NoInheritances.init(rawValue:).$match function_ref=unapplied)))))
+            (brace_stmt implicit
+              (assign_expr implicit type='()'
+                (declref_expr implicit type='@lvalue NoInheritances' decl=Main.(file).NoInheritances.init(rawValue:).self function_ref=unapplied)
+                (dot_syntax_call_expr implicit type='NoInheritances' nothrow
+                  (declref_expr implicit type='(NoInheritances.Type) -> NoInheritances' decl=Main.(file).NoInheritances.barBaz@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:38:7 function_ref=double)
+                  (type_expr implicit type='NoInheritances.Type' typerepr='<<NULL>>')))))
+          (case_stmt implicit
+            (case_label_item default
+            (pattern_any implicit type='Int'))
+            (brace_stmt implicit
+              (fail_stmt implicit))))
+        (return_stmt implicit)))
+    (var_decl implicit "rawValue" type='String' interface type='String' access=internal readImpl=getter immutable
+      (accessor_decl implicit 'anonname=0x107c9ca30' interface type='(NoInheritances) -> () -> String' access=internal get_for=rawValue
+        (parameter "self" type='NoInheritances' interface type='NoInheritances')
+        (parameter_list)
+        (brace_stmt implicit
+          (switch_stmt implicit
+            (declref_expr implicit type='NoInheritances' decl=Main.(file).NoInheritances.<anonymous>.self function_ref=unapplied)
+            (case_stmt implicit
+              (case_label_item
+              (pattern_enum_element implicit type='NoInheritances' NoInheritances._))
+              (brace_stmt implicit
+                (return_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:37:16 - line:37:16]
+                  (string_literal_expr implicit type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:37:16 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:37:16 - line:37:16] encoding=utf8 value="foo-bar" builtin_initializer=Swift.(file).String extension.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**))))
+            (case_stmt implicit
+              (case_label_item
+              (pattern_enum_element implicit type='NoInheritances' NoInheritances._))
+              (brace_stmt implicit
+                (return_stmt implicit
+                  (string_literal_expr implicit type='String' encoding=utf8 value="barBaz" builtin_initializer=Swift.(file).String extension.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**))))))))
+    (pattern_binding_decl implicit
+      (pattern_typed implicit type='String'
+        (pattern_named implicit type='String' 'rawValue'))))
+  (enum_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:41:1 - line:47:1] "WithMembers" interface type='WithMembers.Type' access=internal non-resilient
+    (enum_case_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:42:2 - line:42:7]
+      (enum_element_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:42:7 - line:42:7] "fooBar" interface type='(WithMembers.Type) -> WithMembers' access=internal))
+    (enum_element_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:42:7 - line:42:7] "fooBar" interface type='(WithMembers.Type) -> WithMembers' access=internal)
+    (enum_case_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:43:2 - line:43:7]
+      (enum_element_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:43:7 - line:43:7] "baz" interface type='(WithMembers.Type) -> WithMembers' access=internal))
+    (enum_element_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:43:7 - line:43:7] "baz" interface type='(WithMembers.Type) -> WithMembers' access=internal)
+    (func_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:45:2 - line:45:13] "a()" interface type='(WithMembers) -> () -> ()' access=internal
+      (parameter "self")
+      (parameter_list range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:45:8 - line:45:9])
+      (brace_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:45:11 - line:45:13]))
+    (func_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:46:2 - line:46:13] "b()" interface type='(WithMembers) -> () -> ()' access=internal
+      (parameter "self")
+      (parameter_list range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:46:8 - line:46:9])
+      (brace_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:46:11 - line:46:13]))
+    (func_decl implicit "__derived_enum_equals(_:_:)" interface type='(WithMembers.Type) -> (WithMembers, WithMembers) -> Bool' access=internal type
+      (parameter "self")
+      (parameter_list
+        (parameter "a" type='WithMembers' interface type='WithMembers')
+        (parameter "b" type='WithMembers' interface type='WithMembers'))
+      (brace_stmt implicit
+        (pattern_binding_decl implicit
+          (pattern_typed implicit type='Int'
+            (pattern_named implicit type='Int' 'index_a')))
+
+        (switch_stmt implicit
+          (declref_expr implicit type='WithMembers' decl=Main.(file).WithMembers.__derived_enum_equals(_:_:).a function_ref=unapplied)
+          (case_stmt implicit
+            (case_label_item
+            (pattern_enum_element implicit type='WithMembers' WithMembers._))
+            (brace_stmt implicit
+              (assign_expr implicit type='()'
+                (declref_expr implicit type='@lvalue Int' decl=Main.(file).WithMembers.__derived_enum_equals(_:_:).index_a function_ref=unapplied)
+                (integer_literal_expr implicit type='Int' value=0 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**))))
+          (case_stmt implicit
+            (case_label_item
+            (pattern_enum_element implicit type='WithMembers' WithMembers._))
+            (brace_stmt implicit
+              (assign_expr implicit type='()'
+                (declref_expr implicit type='@lvalue Int' decl=Main.(file).WithMembers.__derived_enum_equals(_:_:).index_a function_ref=unapplied)
+                (integer_literal_expr implicit type='Int' value=1 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**)))))
+        (pattern_binding_decl implicit
+          (pattern_typed implicit type='Int'
+            (pattern_named implicit type='Int' 'index_b')))
+
+        (switch_stmt implicit
+          (declref_expr implicit type='WithMembers' decl=Main.(file).WithMembers.__derived_enum_equals(_:_:).b function_ref=unapplied)
+          (case_stmt implicit
+            (case_label_item
+            (pattern_enum_element implicit type='WithMembers' WithMembers._))
+            (brace_stmt implicit
+              (assign_expr implicit type='()'
+                (declref_expr implicit type='@lvalue Int' decl=Main.(file).WithMembers.__derived_enum_equals(_:_:).index_b function_ref=unapplied)
+                (integer_literal_expr implicit type='Int' value=0 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**))))
+          (case_stmt implicit
+            (case_label_item
+            (pattern_enum_element implicit type='WithMembers' WithMembers._))
+            (brace_stmt implicit
+              (assign_expr implicit type='()'
+                (declref_expr implicit type='@lvalue Int' decl=Main.(file).WithMembers.__derived_enum_equals(_:_:).index_b function_ref=unapplied)
+                (integer_literal_expr implicit type='Int' value=1 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**)))))
+        (return_stmt implicit
+          (binary_expr implicit type='Bool' nothrow
+            (dot_syntax_call_expr implicit type='(Int, Int) -> Bool' nothrow
+              (declref_expr implicit type='(Int.Type) -> (Int, Int) -> Bool' decl=Swift.(file).Int.== function_ref=unapplied)
+              (type_expr implicit type='Int.Type' typerepr='<<NULL>>'))
+            (tuple_expr implicit type='(Int, Int)'
+              (declref_expr implicit type='Int' decl=Main.(file).WithMembers.__derived_enum_equals(_:_:).index_a function_ref=unapplied)
+              (declref_expr implicit type='Int' decl=Main.(file).WithMembers.__derived_enum_equals(_:_:).index_b function_ref=unapplied))))))
+    (var_decl implicit "hashValue" type='Int' interface type='Int' access=internal readImpl=getter immutable
+      (accessor_decl implicit 'anonname=0x107caa598' interface type='(WithMembers) -> () -> Int' access=internal get_for=hashValue
+        (parameter "self" type='WithMembers' interface type='WithMembers')
+        (parameter_list)
+        (brace_stmt implicit
+          (return_stmt implicit
+            (call_expr implicit type='Int' nothrow arg_labels=for:
+              (declref_expr implicit type='(WithMembers) -> Int' decl=Swift.(file)._hashValue(for:) [with (substitution_map generic_signature=<H where H : Hashable> (substitution H -> WithMembers))] function_ref=unapplied)
+              (tuple_expr implicit type='(for: WithMembers)' names=for
+                (declref_expr implicit type='WithMembers' decl=Main.(file).WithMembers.<anonymous>.self function_ref=unapplied)))))))
+    (pattern_binding_decl implicit
+      (pattern_typed implicit type='Int'
+        (pattern_named implicit type='Int' 'hashValue')))
+    (func_decl implicit "hash(into:)" interface type='(WithMembers) -> (inout Hasher) -> ()' access=internal
+      (parameter "self" type='WithMembers' interface type='WithMembers')
+      (parameter_list
+        (parameter "hasher" apiName=into type='Hasher' interface type='Hasher' inout))
+      (brace_stmt implicit
+        (pattern_binding_decl implicit
+          (pattern_typed implicit type='Int'
+            (pattern_named implicit type='Int' 'discriminator')))
+
+        (switch_stmt implicit
+          (declref_expr implicit type='WithMembers' decl=Main.(file).WithMembers.hash(into:).self function_ref=unapplied)
+          (case_stmt implicit
+            (case_label_item
+            (pattern_enum_element implicit type='WithMembers' WithMembers._))
+            (brace_stmt implicit
+              (assign_expr implicit type='()'
+                (declref_expr implicit type='@lvalue Int' decl=Main.(file).WithMembers.hash(into:).discriminator function_ref=unapplied)
+                (integer_literal_expr implicit type='Int' value=0 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**))))
+          (case_stmt implicit
+            (case_label_item
+            (pattern_enum_element implicit type='WithMembers' WithMembers._))
+            (brace_stmt implicit
+              (assign_expr implicit type='()'
+                (declref_expr implicit type='@lvalue Int' decl=Main.(file).WithMembers.hash(into:).discriminator function_ref=unapplied)
+                (integer_literal_expr implicit type='Int' value=1 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**)))))
+        (call_expr implicit type='()' nothrow arg_labels=_:
+          (dot_syntax_call_expr implicit type='(Int) -> ()' nothrow
+            (declref_expr implicit type='(inout Hasher) -> (Int) -> ()' decl=Swift.(file).Hasher.combine [with (substitution_map generic_signature=<H where H : Hashable> (substitution H -> Int))] function_ref=single)
+            (inout_expr implicit type='inout Hasher'
+              (declref_expr implicit type='@lvalue Hasher' decl=Main.(file).WithMembers.hash(into:).hasher function_ref=unapplied)))
+          (paren_expr implicit type='(Int)'
+            (load_expr implicit type='Int'
+              (declref_expr implicit type='@lvalue Int' decl=Main.(file).WithMembers.hash(into:).discriminator function_ref=unapplied)))))))
+  (func_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:49:1 - line:51:1] "throwingFunc()" interface type='() throws -> ()' access=internal
+    (parameter_list range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:49:18 - line:49:19])
+    (brace_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:49:28 - line:51:1]
+      (throw_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:50:2 - line:50:24]
+        (erasure_expr implicit type='Error' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:50:24 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:50:8 - line:50:24]
+          (normal_conformance type=CalculatorError protocol=Error
+            (value req=_domain witness=Swift.(file).Error extension._domain)
+            (value req=_code witness=Swift.(file).Error extension._code)
+            (value req=_userInfo witness=Swift.(file).Error extension._userInfo)
+            (value req=_getEmbeddedNSError() witness=Swift.(file).Error extension._getEmbeddedNSError())
+            (normal_conformance type=CalculatorError protocol=Sendable))
+          (dot_syntax_call_expr type='CalculatorError' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:50:24 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:50:8 - line:50:24] nothrow
+            (declref_expr type='(CalculatorError.Type) -> CalculatorError' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:50:24 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:50:24 - line:50:24] decl=Main.(file).CalculatorError.invalidCharacter@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:25:7 function_ref=unapplied)
+            (type_expr type='CalculatorError.Type' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:50:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:50:8 - line:50:8] typerepr='CalculatorError'))))))
+  (func_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:53:1 - line:55:1] "otherThrowingFunc()" interface type='() throws -> ()' access=internal
+    (parameter_list range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:53:23 - line:53:24])
+    (try_expr type='()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:54:6 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:54:2 - line:54:19]
+      (call_expr type='()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:54:6 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:54:6 - line:54:19] throws arg_labels=
+        (declref_expr type='() throws -> ()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:54:6 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:54:6 - line:54:6] decl=Main.(file).throwingFunc()@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:49:6 function_ref=single)
+        (tuple_expr type='()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:54:18 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:54:18 - line:54:19]))))
+  (enum_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:58:8 - line:61:1] "MyEnum" interface type='MyEnum.Type' access=public non-resilient
+    (enum_case_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:59:2 - line:59:7]
+      (enum_element_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:59:7 - line:59:7] "fooBar" interface type='(MyEnum.Type) -> MyEnum' access=public))
+    (enum_element_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:59:7 - line:59:7] "fooBar" interface type='(MyEnum.Type) -> MyEnum' access=public)
+    (enum_case_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:60:2 - line:60:7]
+      (enum_element_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:60:7 - line:60:7] "baz" interface type='(MyEnum.Type) -> MyEnum' access=public))
+    (enum_element_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:60:7 - line:60:7] "baz" interface type='(MyEnum.Type) -> MyEnum' access=public)
+    (func_decl implicit "__derived_enum_equals(_:_:)" interface type='(MyEnum.Type) -> (MyEnum, MyEnum) -> Bool' access=public type
+      (parameter "self")
+      (parameter_list
+        (parameter "a" type='MyEnum' interface type='MyEnum')
+        (parameter "b" type='MyEnum' interface type='MyEnum'))
+      (brace_stmt implicit
+        (pattern_binding_decl implicit
+          (pattern_typed implicit type='Int'
+            (pattern_named implicit type='Int' 'index_a')))
+
+        (switch_stmt implicit
+          (declref_expr implicit type='MyEnum' decl=Main.(file).MyEnum.__derived_enum_equals(_:_:).a function_ref=unapplied)
+          (case_stmt implicit
+            (case_label_item
+            (pattern_enum_element implicit type='MyEnum' MyEnum._))
+            (brace_stmt implicit
+              (assign_expr implicit type='()'
+                (declref_expr implicit type='@lvalue Int' decl=Main.(file).MyEnum.__derived_enum_equals(_:_:).index_a function_ref=unapplied)
+                (integer_literal_expr implicit type='Int' value=0 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**))))
+          (case_stmt implicit
+            (case_label_item
+            (pattern_enum_element implicit type='MyEnum' MyEnum._))
+            (brace_stmt implicit
+              (assign_expr implicit type='()'
+                (declref_expr implicit type='@lvalue Int' decl=Main.(file).MyEnum.__derived_enum_equals(_:_:).index_a function_ref=unapplied)
+                (integer_literal_expr implicit type='Int' value=1 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**)))))
+        (pattern_binding_decl implicit
+          (pattern_typed implicit type='Int'
+            (pattern_named implicit type='Int' 'index_b')))
+
+        (switch_stmt implicit
+          (declref_expr implicit type='MyEnum' decl=Main.(file).MyEnum.__derived_enum_equals(_:_:).b function_ref=unapplied)
+          (case_stmt implicit
+            (case_label_item
+            (pattern_enum_element implicit type='MyEnum' MyEnum._))
+            (brace_stmt implicit
+              (assign_expr implicit type='()'
+                (declref_expr implicit type='@lvalue Int' decl=Main.(file).MyEnum.__derived_enum_equals(_:_:).index_b function_ref=unapplied)
+                (integer_literal_expr implicit type='Int' value=0 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**))))
+          (case_stmt implicit
+            (case_label_item
+            (pattern_enum_element implicit type='MyEnum' MyEnum._))
+            (brace_stmt implicit
+              (assign_expr implicit type='()'
+                (declref_expr implicit type='@lvalue Int' decl=Main.(file).MyEnum.__derived_enum_equals(_:_:).index_b function_ref=unapplied)
+                (integer_literal_expr implicit type='Int' value=1 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**)))))
+        (return_stmt implicit
+          (binary_expr implicit type='Bool' nothrow
+            (dot_syntax_call_expr implicit type='(Int, Int) -> Bool' nothrow
+              (declref_expr implicit type='(Int.Type) -> (Int, Int) -> Bool' decl=Swift.(file).Int.== function_ref=unapplied)
+              (type_expr implicit type='Int.Type' typerepr='<<NULL>>'))
+            (tuple_expr implicit type='(Int, Int)'
+              (declref_expr implicit type='Int' decl=Main.(file).MyEnum.__derived_enum_equals(_:_:).index_a function_ref=unapplied)
+              (declref_expr implicit type='Int' decl=Main.(file).MyEnum.__derived_enum_equals(_:_:).index_b function_ref=unapplied))))))
+    (var_decl implicit "hashValue" type='Int' interface type='Int' access=public readImpl=getter immutable
+      (accessor_decl implicit 'anonname=0x107ca4880' interface type='(MyEnum) -> () -> Int' access=public get_for=hashValue
+        (parameter "self" type='MyEnum' interface type='MyEnum')
+        (parameter_list)
+        (brace_stmt implicit
+          (return_stmt implicit
+            (call_expr implicit type='Int' nothrow arg_labels=for:
+              (declref_expr implicit type='(MyEnum) -> Int' decl=Swift.(file)._hashValue(for:) [with (substitution_map generic_signature=<H where H : Hashable> (substitution H -> MyEnum))] function_ref=unapplied)
+              (tuple_expr implicit type='(for: MyEnum)' names=for
+                (declref_expr implicit type='MyEnum' decl=Main.(file).MyEnum.<anonymous>.self function_ref=unapplied)))))))
+    (pattern_binding_decl implicit
+      (pattern_typed implicit type='Int'
+        (pattern_named implicit type='Int' 'hashValue')))
+    (func_decl implicit "hash(into:)" interface type='(MyEnum) -> (inout Hasher) -> ()' access=public
+      (parameter "self" type='MyEnum' interface type='MyEnum')
+      (parameter_list
+        (parameter "hasher" apiName=into type='Hasher' interface type='Hasher' inout))
+      (brace_stmt implicit
+        (pattern_binding_decl implicit
+          (pattern_typed implicit type='Int'
+            (pattern_named implicit type='Int' 'discriminator')))
+
+        (switch_stmt implicit
+          (declref_expr implicit type='MyEnum' decl=Main.(file).MyEnum.hash(into:).self function_ref=unapplied)
+          (case_stmt implicit
+            (case_label_item
+            (pattern_enum_element implicit type='MyEnum' MyEnum._))
+            (brace_stmt implicit
+              (assign_expr implicit type='()'
+                (declref_expr implicit type='@lvalue Int' decl=Main.(file).MyEnum.hash(into:).discriminator function_ref=unapplied)
+                (integer_literal_expr implicit type='Int' value=0 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**))))
+          (case_stmt implicit
+            (case_label_item
+            (pattern_enum_element implicit type='MyEnum' MyEnum._))
+            (brace_stmt implicit
+              (assign_expr implicit type='()'
+                (declref_expr implicit type='@lvalue Int' decl=Main.(file).MyEnum.hash(into:).discriminator function_ref=unapplied)
+                (integer_literal_expr implicit type='Int' value=1 builtin_initializer=Swift.(file).Int.init(_builtinIntegerLiteral:) initializer=**NULL**)))))
+        (call_expr implicit type='()' nothrow arg_labels=_:
+          (dot_syntax_call_expr implicit type='(Int) -> ()' nothrow
+            (declref_expr implicit type='(inout Hasher) -> (Int) -> ()' decl=Swift.(file).Hasher.combine [with (substitution_map generic_signature=<H where H : Hashable> (substitution H -> Int))] function_ref=single)
+            (inout_expr implicit type='inout Hasher'
+              (declref_expr implicit type='@lvalue Hasher' decl=Main.(file).MyEnum.hash(into:).hasher function_ref=unapplied)))
+          (paren_expr implicit type='(Int)'
+            (load_expr implicit type='Int'
+              (declref_expr implicit type='@lvalue Int' decl=Main.(file).MyEnum.hash(into:).discriminator function_ref=unapplied)))))))
+  (top_level_code_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:63:1 - line:63:16]
+    (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:63:1 - line:63:16]
+      (pattern_binding_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:63:1 - line:63:16]
+        (pattern_named type='MyEnum' 'a')
+        Original init:
+        (unresolved_dot_expr type='<null>' field 'fooBar' function_ref=unapplied
+          (type_expr type='MyEnum.Type' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:63:9 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:63:9 - line:63:9] typerepr='MyEnum'))
+        Processed init:
+        (dot_syntax_call_expr type='MyEnum' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:63:16 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:63:9 - line:63:16] nothrow
+          (declref_expr type='(MyEnum.Type) -> MyEnum' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:63:16 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:63:16 - line:63:16] decl=Main.(file).MyEnum.fooBar@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:59:7 function_ref=unapplied)
+          (type_expr type='MyEnum.Type' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:63:9 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:63:9 - line:63:9] typerepr='MyEnum')))
+))
+  (var_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:63:5 - line:63:5] "a" type='MyEnum' interface type='MyEnum' access=internal let readImpl=stored immutable)
+  (top_level_code_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:64:1 - line:64:16]
+    (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:64:1 - line:64:16]
+      (pattern_binding_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:64:1 - line:64:16]
+        (pattern_named type='MyEnum' 'b')
+        Original init:
+        (unresolved_dot_expr type='<null>' field 'baz' function_ref=unapplied
+          (type_expr type='MyEnum.Type' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:64:9 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:64:9 - line:64:9] typerepr='MyEnum'))
+        Processed init:
+        (dot_syntax_call_expr type='MyEnum' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:64:16 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:64:9 - line:64:16] nothrow
+          (declref_expr type='(MyEnum.Type) -> MyEnum' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:64:16 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:64:16 - line:64:16] decl=Main.(file).MyEnum.baz@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:60:7 function_ref=unapplied)
+          (type_expr type='MyEnum.Type' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:64:9 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:64:9 - line:64:9] typerepr='MyEnum')))
+))
+  (var_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:64:5 - line:64:5] "b" type='MyEnum' interface type='MyEnum' access=internal let readImpl=stored immutable)
+  (top_level_code_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:68:1 - line:70:1]
+    (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:68:1 - line:70:1]
+      (if_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:68:1 - line:70:1]
+        (binary_expr type='Bool' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:68:6 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:68:4 - line:68:16] nothrow
+          (dot_syntax_call_expr implicit type='(MyEnum, MyEnum) -> Bool' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:68:6 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:68:6 - line:68:6] nothrow
+            (declref_expr type='(MyEnum.Type) -> (MyEnum, MyEnum) -> Bool' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:68:6 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:68:6 - line:68:6] decl=Main.(file).MyEnum.__derived_enum_equals function_ref=single)
+            (type_expr implicit type='MyEnum.Type' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:68:6 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:68:6 - line:68:6] typerepr='MyEnum'))
+          (tuple_expr implicit type='(MyEnum, MyEnum)' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:68:4 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:68:4 - line:68:16]
+            (declref_expr type='MyEnum' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:68:4 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:68:4 - line:68:4] decl=Main.(file).a@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:63:5 function_ref=unapplied)
+            (dot_syntax_call_expr type='MyEnum' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:68:16 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:68:9 - line:68:16] nothrow
+              (declref_expr type='(MyEnum.Type) -> MyEnum' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:68:16 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:68:16 - line:68:16] decl=Main.(file).MyEnum.fooBar@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:59:7 function_ref=unapplied)
+              (type_expr type='MyEnum.Type' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:68:9 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:68:9 - line:68:9] typerepr='MyEnum'))))
+        (brace_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:68:23 - line:70:1]
+          (call_expr type='()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:69:2 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:69:2 - line:69:24] nothrow arg_labels=_:
+            (declref_expr type='(Any..., String, String) -> ()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:69:2 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:69:2 - line:69:2] decl=Swift.(file).print(_:separator:terminator:) function_ref=single)
+            (tuple_expr type='(Any..., separator: String, terminator: String)' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:69:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:69:7 - line:69:24] names='',separator,terminator
+              (vararg_expansion_expr implicit type='[Any]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:69:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:69:8 - line:69:8]
+                (array_expr implicit type='[Any]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:69:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:69:8 - line:69:8] initializer=**NULL**
+                  (erasure_expr implicit type='Any' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:69:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:69:8 - line:69:8]
+                    (string_literal_expr type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:69:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:69:8 - line:69:8] encoding=utf8 value="MyEnum.FOO_BAR" builtin_initializer=Swift.(file).String extension.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**))))
+              (default_argument_expr implicit type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:69:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:69:7 - line:69:7] default_args_owner=Swift.(file).print(_:separator:terminator:) param=1)
+              (default_argument_expr implicit type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:69:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:69:7 - line:69:7] default_args_owner=Swift.(file).print(_:separator:terminator:) param=2)))))))
+  (top_level_code_decl range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:71:1 - line:73:1]
+    (brace_stmt implicit range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:71:1 - line:73:1]
+      (if_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:71:1 - line:73:1]
+        (binary_expr type='Bool' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:71:6 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:71:4 - line:71:16] nothrow
+          (dot_syntax_call_expr implicit type='(MyEnum, MyEnum) -> Bool' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:71:6 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:71:6 - line:71:6] nothrow
+            (declref_expr type='(MyEnum.Type) -> (MyEnum, MyEnum) -> Bool' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:71:6 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:71:6 - line:71:6] decl=Main.(file).MyEnum.__derived_enum_equals function_ref=single)
+            (type_expr implicit type='MyEnum.Type' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:71:6 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:71:6 - line:71:6] typerepr='MyEnum'))
+          (tuple_expr implicit type='(MyEnum, MyEnum)' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:71:4 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:71:4 - line:71:16]
+            (declref_expr type='MyEnum' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:71:4 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:71:4 - line:71:4] decl=Main.(file).b@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:64:5 function_ref=unapplied)
+            (dot_syntax_call_expr type='MyEnum' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:71:16 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:71:9 - line:71:16] nothrow
+              (declref_expr type='(MyEnum.Type) -> MyEnum' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:71:16 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:71:16 - line:71:16] decl=Main.(file).MyEnum.baz@/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:60:7 function_ref=unapplied)
+              (type_expr type='MyEnum.Type' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:71:9 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:71:9 - line:71:9] typerepr='MyEnum'))))
+        (brace_stmt range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:71:20 - line:73:1]
+          (call_expr type='()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:72:2 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:72:2 - line:72:20] nothrow arg_labels=_:
+            (declref_expr type='(Any..., String, String) -> ()' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:72:2 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:72:2 - line:72:2] decl=Swift.(file).print(_:separator:terminator:) function_ref=single)
+            (tuple_expr type='(Any..., separator: String, terminator: String)' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:72:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:72:7 - line:72:20] names='',separator,terminator
+              (vararg_expansion_expr implicit type='[Any]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:72:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:72:8 - line:72:8]
+                (array_expr implicit type='[Any]' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:72:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:72:8 - line:72:8] initializer=**NULL**
+                  (erasure_expr implicit type='Any' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:72:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:72:8 - line:72:8]
+                    (string_literal_expr type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:72:8 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:72:8 - line:72:8] encoding=utf8 value="MyEnum.BAZ" builtin_initializer=Swift.(file).String extension.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**))))
+              (default_argument_expr implicit type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:72:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:72:7 - line:72:7] default_args_owner=Swift.(file).print(_:separator:terminator:) param=1)
+              (default_argument_expr implicit type='String' location=/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:72:7 range=[/Users/vini/Development/Gryphon/Gryphon bootstrap/Test cases/enums.swift:72:7 - line:72:7] default_args_owner=Swift.(file).print(_:separator:terminator:) param=2))))))))
