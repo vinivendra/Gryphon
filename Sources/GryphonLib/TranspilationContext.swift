@@ -36,7 +36,8 @@ public class TranspilationContext {
 	/// Returns the base context for the requested Swift version. If one hasn't been created yet,
 	/// create it then return it.
 	static internal func getBaseContext(
-		forToolchain toolchainName: String?)
+		forToolchain toolchainName: String?,
+		usingLibraryASTDumpFile libraryASTDumpFile: String?)
 		throws -> TranspilationContext
 	{
 		let swiftVersion = try TranspilationContext.getVersionOfToolchain(toolchainName)
@@ -45,7 +46,7 @@ public class TranspilationContext {
 		}
 		else {
 			let newContext = try TranspilationContext(toolchainName: toolchainName)
-			try Utilities.processGryphonTemplatesLibrary(for: newContext)
+			try Utilities.processGryphonTemplatesLibrary(for: newContext, usingASTDumpFile: libraryASTDumpFile)
 			baseContexts[swiftVersion] = newContext
 			return newContext
 		}
@@ -64,7 +65,13 @@ public class TranspilationContext {
 		self.templates = []
 	}
 
-	public init(toolchainName: String?, indentationString: String, defaultsToFinal: Bool) throws {
+	public init(
+		toolchainName: String?,
+		indentationString: String,
+		defaultsToFinal: Bool,
+		usingLibraryASTDumpFile libraryASTDumpFile: String?)
+		throws
+	{
 		try TranspilationContext.checkToolchainSupport(toolchainName)
 
 		self.toolchainName = toolchainName
@@ -72,7 +79,7 @@ public class TranspilationContext {
 		self.indentationString = indentationString
 		self.defaultsToFinal = defaultsToFinal
 		self.templates = try TranspilationContext
-			.getBaseContext(forToolchain: toolchainName)
+			.getBaseContext(forToolchain: toolchainName, usingLibraryASTDumpFile: libraryASTDumpFile)
 			.templates
 			.toMutableList()
 	}

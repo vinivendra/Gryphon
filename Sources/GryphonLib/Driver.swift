@@ -602,7 +602,7 @@ public class Driver {
 		Compiler.logEnd("✅  Done parsing arguments.")
 
 		//// Dump the ASTs
-		if !arguments.contains("-skip-AST-dumps") {
+		astDumps: if !arguments.contains("-skip-AST-dumps") {
 			Compiler.logStart("🧑‍💻  Preparing to dump the ASTs...")
 
 			let maybeXcodeProject = getXcodeProject(inArguments: arguments)
@@ -615,18 +615,26 @@ public class Driver {
 					"from the `xcfilelist`.")
 			}
 
-			let inputFiles = try getInputFilePaths(inArguments: arguments)
-			if inputFiles.isEmpty {
+			// Input files may be .swift or .swiftASTDump. Only .swift files need to be dumped.
+			let allInputFiles = try getInputFilePaths(inArguments: arguments)
+			let swiftInputFiles = allInputFiles.filter {
+				Utilities.getExtension(of: $0) == .swift
+			}
+			if swiftInputFiles.isEmpty {
+				// If there are no Swift files to dump but we have swiftASTDump files, move on
+				if !allInputFiles.isEmpty {
+					break astDumps
+				}
 				throw GryphonError(errorMessage: "No input files provided.")
 			}
-			let allSourceFiles = inputFiles.toMutableList()
+			let allSwiftSourceFiles = swiftInputFiles.toMutableList()
 
 			if isSkippingFiles {
 				let skippedFiles = try getSkippedInputFilePaths(inArguments: arguments)
-				allSourceFiles.append(contentsOf: skippedFiles)
+				allSwiftSourceFiles.append(contentsOf: skippedFiles)
 			}
 
-			let missingfiles = allSourceFiles.filter {
+			let missingfiles = allSwiftSourceFiles.filter {
 				!Utilities.fileExists(at: $0)
 			}
 			if !missingfiles.isEmpty {
@@ -645,7 +653,7 @@ public class Driver {
 			do {
 				Compiler.logStart("🧑‍💻  Dumping the ASTs...")
 				try updateASTDumps(
-					forFiles: allSourceFiles,
+					forFiles: allSwiftSourceFiles,
 					forXcodeProject: maybeXcodeProject,
 					forTarget: target,
 					usingToolchain: toolchain,
@@ -660,7 +668,7 @@ public class Driver {
 			}
 
 			let outdatedASTDumpsAfterFirstUpdate = outdatedASTDumpFiles(
-				forInputFiles: allSourceFiles,
+				forInputFiles: allSwiftSourceFiles,
 				swiftVersion: swiftVersion)
 
 			if !outdatedASTDumpsAfterFirstUpdate.isEmpty {
@@ -703,14 +711,14 @@ public class Driver {
 					Compiler.logStart("⚠️  Attempting to update the AST dumps again...")
 
 					try updateASTDumps(
-						forFiles: allSourceFiles,
+						forFiles: allSwiftSourceFiles,
 						forXcodeProject: maybeXcodeProject,
 						forTarget: target,
 						usingToolchain: toolchain,
 						shouldTryToRecoverFromErrors: true)
 
 					let outdatedASTDumpsAfterSecondUpdate = outdatedASTDumpFiles(
-						forInputFiles: allSourceFiles,
+						forInputFiles: allSwiftSourceFiles,
 						swiftVersion: swiftVersion)
 
 					if !outdatedASTDumpsAfterSecondUpdate.isEmpty {
@@ -746,11 +754,14 @@ public class Driver {
 		//// Perform transpilation
 
 		do {
+			let libraryASTDumpFile = try getLibraryASTDumpFile(inArguments: arguments)
+
 			//
 			let context = try TranspilationContext(
 				toolchainName: toolchain,
 				indentationString: indentationString,
-				defaultsToFinal: defaultsToFinal)
+				defaultsToFinal: defaultsToFinal,
+				usingLibraryASTDumpFile: libraryASTDumpFile)
 
 			Compiler.logStart("🧑‍💻 Starting first part of translation [1/2]...")
 
@@ -857,9 +868,10 @@ public class Driver {
 				$0 != "--skip"
 			}
 
-		let result: MutableList<String> = []
+		var result: MutableList<String> = []
 		result.append(contentsOf: argumentsBeforeSkip.filter {
-			Utilities.getExtension(of: $0) == .swift
+			Utilities.getExtension(of: $0) == .swift ||
+			Utilities.getExtension(of: $0) == .swiftASTDump
 		})
 
 		let fileLists = argumentsBeforeSkip.filter {
@@ -871,7 +883,36 @@ public class Driver {
 			result.append(contentsOf: files)
 		}
 
+		// If the library AST dump was passed we don't consider it a file that should be translated, only processed
+		result = result.filter { !isLibraryASTDumpFile($0) }
+
 		return result
+	}
+
+	static func getLibraryASTDumpFile(
+		inArguments arguments: List<String>)
+		throws -> String?
+	{
+		let cleanArguments = arguments.map {
+			$0.hasSuffix("/") ?
+			String($0.dropLast()) :
+			$0
+		}
+
+		let argumentsBeforeSkip = cleanArguments.prefix {
+			$0 != "--skip"
+		}
+
+		let astDumpFiles = argumentsBeforeSkip.filter {
+			Utilities.getExtension(of: $0) == .swiftASTDump
+		}
+
+		return astDumpFiles.first(where: { isLibraryASTDumpFile($0) })
+	}
+
+	static func isLibraryASTDumpFile(_ file: String) -> Bool {
+		let expectedName = Utilities.changeExtension(of: SupportingFile.gryphonTemplatesLibrary.name, to: .swiftASTDump)
+		return file.hasSuffix(expectedName)
 	}
 
 	static func getSkippedInputFilePaths(
@@ -1349,6 +1390,7 @@ public class Driver {
 	static func isSupportedInputFilePath(_ filePath: String) -> Bool {
 		if let fileExtension = Utilities.getExtension(of: filePath) {
 			if fileExtension == .swift ||
+				fileExtension == .swiftASTDump ||
 				fileExtension == .xcfilelist
 			{
 				return true

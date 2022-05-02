@@ -58,7 +58,8 @@ class LibraryTranspilationTest: XCTestCase {
 	let context = try! TranspilationContext(
 		toolchainName: nil,
 		indentationString: "\t",
-		defaultsToFinal: false)
+		defaultsToFinal: false,
+		usingLibraryASTDumpFile: TestUtilities.libraryASTDumpFilePath)
 
 	// MARK: - Tests
 	func testSimpleMatches() {

@@ -33,16 +33,6 @@ class IntegrationTest: XCTestCase {
 		return "IntegrationTest"
 	}
 
-	override static func setUp() {
-		do {
-			try TestUtilities.updateASTsForTestCases()
-		}
-		catch let error {
-			print(error)
-			fatalError("Failed to update test files.")
-		}
-	}
-
 	/// Tests to be run by the translated Kotlin version.
 	// gryphon annotation: override
 	public func runAllTests() {
@@ -60,83 +50,70 @@ class IntegrationTest: XCTestCase {
 
 	// MARK: - Tests
 	func test() {
-		do {
-			let swiftVersion = try TranspilationContext.getVersionOfToolchain(nil)
+		Compiler.clearIssues()
 
-			Compiler.clearIssues()
+		let tests = TestUtilities.testCases
+		for testName in tests {
+			print("- Testing \(testName)...")
 
-			let tests = TestUtilities.testCases
-			for testName in tests {
-				print("- Testing \(testName)...")
+			do {
+				// Generate kotlin code using the whole compiler
+				let testCasePath = (TestUtilities.testCasesPath + testName).withExtension(.swiftASTDump)
+				let defaultsToFinal = testName.hasSuffix("-default-final")
+				let generatedKotlinCode = try Compiler.transpileKotlinCode(
+					fromASTDumpFiles: [testCasePath],
+					withContext: TranspilationContext(
+						toolchainName: nil,
+						indentationString: "\t",
+						defaultsToFinal: defaultsToFinal,
+						usingLibraryASTDumpFile: TestUtilities.libraryASTDumpFilePath))
+					.first!
 
-				do {
-					// Generate kotlin code using the whole compiler
-					let testCasePath = TestUtilities.testCasesPath + testName
-					let astDumpFilePath =
-						SupportingFile.pathOfSwiftASTDumpFile(
-							forSwiftFile: testCasePath,
-							swiftVersion: swiftVersion)
-					let defaultsToFinal = testName.hasSuffix("-default-final")
-					let generatedKotlinCode = try Compiler.transpileKotlinCode(
-						fromASTDumpFiles: [astDumpFilePath],
-						withContext: TranspilationContext(
-							toolchainName: nil,
-							indentationString: "\t",
-							defaultsToFinal: defaultsToFinal)).first!
+				// Load the previously stored kotlin code from file
+				let kotlinTestCasePath = (TestUtilities.kotlinTestCasesPath + testName).withExtension(.kt)
+				let expectedKotlinCode = try! Utilities.readFile(kotlinTestCasePath)
 
-					// Load the previously stored kotlin code from file
-					let expectedKotlinCode =
-						try! Utilities.readFile(testCasePath.withExtension(.kt))
-
-					XCTAssert(
-						generatedKotlinCode == expectedKotlinCode,
-						"Test \(testName): the transpiler failed to produce expected result. " +
-							"Printing diff ('<' means generated, '>' means expected):" +
-							TestUtilities.diff(generatedKotlinCode, expectedKotlinCode))
-				}
-				catch let error {
-					XCTFail("🚨 Test failed with error:\n\(error)")
-				}
+				XCTAssert(
+					generatedKotlinCode == expectedKotlinCode,
+					"Test \(testName): the transpiler failed to produce expected result. " +
+					"Printing diff ('<' means generated, '>' means expected):" +
+					TestUtilities.diff(generatedKotlinCode, expectedKotlinCode))
 			}
-
-			let unexpectedWarnings = Compiler.issues.filter {
-					!$0.isError &&
-					!$0.fullMessage.contains("Native type") &&
-					!$0.fullMessage.contains("fileprivate declarations")
-				}
-			XCTAssert(
-				unexpectedWarnings.isEmpty,
-				"Unexpected warnings in integration tests:\n" +
-				"\(unexpectedWarnings.map { $0.fullMessage }.joined(separator: "\n\n"))")
-
-			if Compiler.numberOfErrors != 0 {
-				XCTFail("🚨 Integration test found errors:\n")
-				Compiler.printIssues()
+			catch let error {
+				XCTFail("🚨 Test failed with error:\n\(error)")
 			}
 		}
-		catch let error {
-			XCTFail("🚨 Test failed with error:\n\(error)")
+
+		let unexpectedWarnings = Compiler.issues.filter {
+			!$0.isError &&
+			!$0.fullMessage.contains("Native type") &&
+			!$0.fullMessage.contains("fileprivate declarations")
+		}
+		XCTAssert(
+			unexpectedWarnings.isEmpty,
+			"Unexpected warnings in integration tests:\n" +
+			"\(unexpectedWarnings.map { $0.fullMessage }.joined(separator: "\n\n"))")
+
+		if Compiler.numberOfErrors != 0 {
+			XCTFail("🚨 Integration test found errors:\n")
+			Compiler.printIssues()
 		}
 	}
 
 	func testWarnings() {
 		do {
-			let swiftVersion = try TranspilationContext.getVersionOfToolchain(nil)
-
 			Compiler.clearIssues()
 
 			// Generate kotlin code using the whole compiler
-			let testCasePath = TestUtilities.testCasesPath + "warnings"
-			let astDumpFilePath =
-				SupportingFile.pathOfSwiftASTDumpFile(
-					forSwiftFile: testCasePath,
-					swiftVersion: swiftVersion)
+			let testCasePath = (TestUtilities.testCasesPath + "warnings").withExtension(.swiftASTDump)
 			_ = try Compiler.transpileKotlinCode(
-				fromASTDumpFiles: [astDumpFilePath],
+				fromASTDumpFiles: [testCasePath],
 				withContext: TranspilationContext(
 					toolchainName: nil,
 					indentationString: "\t",
-					defaultsToFinal: false)).first!
+					defaultsToFinal: false,
+					usingLibraryASTDumpFile: TestUtilities.libraryASTDumpFilePath))
+				.first!
 
 			XCTAssert(
 				Compiler.numberOfErrors == 0,

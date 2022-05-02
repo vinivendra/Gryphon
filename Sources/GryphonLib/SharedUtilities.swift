@@ -233,8 +233,11 @@ extension Utilities {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 extension Utilities {
+	/// Processes the templates library (before translating any other files).
+	/// If the library was passed as an AST Dump file, include it here.
 	static public func processGryphonTemplatesLibrary(
-		for transpilationContext: TranspilationContext)
+		for transpilationContext: TranspilationContext,
+		usingASTDumpFile astDumpFile: String?)
 		throws
 	{
         // gryphon ignore
@@ -249,7 +252,8 @@ extension Utilities {
 
 		Compiler.logStart("🧑‍💻  Processing the templates library...")
 
-		if Utilities.needsToDumpASTForSwiftFiles(
+		if astDumpFile == nil,
+		   Utilities.needsToDumpASTForSwiftFiles(
 			[SupportingFile.gryphonTemplatesLibrary.name],
 			in: SupportingFile.gryphonTemplatesLibrary.folder ?? ".",
 			forSwiftVersion: transpilationContext.swiftVersion)
@@ -274,11 +278,14 @@ extension Utilities {
 		}
 
 		Compiler.logStart("🧑‍💻  Transpiling and running passes...")
+
+		let astDumpFiles: List<String> = [
+			astDumpFile ??
+			SupportingFile.pathOfSwiftASTDumpFile(
+				forSwiftFile: SupportingFile.gryphonTemplatesLibrary.relativePath,
+				swiftVersion: transpilationContext.swiftVersion)]
         let astArray = try Compiler.transpileGryphonRawASTs(
-			fromASTDumpFiles: [
-				SupportingFile.pathOfSwiftASTDumpFile(
-					forSwiftFile: SupportingFile.gryphonTemplatesLibrary.relativePath,
-					swiftVersion: transpilationContext.swiftVersion), ],
+			fromASTDumpFiles: astDumpFiles,
 			withContext: transpilationContext)
 
         let ast = astArray[0]

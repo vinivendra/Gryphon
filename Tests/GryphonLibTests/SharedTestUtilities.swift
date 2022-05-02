@@ -33,7 +33,12 @@ class TestError: Error {
 
 class TestUtilities {
 	// MARK: - Diffs
-	static let testCasesPath: String = Utilities.getCurrentFolder() + "/Test cases/"
+	/// Tests always run using the Swift 5.5 AST Dump, since it's the latest Swift version that's compatible with this
+	/// (old) Gryphon's AST Dump structure. From Swift 5.6 onward it'd be necessary to update this version to be
+	/// compatible with the new AST Dump structure, which isn't worth it as it doesn't improve the quality of the
+	/// bootstrap tests.
+	static let testCasesPath: String = Utilities.getCurrentFolder() + "/ASTDumps-Swift-5.5/Test cases/"
+	static let kotlinTestCasesPath: String = Utilities.getCurrentFolder() + "/Test cases/"
 
 	static func diff(_ string1: String, _ string2: String) -> String {
 		do {
@@ -84,51 +89,6 @@ class TestUtilities {
 
 	public static let kotlinBuildFolder =
 		"\(SupportingFile.gryphonBuildFolder)/kotlinBuild-\(OS.systemIdentifier)"
-
-	static private var testCasesHaveBeenUpdated = false
-
-	static public func updateASTsForTestCases() throws {
-		guard !testCasesHaveBeenUpdated else {
-			return
-		}
-
-		Compiler.log("\t* Updating ASTs for test cases...")
-
-		let swiftVersion = try TranspilationContext.getVersionOfToolchain(nil)
-		print("⛓ Using Swift \(swiftVersion)")
-
-		let testCasesFolder = "Test cases"
-		if Utilities.needsToDumpASTForSwiftFiles(
-			in: testCasesFolder,
-			forSwiftVersion: swiftVersion)
-		{
-			let testFiles = Utilities.getFiles(
-				inDirectory: testCasesFolder,
-				withExtension: .swift)
-
-			for testFile in testFiles {
-				try Driver.updateASTDumps(
-					forFiles: [testFile],
-					forXcodeProject: nil,
-					forTarget: nil,
-					usingToolchain: nil,
-					shouldTryToRecoverFromErrors: true)
-			}
-
-			if Utilities.needsToDumpASTForSwiftFiles(
-				in: testCasesFolder,
-				forSwiftVersion: swiftVersion)
-			{
-				throw GryphonError(errorMessage:
-					"Failed to update the AST of at least one file in the \(testCasesFolder) " +
-					"folder")
-			}
-		}
-
-		testCasesHaveBeenUpdated = true
-
-		Compiler.log("\t- Done!")
-    }
 
 	// MARK: - Test cases
 	static let testCases: List = [

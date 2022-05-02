@@ -33,16 +33,6 @@ class DriverTest: XCTestCase {
 		return "DriverTest"
 	}
 
-	override static func setUp() {
-		do {
-			try TestUtilities.updateASTsForTestCases()
-		}
-		catch let error {
-			print(error)
-			fatalError("Failed to update test files.")
-		}
-	}
-
 	/// Tests to be run by the translated Kotlin version.
 	// gryphon annotation: override
 	public func runAllTests() {
@@ -81,22 +71,22 @@ class DriverTest: XCTestCase {
 			}
 
 		do {
-			try Driver.run(withArguments: ["test.swift"])
+			try Driver.run(withArguments: ["ASTDumps-Swift-5.5/test.swiftASTDump"])
 			XCTAssert(!compilerOutput.isEmpty)
 
 			compilerOutput = ""
-			try Driver.run(withArguments: ["Test cases/outputs.swift"])
+			try Driver.run(withArguments: ["ASTDumps-Swift-5.5/Test cases/outputs.swiftASTDump"])
 			XCTAssert(compilerOutput.isEmpty)
 
 			compilerOutput = ""
-			try Driver.run(withArguments: ["Test cases/outputs.swift", "--write-to-console"])
+			try Driver.run(withArguments: ["ASTDumps-Swift-5.5/Test cases/outputs.swiftASTDump", "--write-to-console"])
 			XCTAssert(!compilerOutput.isEmpty)
 
 			// Check if --quiet mutes outputs and warnings
 			compilerOutput = ""
 			compilerError = ""
 			try Driver.run(withArguments:
-				["Test cases/warnings.swift", "--write-to-console", "--quiet"])
+				["ASTDumps-Swift-5.5/Test cases/warnings.swiftASTDump", "--write-to-console", "--quiet"])
 			XCTAssert(compilerOutput.isEmpty)
 			XCTAssert(compilerError.isEmpty)
 
@@ -104,7 +94,10 @@ class DriverTest: XCTestCase {
 			compilerOutput = ""
 			compilerError = ""
 			try Driver.run(withArguments:
-				["Test cases/errors.swift", "--write-to-console", "--quiet", "--continue-on-error"])
+				["ASTDumps-Swift-5.5/Test cases/errors.swiftASTDump",
+				 "--write-to-console",
+				 "--quiet",
+				 "--continue-on-error"])
 			XCTAssert(compilerOutput.isEmpty)
 			XCTAssert(!compilerError.isEmpty)
 		}
@@ -172,7 +165,7 @@ class DriverTest: XCTestCase {
 
 	func testNoMainFile() {
 		do {
-			let testCasePath = TestUtilities.testCasesPath + "ifStatement.swift"
+			let testCasePath = TestUtilities.testCasesPath + "ifStatement.swiftASTDump"
 
 			//
 			let driverResult1 = try Driver.run(withArguments:
@@ -181,7 +174,8 @@ class DriverTest: XCTestCase {
 				 "--indentation=t",
 				 "--write-to-console",
 				 "--quiet",
-				 testCasePath, ])
+				 testCasePath,
+				 TestUtilities.libraryASTDumpFilePath, ])
 			let resultArray1 = driverResult1 as? List<Any?>
 			let kotlinTranslations1 = resultArray1?.as(List<Driver.KotlinTranslation>.self)
 
@@ -203,7 +197,8 @@ class DriverTest: XCTestCase {
 				 "--no-main-file",
 				 "--write-to-console",
 				 "--quiet",
-				 testCasePath, ])
+				 testCasePath,
+				 TestUtilities.libraryASTDumpFilePath, ])
 			let resultArray2 = driverResult2 as? List<Any?>
 			let kotlinTranslations2 = resultArray2?.as(List<Driver.KotlinTranslation>.self)
 
@@ -228,7 +223,7 @@ class DriverTest: XCTestCase {
 
 	func testContinueOnErrors() {
 		do {
-			let testCasePath = TestUtilities.testCasesPath + "errors.swift"
+			let testCasePath = TestUtilities.testCasesPath + "errors.swiftASTDump"
 
 			//
 			Compiler.clearIssues()
@@ -267,7 +262,7 @@ class DriverTest: XCTestCase {
 
 	func testIndentation() {
 		do {
-			let testCasePath = TestUtilities.testCasesPath + "ifStatement.swift"
+			let testCasePath = TestUtilities.testCasesPath + "ifStatement.swiftASTDump"
 
 			//
 			let driverResult1 = try Driver.run(withArguments:
@@ -276,7 +271,8 @@ class DriverTest: XCTestCase {
 				 "--indentation=t",
 				 "--write-to-console",
 				 "--quiet",
-				 testCasePath, ])
+				 testCasePath,
+				 TestUtilities.libraryASTDumpFilePath, ])
 			let resultArray1 = driverResult1 as? List<Any?>
 			let kotlinTranslations1 = resultArray1?.as(List<Driver.KotlinTranslation>.self)
 
@@ -298,7 +294,8 @@ class DriverTest: XCTestCase {
 				 "--indentation=4",
 				 "--write-to-console",
 				 "--quiet",
-				 testCasePath, ])
+				 testCasePath,
+				 TestUtilities.libraryASTDumpFilePath, ])
 			let resultArray2 = driverResult2 as? List<Any?>
 			let kotlinTranslations2 = resultArray2?.as(List<Driver.KotlinTranslation>.self)
 
