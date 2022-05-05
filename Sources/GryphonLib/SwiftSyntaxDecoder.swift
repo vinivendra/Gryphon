@@ -18,6 +18,11 @@
 
 import Foundation
 import SwiftSyntax
+
+#if swift(>=5.6)
+import SwiftSyntaxParser
+#endif
+
 import SourceKittenFramework
 
 public class SourceKit {

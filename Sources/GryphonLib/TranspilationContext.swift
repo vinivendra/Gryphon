@@ -33,7 +33,9 @@ public class TranspilationContext {
 	/// May be updated if we try to re-init an Xcode project to look for new Swift files.
 	var absolutePathToSDK: String?
 
-	#if swift(>=5.5)
+	#if swift(>=5.6)
+		static let swiftSyntaxVersion = "5.6"
+	#elseif swift(>=5.5)
         static let swiftSyntaxVersion = "5.5"
     #elseif swift(>=5.4)
 		static let swiftSyntaxVersion = "5.4"
