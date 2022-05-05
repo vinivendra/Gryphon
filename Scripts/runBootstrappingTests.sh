@@ -107,15 +107,17 @@ fi
 
 echo "➡️ [7/7] Comparing Gryphon (old) with Gryphon (old) transpiled..."
 
-for file in Test\ cases/*.swift
+libraryFile="ASTDumps-Swift-5.5/gryphon/GryphonTemplatesLibrary.swiftASTDump"
+
+for file in ASTDumps-Swift-5.5/Test\ cases/*.swiftASTDump
 do
-	if [[ $file == *"errors.swift" ]]; then
+	if [[ $file == *"errors.swift"* ]]; then
 		echo "	↪️ Skipping $file..."
 	else
 		echo "	↪️ Testing $file..."
 
 		defaultFinal="";
-		if [[ $file == *"-default-final.swift" ]]; then
+		if [[ $file == *"-default-final.swift"* ]]; then
 			defaultFinal="--default-final";
 		fi
 
@@ -127,7 +129,7 @@ do
 
 			java -jar Bootstrap/kotlin.jar \
 				--indentation=t -avoid-unicode $representation $defaultFinal --write-to-console \
-				"$file" > .gryphon/generatedResult.txt 2> .gryphon/errors.txt
+				"$file" "$libraryFile" > .gryphon/generatedResult.txt 2> .gryphon/errors.txt
 
 			if [[ $? -ne 0 ]]; then
 				echo "🚨 failed to generate bootstrap results!"
@@ -137,7 +139,7 @@ do
 
 			./.build/debug/Gryphon \
 				--indentation=t -avoid-unicode $representation $defaultFinal --write-to-console \
-				"$file" > .gryphon/expectedResult.txt 2> .gryphon/errors.txt
+				"$file" "$libraryFile" > .gryphon/expectedResult.txt 2> .gryphon/errors.txt
 
 			if [[ $? -ne 0 ]]; then
 				echo "🚨 failed to generate expected results!"
