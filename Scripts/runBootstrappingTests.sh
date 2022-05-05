@@ -1,5 +1,22 @@
 #!/bin/bash
 
+isVerbose=""
+
+while test $# -gt 0
+do
+    case "$1" in
+		"-v")
+			isVerbose="-v"
+            ;;
+		*)
+			echo "Skipping unknown argument '$1'"
+			;;
+    esac
+
+    shift
+done
+
+
 echo "➡️ [1/7] Updating Gryphon (old)..."
 
 set -e
@@ -52,7 +69,7 @@ cd ../../..
 
 echo "➡️ [4/7] Transpiling the Gryphon (old) source files to Kotlin..."
 
-if bash Scripts/transpileGryphonSources.sh
+if bash Scripts/transpileGryphonSources.sh $isVerbose
 then
 	echo "✅ Done."
 	echo ""

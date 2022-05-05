@@ -1,9 +1,26 @@
 #!/bin/bash
 
+isVerbose=""
+
+while test $# -gt 0
+do
+    case "$1" in
+		"-v")
+			isVerbose="--verbose"
+            ;;
+		*)
+			echo "Skipping unknown argument '$1'"
+			;;
+    esac
+
+    shift
+done
+
 ./.build/debug/Gryphon \
 	--indentation=4 \
 	-print-ASTs-on-error \
 	--continue-on-error \
+	$isVerbose \
 	Test\ Files/Bootstrap/gryphon-old/Sources/GryphonLib/ASTDumpDecoder.swift \
 	Test\ Files/Bootstrap/gryphon-old/Sources/GryphonLib/AuxiliaryFileContents.swift \
 	Test\ Files/Bootstrap/gryphon-old/Sources/GryphonLib/Compiler.swift \
