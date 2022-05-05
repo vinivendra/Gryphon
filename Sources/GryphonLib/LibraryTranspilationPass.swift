@@ -836,155 +836,155 @@ extension Expression {
 
 internal extension TranspilationContext {
 	func isSubtype(_ subType: String, of superType: String) -> Bool {
-			// Check common cases
-			if subType == superType {
-				return true
-			}
-			else if subType.isEmpty || superType.isEmpty {
-				return false
-			}
-			else if superType == "Any" ||
-				superType == "_Any" ||
-				superType == "_Optional"
-			{
-				return true
-			}
-			else if superType == "_Hashable" ||
-				superType == "_Comparable",
-				!subType.contains("->")
-			{
-				return true
-			}
-			else if superType == "_CustomStringConvertible" {
-				if let subTypeInheritances = getInheritance(forFullType: subType) {
-					return subTypeInheritances.contains("CustomStringConvertible")
-				}
-				else {
-					// If the subType was defined externally, assume it's CustomStringConvertible
-					return true
-				}
-			}
-			else if superType == "_Optional?" {
-				return subType.hasSuffix("?")
-			}
-			else if superType == "XCTestCase" {
-				return subType.contains("Test")
-			}
-
-			// Handle tuples
-			if Utilities.isInEnvelopingParentheses(subType),
-				Utilities.isInEnvelopingParentheses(superType)
-			{
-				let subContents = String(subType.dropFirst().dropLast())
-				let superContents = String(superType.dropFirst().dropLast())
-
-				let subComponents = subContents.split(withStringSeparator: ", ")
-				let superComponents = superContents.split(withStringSeparator: ", ")
-
-				guard subComponents.count == superComponents.count else {
-					return false
-				}
-
-				for (subComponent, superComponent) in zip(subComponents, superComponents) {
-					guard self.isSubtype(subComponent, of: superComponent) else {
-						return false
-					}
-				}
-
-				return true
-			}
-
-			// Simplify the types
-			let simpleSubType = simplifyType(string: subType)
-			let simpleSuperType = simplifyType(string: superType)
-			if simpleSubType != subType || simpleSuperType != superType {
-				return self.isSubtype(simpleSubType, of: simpleSuperType)
-			}
-
-			// Handle optionals
-			if subType.last! == "?", superType.last! == "?" {
-				let newSubType = String(subType.dropLast())
-				let newSuperType = String(superType.dropLast())
-				return self.isSubtype(newSubType, of: newSuperType)
-			}
-			else if superType.last! == "?" {
-				let newSuperType = String(superType.dropLast())
-				return self.isSubtype(subType, of: newSuperType)
-			}
-
-			// Analyze components of function types
-			if superType.contains(" -> ") {
-				guard subType.contains(" -> ") else {
-					return false
-				}
-
-				return true
-			}
-
-			// Handle arrays and dictionaries
-			if subType.first! == "[", subType.last! == "]",
-				superType.first! == "[", superType.last! == "]"
-			{
-				if subType.contains(" : ") && superType.contains(" : ") {
-					let subKeyValue =
-						String(subType.dropFirst().dropLast()).split(withStringSeparator: " : ")
-					let superKeyValue =
-						String(superType.dropFirst().dropLast()).split(withStringSeparator: " : ")
-					let subKey = subKeyValue[0]
-					let subValue = subKeyValue[1]
-					let superKey = superKeyValue[0]
-					let superValue = superKeyValue[1]
-					return self.isSubtype(subKey, of: superKey) &&
-						self.isSubtype(subValue, of: superValue)
-				}
-				else if !subType.contains(":") && !superType.contains(":") {
-					let subElement = String(subType.dropFirst().dropLast())
-					let superTypeElement = String(superType.dropFirst().dropLast())
-					return self.isSubtype(subElement, of: superTypeElement)
-				}
-			}
-
-			// Handle generics
-			if subType.contains("<"), subType.last! == ">",
-				superType.contains("<"), superType.last! == ">"
-			{
-				let subStartGenericsIndex = subType.firstIndex(of: "<")!
-				let superTypeStartGenericsIndex = superType.firstIndex(of: "<")!
-
-				let subGenericArguments =
-					String(subType[subStartGenericsIndex...].dropFirst().dropLast())
-				let superTypeGenericArguments =
-					String(superType[superTypeStartGenericsIndex...].dropFirst().dropLast())
-
-				let subTypeComponents = subGenericArguments.split(withStringSeparator: ", ")
-				let superTypeComponents = superTypeGenericArguments.split(withStringSeparator: ", ")
-
-				guard superTypeComponents.count == subTypeComponents.count else {
-					return false
-				}
-
-				for (subTypeComponent, superTypeComponent) in
-					zip(subTypeComponents, superTypeComponents)
-				{
-					if !self.isSubtype(subTypeComponent, of: superTypeComponent) {
-						return false
-					}
-				}
-
-				return true
-			}
-			else if subType.contains("<"), subType.last! == ">" {
-				let typeWithoutGenerics = String(subType.prefix { $0 != "<" })
-				return self.isSubtype(typeWithoutGenerics, of: superType)
-			}
-			else if superType.contains("<"), superType.last! == ">" {
-				let typeWithoutGenerics = String(superType.prefix { $0 != "<" })
-				return self.isSubtype(subType, of: typeWithoutGenerics)
-			}
-
-			// If no subtype cases were met, say it's not a subtype
+		// Check common cases
+		if subType == superType {
+			return true
+		}
+		else if subType.isEmpty || superType.isEmpty {
 			return false
 		}
+		else if superType == "Any" ||
+					superType == "_Any" ||
+					superType == "_Optional"
+		{
+			return true
+		}
+		else if superType == "_Hashable" ||
+					superType == "_Comparable",
+				!subType.contains("->")
+		{
+			return true
+		}
+		else if superType == "_CustomStringConvertible" {
+			if let subTypeInheritances = getInheritance(forFullType: subType) {
+				return subTypeInheritances.contains("CustomStringConvertible")
+			}
+			else {
+				// If the subType was defined externally, assume it's CustomStringConvertible
+				return true
+			}
+		}
+		else if superType == "_Optional?" {
+			return subType.hasSuffix("?")
+		}
+		else if superType == "XCTestCase" {
+			return subType.contains("Test")
+		}
+
+		// Handle tuples
+		if Utilities.isInEnvelopingParentheses(subType),
+		   Utilities.isInEnvelopingParentheses(superType)
+		{
+			let subContents = String(subType.dropFirst().dropLast())
+			let superContents = String(superType.dropFirst().dropLast())
+
+			let subComponents = subContents.split(withStringSeparator: ", ")
+			let superComponents = superContents.split(withStringSeparator: ", ")
+
+			guard subComponents.count == superComponents.count else {
+				return false
+			}
+
+			for (subComponent, superComponent) in zip(subComponents, superComponents) {
+				guard self.isSubtype(subComponent, of: superComponent) else {
+					return false
+				}
+			}
+
+			return true
+		}
+
+		// Simplify the types
+		let simpleSubType = simplifyType(string: subType)
+		let simpleSuperType = simplifyType(string: superType)
+		if simpleSubType != subType || simpleSuperType != superType {
+			return self.isSubtype(simpleSubType, of: simpleSuperType)
+		}
+
+		// Handle optionals
+		if subType.last! == "?", superType.last! == "?" {
+			let newSubType = String(subType.dropLast())
+			let newSuperType = String(superType.dropLast())
+			return self.isSubtype(newSubType, of: newSuperType)
+		}
+		else if superType.last! == "?" {
+			let newSuperType = String(superType.dropLast())
+			return self.isSubtype(subType, of: newSuperType)
+		}
+
+		// Analyze components of function types
+		if superType.contains(" -> ") {
+			guard subType.contains(" -> ") else {
+				return false
+			}
+
+			return true
+		}
+
+		// Handle arrays and dictionaries
+		if subType.first! == "[", subType.last! == "]",
+		   superType.first! == "[", superType.last! == "]"
+		{
+			if subType.contains(" : ") && superType.contains(" : ") {
+				let subKeyValue =
+				String(subType.dropFirst().dropLast()).split(withStringSeparator: " : ")
+				let superKeyValue =
+				String(superType.dropFirst().dropLast()).split(withStringSeparator: " : ")
+				let subKey = subKeyValue[0]
+				let subValue = subKeyValue[1]
+				let superKey = superKeyValue[0]
+				let superValue = superKeyValue[1]
+				return self.isSubtype(subKey, of: superKey) &&
+				self.isSubtype(subValue, of: superValue)
+			}
+			else if !subType.contains(":") && !superType.contains(":") {
+				let subElement = String(subType.dropFirst().dropLast())
+				let superTypeElement = String(superType.dropFirst().dropLast())
+				return self.isSubtype(subElement, of: superTypeElement)
+			}
+		}
+
+		// Handle generics
+		if subType.contains("<"), subType.last! == ">",
+		   superType.contains("<"), superType.last! == ">"
+		{
+			let subStartGenericsIndex = subType.firstIndex(of: "<")!
+			let superTypeStartGenericsIndex = superType.firstIndex(of: "<")!
+
+			let subGenericArguments =
+			String(subType[subStartGenericsIndex...].dropFirst().dropLast())
+			let superTypeGenericArguments =
+			String(superType[superTypeStartGenericsIndex...].dropFirst().dropLast())
+
+			let subTypeComponents = subGenericArguments.split(withStringSeparator: ", ")
+			let superTypeComponents = superTypeGenericArguments.split(withStringSeparator: ", ")
+
+			guard superTypeComponents.count == subTypeComponents.count else {
+				return false
+			}
+
+			for (subTypeComponent, superTypeComponent) in
+					zip(subTypeComponents, superTypeComponents)
+			{
+				if !self.isSubtype(subTypeComponent, of: superTypeComponent) {
+					return false
+				}
+			}
+
+			return true
+		}
+		else if subType.contains("<"), subType.last! == ">" {
+			let typeWithoutGenerics = String(subType.prefix { $0 != "<" })
+			return self.isSubtype(typeWithoutGenerics, of: superType)
+		}
+		else if superType.contains("<"), superType.last! == ">" {
+			let typeWithoutGenerics = String(superType.prefix { $0 != "<" })
+			return self.isSubtype(subType, of: typeWithoutGenerics)
+		}
+
+		// If no subtype cases were met, say it's not a subtype
+		return false
+	}
 }
 
 private func simplifyType(string: String) -> String {
@@ -993,7 +993,7 @@ private func simplifyType(string: String) -> String {
 		return result
 	}
 
-	// Treat MutableList as Array
+	// Treat (Mutable)List as Array
 	if string.hasPrefix("MutableList<"), string.last! == ">" {
 		let elementType = String(string.dropFirst("MutableList<".count).dropLast())
 		return "[\(elementType)]"
@@ -1018,7 +1018,7 @@ private func simplifyType(string: String) -> String {
 		return "[\(elementType)]"
 	}
 
-	// Treat MutableMap as Dictionary
+	// Treat (Mutable)Map as Dictionary
 	if string.hasPrefix("MutableMap<"), string.last! == ">" {
 		let keyValue = String(string.dropFirst("MutableMap<".count).dropLast())
 			.split(withStringSeparator: ", ")
@@ -1072,6 +1072,14 @@ private func simplifyType(string: String) -> String {
 	if string.hasPrefix("__owned ") {
 		return String(string.dropFirst("__owned ".count))
 	}
+
+	// In Swift 5.6, declarations of functions with variadic parameters are typed as `T...` instead
+	// of `T` as in Swift <5.6
+	#if swift(>=5.6)
+	if string.hasSuffix("...") {
+		return String(string.dropLast("...".count))
+	}
+	#endif
 
 	return string
 }
