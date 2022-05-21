@@ -24,6 +24,7 @@ public class TranspilationContext {
 	let xcodeProjectPath: String?
 	let pathConfigurations: Map< String, String>
 	let target: String?
+	let useModernBuildSystem: Bool
 	/// Absolute paths to any files included in the compilation, as well as any other `swiftc`
 	/// arguments (except for the SDK path, which should be set in `absolutePathToSDK`).
 	/// May be updated if we try to re-init an Xcode project to look for new Swift files.
@@ -74,6 +75,7 @@ public class TranspilationContext {
 		self.target = nil
 		self.swiftCompilationArguments = [SupportingFile.gryphonTemplatesLibrary.absolutePath]
 		self.absolutePathToSDK = nil
+		self.useModernBuildSystem = false
 	}
 
 	public init(
@@ -82,6 +84,7 @@ public class TranspilationContext {
 		xcodeProjectPath: String?,
 		pathConfigurations: Map<String, String>,
 		target: String?,
+		useModernBuildSystem: Bool,
 		swiftCompilationArguments: List<String>,
 		absolutePathToSDK: String?)
 		throws
@@ -91,6 +94,7 @@ public class TranspilationContext {
 		self.xcodeProjectPath = xcodeProjectPath
 		self.pathConfigurations = pathConfigurations
 		self.target = target
+		self.useModernBuildSystem = useModernBuildSystem
 		self.templates = try TranspilationContext
 			.getBaseContext()
 			.templates

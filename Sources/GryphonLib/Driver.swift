@@ -39,6 +39,7 @@ public class Driver {
 	public static let supportedArgumentsWithParameters: List = [
 		"--indentation=",
 		"--target=",
+		"--UseModernBuildSystem=",
 		"-line-limit=",
 	]
 
@@ -130,6 +131,18 @@ public class Driver {
 
 		Compiler.logStart("🧑‍💻  Checking Xcode arguments...")
 
+		// Get the chosen Build System mode (YES for modern and NO for legacy)
+		let enableModernBuildSystem: Bool
+		let buildSystemEnabledString = getValue(of: "--UseModernBuildSystem", inArguments: arguments)
+		if let actualBuildSystemEnabledString = buildSystemEnabledString {
+			enableModernBuildSystem = actualBuildSystemEnabledString == "YES"
+			Compiler.log("ℹ️  Using UseModernBuildSystem \(actualBuildSystemEnabledString) parsed value \(enableModernBuildSystem).")
+		}
+		else {
+			enableModernBuildSystem = false
+			Compiler.log("ℹ️  Using default value for UseModernBuildSystem which is legacy system.")
+		}
+
 		// Get the chosen target, if there is one
 		let target = getValue(of: "--target", inArguments: arguments)
 		if let chosenTarget = target {
@@ -192,7 +205,7 @@ public class Driver {
 
 			Compiler.logStart("🧑‍💻  Creating iOS compilation files...")
 
-			try createIOSCompilationFiles(forXcodeProject: xcodeProject, forTarget: target)
+			try createIOSCompilationFiles(forXcodeProject: xcodeProject, useModernBuildSystem: enableModernBuildSystem, forTarget: target)
 
 			Compiler.logEnd("✅  Done creating iOS compilation files.")
 
@@ -211,6 +224,7 @@ public class Driver {
 			try makeGryphonTargets(
 				forXcodeProject: xcodeProject,
 				forTarget: target,
+				useModernBuildSystem: enableModernBuildSystem,
 				configFiles: configFiles)
 
 			Compiler.logEnd("✅  Done adding Gryphon targets.")
@@ -492,6 +506,14 @@ public class Driver {
 		//
 		let maybeXcodeProject = getXcodeProject(inArguments: arguments)
 		let maybeTarget = getValue(of: "--target", inArguments: arguments)
+		let maybeUseModernBuildSystem = getValue(of: "--UseModernBuildSystem", inArguments: arguments)
+		let useModernBuildSystem: Bool
+		if let useModernBuildSystemString = maybeUseModernBuildSystem {
+			useModernBuildSystem = useModernBuildSystemString == "YES"
+		} else {
+			useModernBuildSystem = false
+		}
+		Compiler.log("ℹ️  UseModernBuildSystem value in performCompilation \(maybeUseModernBuildSystem ?? "no argument") parsed value \(useModernBuildSystem).")
 
 		//
 		let pathConfigurationFiles = getPathConfigurationFiles(inArguments: arguments)
@@ -582,6 +604,7 @@ public class Driver {
 				xcodeProjectPath: maybeXcodeProject,
 				pathConfigurations: pathConfigurations,
 				target: maybeTarget,
+				useModernBuildSystem: useModernBuildSystem,
 				swiftCompilationArguments: otherSwiftArguments,
 				absolutePathToSDK: sdkPath)
 
@@ -777,15 +800,20 @@ public class Driver {
 	static func runXcodebuild(
 		forXcodeProject xcodeProjectPath: String,
 		forTarget target: String?,
+		enableModernBuildSystem: Bool,
 		simulator: String? = nil,
 		dryRun: Bool)
 		-> Shell.CommandOutput
 	{
+		// Can't figure out why `useModernBuildSystem` boolean is false when it is YES in the input
+		// So, returning "YES" when it is false for now to fix it
+		let stringValueForModernBuildSystem: String = enableModernBuildSystem ? "YES" : "NO"
+		Compiler.log("ℹ️  UseModernBuildSystem value in runXcodebuild \(stringValueForModernBuildSystem) parsed value \(enableModernBuildSystem).")
 		let arguments: MutableList = [
 			"xcodebuild",
-			"-UseModernBuildSystem=NO",
+			"-UseModernBuildSystem=\(stringValueForModernBuildSystem)",
 			"-project",
-			"\(xcodeProjectPath)", ]
+			xcodeProjectPath, ]
 
 		if let userTarget = target {
 			arguments.append("-target")
@@ -797,7 +825,8 @@ public class Driver {
 			arguments.append("iphonesimulator\(simulatorVersion)")
 		}
 
-		if dryRun {
+		if !enableModernBuildSystem {
+			// -dry-run is not yet supported in the modern build system
 			arguments.append("-dry-run")
 		}
 
@@ -819,6 +848,7 @@ public class Driver {
 					let result = runXcodebuild(
 						forXcodeProject: xcodeProjectPath,
 						forTarget: target,
+						enableModernBuildSystem: enableModernBuildSystem,
 						simulator: iOSVersion,
 						dryRun: dryRun)
 					Compiler.logEnd("⚠️  Done.")
@@ -862,12 +892,14 @@ public class Driver {
 	/// and a file with the `swiftc` arguments for SourceKit.
 	static func createIOSCompilationFiles(
 		forXcodeProject xcodeProjectPath: String,
+		useModernBuildSystem: Bool,
 		forTarget target: String?)
 		throws
 	{
 		let commandResult = runXcodebuild(
 			forXcodeProject: xcodeProjectPath,
 			forTarget: target,
+			enableModernBuildSystem: useModernBuildSystem,
 			dryRun: true)
 
 		guard commandResult.status == 0 else {
@@ -886,13 +918,17 @@ public class Driver {
 
 			let separator = "=== BUILD TARGET "
 			let components = output.split(withStringSeparator: separator)
-			guard let selectedComponent = components.first(where: { $0.hasPrefix(userTarget) })
-				else
-			{
-				throw GryphonError(errorMessage: "Failed to find build instructions for target " +
-					"\(userTarget) in the xcodebuild output.")
+			if components.count > 1 {
+				guard let selectedComponent = components.first(where: { $0.hasPrefix(userTarget) })
+					else
+				{
+					throw GryphonError(errorMessage: "Failed to find build instructions for target " +
+						"\(userTarget) in the xcodebuild output.")
+				}
+				targetContents = selectedComponent
+			} else {
+				targetContents = output
 			}
-			targetContents = selectedComponent
 		}
 		else {
 			targetContents = output
@@ -917,13 +953,35 @@ public class Driver {
 		}
 
 		Compiler.log("ℹ️  Adapting Swift compilation command for dumping ASTs...")
-		let commands = compileSwiftStep.split(withStringSeparator: "\n")
 
 		var sourceKitFileContents = ""
 
-		// Fix the call to the Swift compiler
-		let compilationCommand = commands.last!
-		let commandComponents = compilationCommand.splitUsingUnescapedSpaces()
+		let splittedCommandComponents = compileSwiftStep.splitUsingUnescapedSpaces()
+		
+		let initialLength = splittedCommandComponents.count
+		var swiftComponentIndex = 0
+		var remarkComponentIndex: Int?
+		for i in 0..<splittedCommandComponents.count {
+			if splittedCommandComponents[i].hasSuffix("swiftc") {
+				// need to drop all text which goes before compiler name
+				swiftComponentIndex = i
+			} else if splittedCommandComponents[i].hasSuffix("remark:") {
+				// when swiftc uses -incremental option and -whole-module-optimization was present
+				// they are not compatible and compiler prints a warning message
+				// which breaks the arguments parsing
+				remarkComponentIndex = i
+			}
+		}
+		// Probably better need to use `toMutableList()`
+		var commandComponents = splittedCommandComponents.dropFirst(swiftComponentIndex)
+		if let actualRemarkComponentIndex = remarkComponentIndex {
+			commandComponents = commandComponents.dropLast(initialLength - actualRemarkComponentIndex - 1)
+			if let workDirWithRemark = commandComponents.last, workDirWithRemark.hasSuffix("remark:") {
+				let fixedWorkDirValue = workDirWithRemark.dropLast("remark:".count + 1) // 1 is to remove new line symbol
+				commandComponents = commandComponents.dropLast(1)
+				commandComponents = commandComponents.appending(String(fixedWorkDirValue))
+			}
+		}
 
 		let filteredArguments = commandComponents.filter { (argument: String) -> Bool in
 			argument != "-incremental" &&
@@ -956,6 +1014,7 @@ public class Driver {
 	static func makeGryphonTargets(
 		forXcodeProject xcodeProjectPath: String,
 		forTarget target: String?,
+		useModernBuildSystem: Bool,
 		configFiles: List<String>)
 		throws
 	{
@@ -966,6 +1025,8 @@ public class Driver {
 			"\(SupportingFile.makeGryphonTargets.absolutePath)",
 			"\(xcodeProjectPath)", ]
 
+		let modernBuildSystemStringValue = useModernBuildSystem ? "YES": "NO"
+		arguments.append("--UseModernBuildSystem=\(modernBuildSystemStringValue)")
 		// Any other arguments will be appended to the target's script
 		if let userTarget = target {
 			arguments.append("--target=\"\(userTarget)\"")
@@ -1096,7 +1157,7 @@ public class Driver {
 	}
 
 	/// Fetches the arguments that should be included in recursive driver calls, which are
-	/// `--target=`, `--verbose`, and the config files.
+	/// `--target=`, `--verbose`, `--UseModernBuildSystem=`, and the config files.
 	static func getRecursiveArguments(from arguments: List<String>) -> MutableList<String> {
 		let result: MutableList<String> = []
 
@@ -1105,6 +1166,9 @@ public class Driver {
 		}
 		if let targetArgument = arguments.first(where: { $0.hasPrefix("--target=") }) {
 			result.append(targetArgument)
+		}
+		if let useModernBuildSystemArgument = arguments.first(where: { $0.hasPrefix("--UseModernBuildSystem=") }) {
+			result.append(useModernBuildSystemArgument)
 		}
 
 		let configFiles = getPathConfigurationFiles(inArguments: arguments)
