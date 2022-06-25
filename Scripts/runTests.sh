@@ -206,7 +206,7 @@ if [[ $xcodeTests -ne 0 ]]; then
 	exec 4>&1
 	exec 1> >(paste /dev/null -)
 
-	if bash Scripts/runXcodeTests.sh
+	if bash Scripts/runXcodeTests.sh $isVerbose
 	then
 		echo "✅ Xcode tests succeeded."
 		echo ""

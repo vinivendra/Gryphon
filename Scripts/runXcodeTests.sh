@@ -1,4 +1,25 @@
 #!/bin/bash
+
+####################################################################################################
+# Read the arguments
+
+isVerbose=""
+
+while test $# -gt 0
+do
+    case "$1" in
+		"-v")
+			isVerbose="--verbose"
+            ;;
+		*)
+			echo "Skipping unknown argument '$1'"
+			;;
+    esac
+
+    shift
+done
+
+####################################################################################################
 set -e
 
 if uname -s | grep "Darwin"
@@ -35,7 +56,7 @@ echo "sdk.dir=/Users/$USER/Library/Android/sdk" > \
 
 # Remove Gryphon-generated files
 cd "Test Files/XcodeTests/iOS"
-gryphon clean
+gryphon clean $isVerbose
 rm -f "gryphonInputFiles.xcfilelist"
 rm -f "local.config"
 
@@ -53,7 +74,7 @@ echo ""
 echo "➡️ [2/8] Initializing the Xcode project..."
 
 # Initialize the Xcode project
-gryphon init "GryphoniOSTest.xcodeproj"
+gryphon init "GryphoniOSTest.xcodeproj" $isVerbose
 
 # Add the "Model.swift" file to the list of files to be translated
 echo "GryphoniOSTest/Model.swift" > "gryphonInputFiles.xcfilelist"
@@ -113,7 +134,7 @@ echo ""
 echo "➡️ [4/8] Resetting the Xcode project..."
 
 # Remove Gryphon-generated files
-gryphon clean
+gryphon clean $isVerbose
 rm -f "gryphonInputFiles.xcfilelist"
 rm -f "local.config"
 
@@ -131,7 +152,7 @@ echo ""
 echo "➡️ [5/8] Initializing the Xcode project with '--target'..."
 
 # Initialize the Xcode project
-gryphon init "GryphoniOSTest.xcodeproj" --target=GryphoniOSTest
+gryphon init "GryphoniOSTest.xcodeproj" --target=GryphoniOSTest $isVerbose
 
 # Add the "Model.swift" file to the list of files to be translated
 echo "GryphoniOSTest/Model.swift" > "gryphonInputFiles.xcfilelist"
@@ -217,7 +238,7 @@ rm -f output.txt
 cp "../ModelWithErrors.swift" "GryphoniOSTest/Model.swift"
 
 # Transpile the model file
-gryphon "GryphoniOSTest/Model.swift"
+gryphon "GryphoniOSTest/Model.swift" $isVerbose
 
 # Run the Kotlin target
 if [[ $(xcodebuild -project GryphoniOSTest.xcodeproj/ -scheme Kotlin > output.txt 2> /dev/null) ]];
