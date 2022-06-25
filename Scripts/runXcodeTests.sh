@@ -93,14 +93,24 @@ rm -f ../Android/app/src/main/java/com/gryphon/gryphonandroidtest/Model.kt
 # Remove file that stores errors and warnings
 rm -f output.txt
 
+
 # Run the Gryphon target
-if [[ $(xcodebuild -project GryphoniOSTest.xcodeproj/ -scheme Gryphon > output.txt) ]];
+set +e
+xcodebuild -project GryphoniOSTest.xcodeproj/ -scheme Gryphon > output.txt
+
+# If there was an error
+if [ $? -ne 0 ];
 then
+	echo ""
+	echo ""
 	echo "🚨 Error running Gryphon target. Printing xcodebuild output:"
 	cat output.txt || true
 	sleep 3 # Wait for cat to finish printing before exiting
 	exit -1
 fi
+
+set -e
+
 
 # Check if Gryphon raised warnings or errors for the Model.swift file
 if [[ $(grep -E "Model\.swift:[0-9]+:[0-9]+: error" output.txt) ]];
