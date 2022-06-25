@@ -778,7 +778,8 @@ public class Driver {
 		forXcodeProject xcodeProjectPath: String,
 		forTarget target: String?,
 		simulator: String? = nil,
-		dryRun: Bool)
+		dryRun: Bool,
+		clean: Bool = false)
 		-> Shell.CommandOutput
 	{
 		let arguments: MutableList = [
@@ -799,6 +800,10 @@ public class Driver {
 
 		if dryRun {
 			arguments.append("-dry-run")
+		}
+
+		if clean {
+			arguments.append("clean")
 		}
 
 		let commandResult = Shell.runShellCommand(arguments)
@@ -836,7 +841,15 @@ public class Driver {
 				Compiler.log("⚠️  The Swift build system in this Xcode version doesn't support" +
 							 "-dry-run. Trying again with a full compilation (which might take" +
 							 " a while).")
-				Compiler.logStart("⚠️  Calling xcodebuild again...")
+				Compiler.logStart("⚠️  Calling xcodebuild clean...")
+				_ = runXcodebuild(
+					forXcodeProject: xcodeProjectPath,
+					forTarget: target,
+					simulator: simulator,
+					dryRun: false,
+					clean: true)
+				Compiler.logEnd("⚠️  Done.")
+				Compiler.logStart("⚠️  Calling xcodebuild...")
 				let result = runXcodebuild(
 					forXcodeProject: xcodeProjectPath,
 					forTarget: target,
@@ -901,6 +914,7 @@ public class Driver {
 		if let userTarget = target {
 			Compiler.log("ℹ️  Looking for build instructions for the \(userTarget) target...")
 
+			// FIXME: It seems Xcode 13.3+ doesn't use this message anymore.
 			let separator = "=== BUILD TARGET "
 			let components = output.split(withStringSeparator: separator)
 			guard let selectedComponent = components.first(where: { $0.hasPrefix(userTarget) })
@@ -933,13 +947,16 @@ public class Driver {
 			}
 		}
 
-		Compiler.log("ℹ️  Adapting Swift compilation command for dumping ASTs...")
 		let commands = compileSwiftStep.split(withStringSeparator: "\n")
 
-		var sourceKitFileContents = ""
+		guard let compilationCommand = commands.last(where: { $0.contains("swiftc") }) else {
+			throw GryphonError(
+				errorMessage: "Unable to find the `swiftc` call in the xcodebuild output.")
+		}
 
 		// Fix the call to the Swift compiler
-		let compilationCommand = commands.last!
+		Compiler.log("ℹ️  Adapting Swift compilation command for SourceKit...")
+
 		let commandComponents = compilationCommand.splitUsingUnescapedSpaces()
 
 		let filteredArguments = commandComponents.filter { (argument: String) -> Bool in
@@ -962,7 +979,7 @@ public class Driver {
 		sourceKitArguments.append("GRYPHON")
 
 		// Build the resulting command
-		sourceKitFileContents += sourceKitArguments.dropFirst().joined(separator: " ")
+		let sourceKitFileContents = sourceKitArguments.dropFirst().joined(separator: " ")
 
 		try Utilities.createFile(
 			named: SupportingFile.sourceKitCompilationArguments.name,
