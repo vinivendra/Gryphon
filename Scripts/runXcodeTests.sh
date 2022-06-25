@@ -57,6 +57,7 @@ echo "sdk.dir=/Users/$USER/Library/Android/sdk" > \
 # Remove Gryphon-generated files
 cd "Test Files/XcodeTests/iOS"
 gryphon clean $isVerbose
+rm -rf "build"
 rm -f "gryphonInputFiles.xcfilelist"
 rm -f "local.config"
 
