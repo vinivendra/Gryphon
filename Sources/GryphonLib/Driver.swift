@@ -807,8 +807,10 @@ public class Driver {
 		if commandResult.status != 0 {
 			// Code signing errors might be solved by forcing a build with the simulator
 			if simulator == nil,
-				(commandResult.standardError.contains("Code Signing Error:") ||
-				 commandResult.standardOutput.contains("Code Signing Error:"))
+			   (commandResult.standardError.contains("Code Signing Error:") ||
+				commandResult.standardOutput.contains("Code Signing Error:") ||
+				commandResult.standardError.contains("error: Signing for ") ||
+				commandResult.standardOutput.contains("error: Signing for "))
 			{
 				Compiler.log("⚠️  There was a code signing error when running xcodebuild. " +
 					"Using a simulator might fix it.")
@@ -827,6 +829,21 @@ public class Driver {
 				else {
 					Compiler.logEnd("⚠️  No installed simulators were found.")
 				}
+			}
+			else if (commandResult.standardError.contains("-dry-run is not yet supported") ||
+					 commandResult.standardOutput.contains("-dry-run is not yet supported"))
+			{
+				Compiler.log("⚠️  The Swift build system in this Xcode version doesn't support" +
+							 "-dry-run. Trying again with a full compilation (which might take" +
+							 " a while).")
+				Compiler.logStart("⚠️  Calling xcodebuild again...")
+				let result = runXcodebuild(
+					forXcodeProject: xcodeProjectPath,
+					forTarget: target,
+					simulator: simulator,
+					dryRun: false)
+				Compiler.logEnd("⚠️  Done.")
+				return result
 			}
 		}
 
