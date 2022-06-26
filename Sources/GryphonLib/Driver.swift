@@ -835,8 +835,8 @@ public class Driver {
 					Compiler.logEnd("⚠️  No installed simulators were found.")
 				}
 			}
-			else if (commandResult.standardError.contains("-dry-run is not yet supported") ||
-					 commandResult.standardOutput.contains("-dry-run is not yet supported"))
+			else if commandResult.standardError.contains("-dry-run is not yet supported") ||
+					 commandResult.standardOutput.contains("-dry-run is not yet supported")
 			{
 				Compiler.log("⚠️  The Swift build system in this Xcode version doesn't support" +
 							 "-dry-run. Trying again with a full compilation (which might take" +
