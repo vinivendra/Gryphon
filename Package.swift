@@ -28,7 +28,13 @@ import PackageDescription
 //	url: "https://github.com/apple/swift-syntax.git",
 //	.revision("release/5.6")) // <- git branch name
 
-#if swift(>=5.5)
+// Which SwiftSyntax version to use
+#if swift(>=5.6)
+let swiftSyntaxPackage = Package.Dependency.package(
+	name: "SwiftSyntax",
+	url: "https://github.com/apple/swift-syntax.git",
+	.exact("0.50600.1"))
+#elseif swift(>=5.5)
 let swiftSyntaxPackage = Package.Dependency.package(
 	name: "SwiftSyntax",
 	url: "https://github.com/apple/swift-syntax.git",
@@ -50,6 +56,20 @@ let swiftSyntaxPackage = Package.Dependency.package(
 	.exact("0.50200.0"))
 #endif
 
+// Which modules to import from SwiftSyntax (and SourceKitten)
+#if swift(>=5.6)
+let gryphonLibDependencies: [Target.Dependency] = [
+	.product(name: "SwiftSyntax", package: "SwiftSyntax"),
+	.product(name: "SwiftSyntaxParser", package: "SwiftSyntax"),
+	.product(name: "SourceKittenFramework", package: "SourceKitten")
+]
+#else
+let gryphonLibDependencies: [Target.Dependency] = [
+	.product(name: "SwiftSyntax", package: "SwiftSyntax"),
+	.product(name: "SourceKittenFramework", package: "SourceKitten")
+]
+#endif
+
 let package = Package(
 	name: "Gryphon",
 	platforms: [
@@ -68,10 +88,7 @@ let package = Package(
 	targets: [
 		.target(
 			name: "GryphonLib",
-			dependencies: [
-				.product(name: "SwiftSyntax", package: "SwiftSyntax"),
-				.product(name: "SourceKittenFramework", package: "SourceKitten")
-			]),
+			dependencies: gryphonLibDependencies),
 		.target(
 			name: "Gryphon",
 			dependencies: ["GryphonLib"]),

@@ -501,7 +501,7 @@ extension Syntax {
 		else if self.is(VersionTupleSyntax.self)
 			{ return "Version Tuple" }
 
-		// Nodes exclusive to Swift 5.2
+		// Nodes exclusive to Swift ≤5.2
 		#if swift(<5.3)
 		if self.is(DifferentiationParamsClauseSyntax.self)
 			{ return "Differentiation Params Clause" }
@@ -515,7 +515,7 @@ extension Syntax {
 			{ return "Differentiable Attribute Func Specifier" }
 		#endif
 
-		// Nodes exclusive to Swift 5.3
+		// Nodes exclusive to Swift ≥5.3
 		#if swift(>=5.3)
 		if self.is(PoundFileIDExprSyntax.self)
 			{ return "PoundFileIDExprSyntax" }

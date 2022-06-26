@@ -18,6 +18,11 @@
 
 import Foundation
 import SwiftSyntax
+
+#if swift(>=5.6)
+import SwiftSyntaxParser
+#endif
+
 import SourceKittenFramework
 
 public class SourceKit {
@@ -2784,9 +2789,15 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		_ subscriptExpression: SubscriptExprSyntax)
 		throws -> Expression
 	{
-		guard let indexTypeName = getType(
-				from: subscriptExpression.leftBracket,
-				to: subscriptExpression.rightBracket),
+		#if swift(>=5.6)
+		let maybeIndexTypeName = subscriptExpression.getType(fromList: self.expressionTypes)
+		#else
+		let maybeIndexTypeName = getType(
+			from: subscriptExpression.leftBracket,
+			to: subscriptExpression.rightBracket)
+		#endif
+
+		guard let indexTypeName = maybeIndexTypeName,
 			let typeName = subscriptExpression.getType(fromList: self.expressionTypes) else
 		{
 			return try errorExpression(
@@ -3356,6 +3367,21 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		throws -> Expression
 	{
 		//  Get the type of the call's tuple
+		#if swift(>=5.6)
+		// Swift 5.6 doesn't include a type for the tuple itself in its SourceKit output. We have to
+		// look up types for each argument and join them.
+		let argumentTypes = functionCallExpression.argumentList
+			.map { $0.expression }
+			.map { $0.getType(fromList: self.expressionTypes) }
+			.map { $0 ?? "_" }
+		// If a type is unknown, we replaced it with "_". I don't know it this is possible or if it
+		// will cause problems down the road, but I can't think of a better solution for
+		// representing a type that doesn't exist.
+
+		let tupleTypeName = "(\(argumentTypes.joined(separator: ",")))"
+
+		#else
+		// Swift 5.5 (and below) include a type for the tuple itself, so we can grab that.
 		let tupleTypeName: String?
 		if let leftParenthesesPosition = functionCallExpression.leftParen?
 				.positionAfterSkippingLeadingTrivia.utf8Offset,
@@ -3377,6 +3403,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		else {
 			tupleTypeName = nil
 		}
+		#endif
 
 		let tupleExpression = try convertTupleExpressionElementList(
 			functionCallExpression.argumentList,
@@ -3425,8 +3452,8 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			isPure: isPure)
 	}
 
-	/// The type has to be passed in because SourceKit needs the parentheses to determine the tuple
-	/// type, and the type list doesn't include them.
+	/// The type has to be passed in because SourceKit needs the parentheses tokens to determine the
+	/// tuple type, and the type list doesn't include them.
 	func convertTupleExpressionElementList(
 		_ tupleExprElementListSyntax: TupleExprElementListSyntax,
 		withType tupleType: String?)
@@ -3464,15 +3491,21 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			let translatedExpression = try convertExpression(tupleExpressionElement.expression)
 
 			// When a variadic parameter is matched to a single expression, the expression's
-			// type comes wrapped in an array (e.g. the `_any` in `print(_any)` has type `[Any]`
-			// instead of `Any`). Try to detect these cases and remove the array wrap.
+			// type comes wrapped in an array in Swift <5.5 (e.g. the `_any` in `print(_any)` has
+			// type `[Any]` instead of `Any`) or with elipses in Swift >5.6 (e.g. `Any...`).
+			// Try to detect these cases and remove the characters that indicate it's a variadic
+			// parameter.
 			if let typeName = translatedExpression.swiftType {
-				let shouldRemoveArrayWrapper = parameter(
+				let shouldRemoveVariadicSign = parameter(
 					withLabel: label,
 					andType: typeName,
 					matchesVariadicInTypeList: labeledTypes)
-				if shouldRemoveArrayWrapper {
+				if shouldRemoveVariadicSign {
+					#if swift(>=5.6)
+					translatedExpression.swiftType = String(typeName.dropLast(3))
+					#else
 					translatedExpression.swiftType = String(typeName.dropFirst().dropLast())
+					#endif
 				}
 			}
 
@@ -3493,9 +3526,10 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		matchesVariadicInTypeList labeledTypes: List<(String?, String)>?)
 		-> Bool
 	{
+		// Swift 5.5 and below represents variadics as `[T]`; 5.6 and above use `T...`.
 		guard let labeledTypes = labeledTypes,
-			typeName.hasPrefix("["),
-			typeName.hasSuffix("]") else
+			  ((typeName.hasPrefix("[") && typeName.hasSuffix("]")) ||
+				typeName.hasSuffix("...")) else
 		{
 			return false
 		}

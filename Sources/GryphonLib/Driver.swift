@@ -17,7 +17,7 @@
 //
 
 public class Driver {
-	public static let gryphonVersion = "0.18.1"
+	public static let gryphonVersion = "0.19"
 
 	public static let supportedArguments: List = [
 		"help", "-help", "--help",
@@ -778,7 +778,8 @@ public class Driver {
 		forXcodeProject xcodeProjectPath: String,
 		forTarget target: String?,
 		simulator: String? = nil,
-		dryRun: Bool)
+		dryRun: Bool,
+		clean: Bool = false)
 		-> Shell.CommandOutput
 	{
 		let arguments: MutableList = [
@@ -801,14 +802,20 @@ public class Driver {
 			arguments.append("-dry-run")
 		}
 
+		if clean {
+			arguments.append("clean")
+		}
+
 		let commandResult = Shell.runShellCommand(arguments)
 
 		// If something went wrong, try to recover
 		if commandResult.status != 0 {
 			// Code signing errors might be solved by forcing a build with the simulator
 			if simulator == nil,
-				(commandResult.standardError.contains("Code Signing Error:") ||
-				 commandResult.standardOutput.contains("Code Signing Error:"))
+			   (commandResult.standardError.contains("Code Signing Error:") ||
+				commandResult.standardOutput.contains("Code Signing Error:") ||
+				commandResult.standardError.contains("error: Signing for ") ||
+				commandResult.standardOutput.contains("error: Signing for "))
 			{
 				Compiler.log("⚠️  There was a code signing error when running xcodebuild. " +
 					"Using a simulator might fix it.")
@@ -827,6 +834,29 @@ public class Driver {
 				else {
 					Compiler.logEnd("⚠️  No installed simulators were found.")
 				}
+			}
+			else if commandResult.standardError.contains("-dry-run is not yet supported") ||
+					 commandResult.standardOutput.contains("-dry-run is not yet supported")
+			{
+				Compiler.log("⚠️  The Swift build system in this Xcode version doesn't support" +
+							 "-dry-run. Trying again with a full compilation (which might take" +
+							 " a while).")
+				Compiler.logStart("⚠️  Calling xcodebuild clean...")
+				_ = runXcodebuild(
+					forXcodeProject: xcodeProjectPath,
+					forTarget: target,
+					simulator: simulator,
+					dryRun: false,
+					clean: true)
+				Compiler.logEnd("⚠️  Done.")
+				Compiler.logStart("⚠️  Calling xcodebuild...")
+				let result = runXcodebuild(
+					forXcodeProject: xcodeProjectPath,
+					forTarget: target,
+					simulator: simulator,
+					dryRun: false)
+				Compiler.logEnd("⚠️  Done.")
+				return result
 			}
 		}
 
@@ -884,6 +914,7 @@ public class Driver {
 		if let userTarget = target {
 			Compiler.log("ℹ️  Looking for build instructions for the \(userTarget) target...")
 
+			// FIXME: It seems Xcode 13.3+ doesn't use this message anymore.
 			let separator = "=== BUILD TARGET "
 			let components = output.split(withStringSeparator: separator)
 			guard let selectedComponent = components.first(where: { $0.hasPrefix(userTarget) })
@@ -916,13 +947,16 @@ public class Driver {
 			}
 		}
 
-		Compiler.log("ℹ️  Adapting Swift compilation command for dumping ASTs...")
 		let commands = compileSwiftStep.split(withStringSeparator: "\n")
 
-		var sourceKitFileContents = ""
+		guard let compilationCommand = commands.last(where: { $0.contains("swiftc") }) else {
+			throw GryphonError(
+				errorMessage: "Unable to find the `swiftc` call in the xcodebuild output.")
+		}
 
 		// Fix the call to the Swift compiler
-		let compilationCommand = commands.last!
+		Compiler.log("ℹ️  Adapting Swift compilation command for SourceKit...")
+
 		let commandComponents = compilationCommand.splitUsingUnescapedSpaces()
 
 		let filteredArguments = commandComponents.filter { (argument: String) -> Bool in
@@ -945,7 +979,7 @@ public class Driver {
 		sourceKitArguments.append("GRYPHON")
 
 		// Build the resulting command
-		sourceKitFileContents += sourceKitArguments.dropFirst().joined(separator: " ")
+		let sourceKitFileContents = sourceKitArguments.dropFirst().joined(separator: " ")
 
 		try Utilities.createFile(
 			named: SupportingFile.sourceKitCompilationArguments.name,

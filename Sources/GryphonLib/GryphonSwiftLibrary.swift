@@ -296,16 +296,25 @@ public struct _ListSlice<Element>: Collection,
 			return list[position]
 		}
 
-		// MutableCollection
+		// For MutableCollection
 		set {
 			list._setElement(newValue, atIndex: position)
 		}
 	}
 
 	public subscript(bounds: Range<Index>) -> _ListSlice<Element> {
-		// From Collection.swift
-		_failEarlyRangeCheck(bounds, bounds: startIndex..<endIndex)
-		return _ListSlice(list: list, range: bounds)
+		get {
+			// From Collection.swift
+			_failEarlyRangeCheck(bounds, bounds: startIndex..<endIndex)
+			return _ListSlice(list: list, range: bounds)
+		}
+
+		// For MutableCollection
+		set {
+			for i in bounds {
+				list._setElement(newValue[i], atIndex: i)
+			}
+		}
 	}
 
 	public func index(after i: Int) -> Int {
@@ -598,6 +607,20 @@ public class MutableList<Element>: List<Element>,
 		}
 		set {
 			array[position] = newValue
+		}
+	}
+
+	public override subscript(bounds: Range<Index>) -> _ListSlice<Element> {
+		get {
+			// From Collection.swift
+			_failEarlyRangeCheck(bounds, bounds: startIndex..<endIndex)
+			return _ListSlice(list: self, range: bounds)
+		}
+
+		set {
+			for i in bounds {
+				array[i] = newValue[i]
+			}
 		}
 	}
 

@@ -7,6 +7,7 @@ unitTests=0
 acceptanceTests=0
 bootstrapTests=0
 xcodeTests=0
+isVerbose=""
 
 while test $# -gt 0
 do
@@ -22,6 +23,9 @@ do
             ;;
         "-x")
 			xcodeTests=1
+            ;;
+		"-v")
+			isVerbose="-v"
             ;;
 		*)
 			echo "Skipping unknown argument '$1'"
@@ -182,7 +186,7 @@ if [[ $bootstrapTests -ne 0 ]]; then
 	exec 4>&1
 	exec 1> >(paste /dev/null -)
 
-	if bash Scripts/runBootstrappingTests.sh
+	if bash Scripts/runBootstrappingTests.sh $isVerbose
 	then
 		echo "✅ Bootstrapping tests succeeded."
 		echo ""
@@ -202,7 +206,7 @@ if [[ $xcodeTests -ne 0 ]]; then
 	exec 4>&1
 	exec 1> >(paste /dev/null -)
 
-	if bash Scripts/runXcodeTests.sh
+	if bash Scripts/runXcodeTests.sh $isVerbose
 	then
 		echo "✅ Xcode tests succeeded."
 		echo ""
