@@ -1,5 +1,13 @@
 #!/bin/bash
 
+if [[ $(swift --version | grep "5.5") ]];
+then
+	echo "Using Swift 5.5"
+else
+	echo "🚨 Only Swift 5.5 is supported for bootstrapping tests."
+	exit -1
+fi
+
 isVerbose=""
 
 while test $# -gt 0
