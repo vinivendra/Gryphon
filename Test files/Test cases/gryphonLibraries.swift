@@ -626,6 +626,11 @@ public class MutableList<Element>: List<Element>,
 	override public func drop(while predicate: (Element) throws -> Bool) rethrows -> List<Element> {
 		return try List(array.drop(while: predicate))
 	}
+    
+    // RangeReplaceableCollection
+    public func replaceSubrange<C>(_ subrange: Range<Index>, with newElements: C) where C : Collection, Element == C.Element {
+        self.array.replaceSubrange(subrange, with: newElements)
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
