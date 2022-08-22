@@ -356,6 +356,11 @@ public struct _ListSlice<Element>: Collection,
 		let array = list.array[range]
 		return try List<SegmentOfResult.Element>(array.flatMap(transform))
 	}
+    
+    // RangeReplaceableCollection
+    public func replaceSubrange<C>(_ subrange: Range<Int>, with newElements: C) where C : Collection, Element == C.Element {
+        list.array[range].replaceSubrange(subrange, with: newElements)
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
