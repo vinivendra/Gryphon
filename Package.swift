@@ -1,4 +1,4 @@
-// swift-tools-version:5.2
+// swift-tools-version:5.5
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 //
@@ -73,7 +73,7 @@ let gryphonLibDependencies: [Target.Dependency] = [
 let package = Package(
 	name: "Gryphon",
 	platforms: [
-		.macOS(.v10_13)
+        .macOS(.v12)
 		/* Linux */
 	],
 	products: [
