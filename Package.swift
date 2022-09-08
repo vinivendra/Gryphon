@@ -81,8 +81,10 @@ let package = Package(
 	],
 	dependencies: [
 		swiftSyntaxPackage,
-        .package(url: "https://github.com/jpsim/SourceKitten",
-                 .exact("0.31.1"))
+        .package(
+            url: "https://github.com/jpsim/SourceKitten",
+                 .exact("0.31.1")
+        )
 	],
 	targets: [
 		.target(
