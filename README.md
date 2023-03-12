@@ -1,6 +1,13 @@
-<img src="https://github.com/vinivendra/Gryphon/raw/release/Gryphon%20Logo.svg" alt="Gryphon logo" height="70">
+<picture>
+	<source media="(prefers-color-scheme: dark)" srcset="https://github.com/vinivendra/Gryphon/raw/release/Gryphon%20Logo%20dark.svg">
+	<img src="https://github.com/vinivendra/Gryphon/raw/release/Gryphon%20Logo.svg" alt="Gryphon logo" height="70">
+</picture>
 
-## The Swift to Kotlin translator
+### 🔔 Call for maintainers
+
+*Gryphon is looking for new maintainers! If you're interested in helping out or just want to check out our progress, head over to the [GitHub forum post](https://github.com/vinivendra/Gryphon/discussions/125).*
+
+# The Swift to Kotlin translator
 
 [![Swift package manager compatible](https://img.shields.io/badge/SPM-compatible-brightgreen)](https://www.firsttimersonly.com/)
 [![open ethical](https://img.shields.io/badge/open-ethical-%234baaaa)](https://ethicalsource.dev)
