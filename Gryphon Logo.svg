@@ -5,7 +5,15 @@
     <desc>Created with Sketch.</desc>
     <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
         <g id="Group-4-Copy" transform="translate(0.000000, -12.000000)">
-            <text id="Gryphon-Logo-4-(t)-Copy-3" font-family="AvenirNext-Medium, Avenir Next" font-size="420" font-weight="400" letter-spacing="-28" fill="#000000">
+            <style>
+            text {
+                fill: black;
+            }
+            @media (prefers-color-scheme: dark) {
+                text { fill: white; }
+            }
+            </style>
+            <text id="Gryphon-Logo-4-(t)-Copy-3" font-family="AvenirNext-Medium, Avenir Next" font-size="420" font-weight="400" letter-spacing="-28">
                 <tspan x="605" y="420">Gryphon</tspan>
             </text>
             <g id="Gryphon-Logo-4-(i)-Copy-3" transform="translate(0.000000, 12.000000)" stroke="#979797">
