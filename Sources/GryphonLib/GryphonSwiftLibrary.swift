@@ -333,7 +333,7 @@ public struct _ListSlice<Element>: Collection,
 	}
   
   public func replaceSubrange<C>(_ subrange: Range<Int>, with newElements: C) where C : Collection, Element == C.Element {
-    list.array.replaceSubrange(subrange, with: newElements)
+    list.array[range].replaceSubrange(subrange, with: newElements)
   }
 
 	// Other methods
