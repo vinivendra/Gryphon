@@ -331,6 +331,10 @@ public struct _ListSlice<Element>: Collection,
 		self.list = []
 		self.range = 0..<0
 	}
+  
+  public func replaceSubrange<C>(_ subrange: Range<Int>, with newElements: C) where C : Collection, Element == C.Element {
+    list.array.replaceSubrange(subrange, with: newElements)
+  }
 
 	// Other methods
 	public func filter(_ isIncluded: (Element) throws -> Bool) rethrows -> List<Element> {
@@ -632,6 +636,10 @@ public class MutableList<Element>: List<Element>,
 	public required init(arrayLiteral elements: Element...) {
 		super.init(elements)
 	}
+  
+  public func replaceSubrange<C>(_ subrange: Range<Int>, with newElements: C) where C : Collection, Element == C.Element {
+    array.replaceSubrange(subrange, with: newElements)
+  }
 
 	// Other methods
 	public func append(_ newElement: Element) {
