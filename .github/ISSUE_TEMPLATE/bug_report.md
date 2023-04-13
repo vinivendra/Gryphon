@@ -7,6 +7,11 @@ assignees: ''
 
 ---
 
+<!-- ⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️ -->
+<!-- PLEASE READ THIS BEFORE OPENING YOUR ISSUE -->
+<!-- Gryphon only officially supports Swift 5.2 to 5.5. If you're trying to install Gryphon using a more recent version of Swift, Xcode, or macOS, please see the related issue: https://github.com/vinivendra/Gryphon/issues/127 -->
+<!-- ⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️ -->
+
 <!-- Note: If instead of reporting a bug you're looking for help using Gryphon, you can always send a message [on Twitter](https://twitter.com/gryphonblog). -->
 
 **Describe the bug**
