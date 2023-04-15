@@ -92,7 +92,7 @@ let package = Package(
 		.target(
 			name: "GryphonLib",
 			dependencies: gryphonLibDependencies),
-		.target(
+		.executableTarget(
 			name: "Gryphon",
 			dependencies: ["GryphonLib"]),
 		.testTarget(
