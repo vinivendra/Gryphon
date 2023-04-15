@@ -493,6 +493,8 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		self.indexingResponse = indexingResponse
 		self.syntaxTree = tree
 		self.context = context
+    
+    super.init(viewMode: .sourceAccurate)
 	}
 
 	func convertToGryphonAST(asMainFile isMainFile: Bool) throws -> GryphonAST {
@@ -1197,6 +1199,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
           try conditions.append(.condition(expression: errorExpression(
             forASTNode: optionalBinding.asSyntax,
             withMessage: "Unwrap condition requires a valid identifier")))
+          continue
         }
 				let expression = try convertExpression(expressionExpr)
 				conditions.append(IfStatement.IfCondition.declaration(variableDeclaration:
