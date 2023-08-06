@@ -243,7 +243,7 @@ public class Driver {
 
 		guard settings.shouldGenerateSwiftAST else {
 			Compiler.logStart("☑️  Nothing to do for \(inputFileRelativePath).")
-			return []
+			return nil
 		}
 
 		let isMainFile = (inputFilePath == settings.mainFilePath)
