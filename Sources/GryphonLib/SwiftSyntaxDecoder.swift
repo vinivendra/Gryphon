@@ -493,6 +493,8 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		self.indexingResponse = indexingResponse
 		self.syntaxTree = tree
 		self.context = context
+    
+    super.init(viewMode: .sourceAccurate)
 	}
 
 	func convertToGryphonAST(asMainFile isMainFile: Bool) throws -> GryphonAST {
@@ -1000,79 +1002,76 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		for syntax in switchStatement.cases {
 			let statements: MutableList<Statement> = []
 
-			if let switchCase = syntax.as(SwitchCaseSyntax.self) {
+			switch syntax {
+      case .switchCase(let switchCase):
 				let expressions: MutableList<Expression>
-				if let label = switchCase.label.as(SwitchCaseLabelSyntax.self) {
-					// If it's a case with an expression
-					expressions = try MutableList(label.caseItems.map { item -> Expression in
-						// If it's a case let:
-
-						if  // `case let .foo(bar: ...)`
-							let patternExpression = item.pattern.as(ValueBindingPatternSyntax.self)?
-									.valuePattern.as(ExpressionPatternSyntax.self) ??
-							// `case .foo(bar: let ...)`
-								item.pattern.as(ExpressionPatternSyntax.self),
-							patternExpression.expression.is(FunctionCallExprSyntax.self)
-						{
-							let caseLetResult = try convertCaseLet(
-								pattern: patternExpression,
-								patternExpression: switchExpression)
-
-							statements.append(contentsOf:
-								caseLetResult.variables.forceCast(to: MutableList<Statement>.self))
-
-							guard caseLetResult.conditions.count == 1,
-								let onlyCondition = caseLetResult.conditions.first else
-							{
-								if caseLetResult.conditions.isEmpty {
-									return try errorExpression(
-										forASTNode: Syntax(item),
-										withMessage: "Expected case let to yield at least one " +
-											"expression")
-								}
-								else {
-									return try errorExpression(
-										forASTNode: Syntax(item),
-										withMessage: "Case let's with expressions are not " +
-											"supported in Kotlin.")
-								}
-							}
-
-							return onlyCondition
-						}
-						// If it's a simple case
-						else if let expression = item.pattern.as(ExpressionPatternSyntax.self) {
-							if let memberExpression =
-								expression.expression.as(MemberAccessExprSyntax.self),
-							   memberExpression.base == nil,
-							   let typeName = switchExpression.swiftType
-							{
-								// If it's a `.a`, assume the type is the same as the switch
-								// expression's
-								return try convertMemberAccessExpression(
-									memberExpression,
-									typeName: typeName)
-							}
-							else {
-								return try convertExpression(expression.expression)
-							}
-						}
-						else {
-							return try errorExpression(
-								forASTNode: Syntax(item),
-								withMessage: "Unsupported switch case item")
-						}
-					})
-				}
-				else if switchCase.label.is(SwitchDefaultLabelSyntax.self) {
-					// If it's a `default:` label
-					expressions = []
-				}
-				else {
-					expressions = [try errorExpression(
-						forASTNode: switchCase.label,
-						withMessage: "Unsupported switch case label"), ]
-				}
+        switch switchCase.label {
+        case .case(let label):
+          // If it's a case with an expression
+          expressions = try MutableList(label.caseItems.map { item -> Expression in
+            // If it's a case let:
+            
+            if  // `case let .foo(bar: ...)`
+              let patternExpression = item.pattern.as(ValueBindingPatternSyntax.self)?
+                .valuePattern.as(ExpressionPatternSyntax.self) ??
+                // `case .foo(bar: let ...)`
+                item.pattern.as(ExpressionPatternSyntax.self),
+              patternExpression.expression.is(FunctionCallExprSyntax.self)
+            {
+              let caseLetResult = try convertCaseLet(
+                pattern: patternExpression,
+                patternExpression: switchExpression)
+              
+              statements.append(contentsOf:
+                                  caseLetResult.variables.forceCast(to: MutableList<Statement>.self))
+              
+              guard caseLetResult.conditions.count == 1,
+                    let onlyCondition = caseLetResult.conditions.first else
+              {
+                if caseLetResult.conditions.isEmpty {
+                  return try errorExpression(
+                    forASTNode: Syntax(item),
+                    withMessage: "Expected case let to yield at least one " +
+                    "expression")
+                }
+                else {
+                  return try errorExpression(
+                    forASTNode: Syntax(item),
+                    withMessage: "Case let's with expressions are not " +
+                    "supported in Kotlin.")
+                }
+              }
+              
+              return onlyCondition
+            }
+            // If it's a simple case
+            else if let expression = item.pattern.as(ExpressionPatternSyntax.self) {
+              if let memberExpression =
+                  expression.expression.as(MemberAccessExprSyntax.self),
+                 memberExpression.base == nil,
+                 let typeName = switchExpression.swiftType
+              {
+                // If it's a `.a`, assume the type is the same as the switch
+                // expression's
+                return try convertMemberAccessExpression(
+                  memberExpression,
+                  typeName: typeName)
+              }
+              else {
+                return try convertExpression(expression.expression)
+              }
+            }
+            else {
+              return try errorExpression(
+                forASTNode: Syntax(item),
+                withMessage: "Unsupported switch case item")
+            }
+          })
+          
+        case .default:
+          // If it's a `default:` label
+          expressions = []
+        }
 
 				// Add the explicit statements after possible variable declarations derived from
 				// `case let`
@@ -1081,11 +1080,11 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 				cases.append(SwitchCase(
 					expressions: expressions,
 					statements: statements))
-			}
-			else {
+        
+      case .ifConfigDecl(let ifConfigDecl):
 				let expression = try errorExpression(
-					forASTNode: syntax,
-					withMessage: "Unsupported switch case")
+          forASTNode: ifConfigDecl.asSyntax,
+					withMessage: "#if is not supported between switch cases yet.")
 				cases.append(SwitchCase(
 					expressions: [expression],
 					statements: []))
@@ -1189,7 +1188,20 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 				let identifier = optionalBinding.pattern.getText()
 			{
 				// if let
-				let expression = try convertExpression(optionalBinding.initializer.value)
+        // Since Swift 5.7 there's a new shorthand for if let / if var:
+        // `if let someOptional { }` should be treated as `if let someOptional = someOptional`.
+        // So if `optionalBinding.initializer` is empty, we should take the pattern as the expression to initialize.
+        guard let expressionExpr =
+                optionalBinding.initializer?.value
+                ?? optionalBinding.pattern.as(ExprSyntax.self) else
+        {
+          // Cases like `if let (a, b) {}` is invalid.
+          try conditions.append(.condition(expression: errorExpression(
+            forASTNode: optionalBinding.asSyntax,
+            withMessage: "Unwrap condition requires a valid identifier")))
+          continue
+        }
+				let expression = try convertExpression(expressionExpr)
 				conditions.append(IfStatement.IfCondition.declaration(variableDeclaration:
 					VariableDeclaration(
 						syntax: Syntax(optionalBinding),
@@ -1278,7 +1290,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		statements.append(contentsOf: try convertBlock(ifStatement.statements))
 
 		let elseStatement: IfStatement?
-		if let elseIfSyntax = ifStatement.children.last?.as(IfStmtSyntax.self) {
+    if let elseIfSyntax = ifStatement.children(viewMode: .sourceAccurate).last?.as(IfStmtSyntax.self) {
 			elseStatement = try convertIfStatement(elseIfSyntax)
 		}
 		else if let elseBlock = ifStatement.elseBlock {
@@ -1670,8 +1682,8 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			// If it's a `#if`
 			if let condition = clause.condition {
 				if let identifierCondition = condition.as(IdentifierExprSyntax.self),
-					identifierCondition.identifier.text == "GRYPHON",
-					let conditionBlock = clause.elements.as(CodeBlockItemListSyntax.self)
+					 identifierCondition.identifier.text == "GRYPHON",
+           let conditionBlock = clause.elements?.as(CodeBlockItemListSyntax.self)
 				{
 					// If it's a `#if GRYPHON`
 					gryphonClauseIsNegated = false
@@ -1695,7 +1707,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 							"`#if !GRYPHON` and `#else` are supported."), ]
 				}
 			}
-			else if let conditionBlock = clause.elements.as(CodeBlockItemListSyntax.self) {
+      else if let conditionBlock = clause.elements?.as(CodeBlockItemListSyntax.self) {
 				// If it's a `#else`
 				if gryphonClauseIsNegated {
 					// If there was a `#if !GRYPHON` before, we have to translate the `#else`
@@ -1924,11 +1936,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		_ typealiasDeclaration: TypealiasDeclSyntax)
 		throws -> Statement
 	{
-		guard let typeSyntax = typealiasDeclaration.initializer?.value else {
-			return try errorStatement(
-				forASTNode: Syntax(typealiasDeclaration),
-				withMessage: "Unable to get the type name.")
-		}
+    let typeSyntax = typealiasDeclaration.initializer.value
 
 		let accessAndAnnotations =
 			getAccessAndAnnotations(fromModifiers: typealiasDeclaration.modifiers)
@@ -2083,7 +2091,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		let result: MutableList<FunctionParameter> = []
 		for parameter in parameterList {
 			if let firstName = parameter.firstName?.text,
-				let typeToken = parameter.children.first(where: { $0.is(TypeSyntax.self) })
+         let typeToken = parameter.children(viewMode: .sourceAccurate).first(where: { $0.is(TypeSyntax.self) })
 			{
 				let typeSyntax = typeToken.as(TypeSyntax.self)!
 
@@ -2196,7 +2204,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 				var errorHappened = false
 				var getter: FunctionDeclaration?
 				var setter: FunctionDeclaration?
-				if let maybeCodeBlock = patternBinding.children.first(where:
+        if let maybeCodeBlock = patternBinding.children(viewMode: .sourceAccurate).first(where:
 						{ $0.is(CodeBlockSyntax.self) }),
 					let codeBlock = maybeCodeBlock.as(CodeBlockSyntax.self)
 				{
@@ -2250,7 +2258,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 
 						// If there the accessor has a body (if not, assume it's a protocol's
 						// `{ get }`).
-						if let maybeCodeBlock = accessor.children.first(where:
+            if let maybeCodeBlock = accessor.children(viewMode: .sourceAccurate).first(where:
 								{ $0.is(CodeBlockSyntax.self) }),
 							let codeBlock = maybeCodeBlock.as(CodeBlockSyntax.self)
 						{
@@ -2637,7 +2645,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 
 		// Expressions that can be translated as their last subexpression
 		if expression.is(InOutExprSyntax.self),
-			let lastChild = expression.children.last,
+       let lastChild = expression.children(viewMode: .sourceAccurate).last,
 			let subExpression = lastChild.as(ExprSyntax.self)
 		{
 			return try convertExpression(subExpression)
@@ -2881,13 +2889,13 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 
 			// Get the parameters
 			let cleanInputParameters: List<String>
-			if inputParameters.children.allSatisfy({ $0.is(ClosureParamSyntax.self) }) {
-				cleanInputParameters = List(inputParameters.children).map {
+      if inputParameters.children(viewMode: .sourceAccurate).allSatisfy({ $0.is(ClosureParamSyntax.self) }) {
+        cleanInputParameters = List(inputParameters.children(viewMode: .sourceAccurate)).map {
 						$0.as(ClosureParamSyntax.self)!.name.text
 					}
 			}
 			else if let parameterList =
-				inputParameters.children.first(where: { $0.is(FunctionParameterListSyntax.self) }),
+                inputParameters.children(viewMode: .sourceAccurate).first(where: { $0.is(FunctionParameterListSyntax.self) }),
 				let castedParameterList = parameterList.as(FunctionParameterListSyntax.self)
 			{
 				cleanInputParameters = List(castedParameterList)
@@ -3292,9 +3300,9 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		let values: MutableList<Expression> = []
 
 		// If the dictionary isn't empty
-		if dictionaryExpression.children.count == 3,
+    if dictionaryExpression.children(viewMode: .sourceAccurate).count == 3,
 			let elements =
-				List(dictionaryExpression.children)[1].as(DictionaryElementListSyntax.self)
+        List(dictionaryExpression.children(viewMode: .sourceAccurate))[1].as(DictionaryElementListSyntax.self)
 		{
 			for dictionaryElement in elements {
 				try keys.append(convertExpression(dictionaryElement.keyExpression))
@@ -3839,7 +3847,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			// `\` + `(` + `expression` + `)`
 			// The expression comes enveloped in a tuple
 			if let expressionSegment = segment.as(ExpressionSegmentSyntax.self) {
-				let children = List(expressionSegment.children)
+        let children = List(expressionSegment.children(viewMode: .sourceAccurate))
 				if children.count == 4,
 					children[0].is(TokenSyntax.self),
 					children[1].is(TokenSyntax.self),
@@ -4000,7 +4008,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 
 extension SyntaxProtocol {
 	func getText() -> String? {
-		if let firstChild = self.children.first,
+    if let firstChild = self.children(viewMode: .sourceAccurate).first,
 			let childTokenSyntax = firstChild.as(TokenSyntax.self)
 		{
 			return childTokenSyntax.text
@@ -4105,7 +4113,7 @@ extension InitializerDeclSyntax: FunctionLikeSyntax {
 	}
 
 	var parameterList: FunctionParameterListSyntax {
-		return self.parameters.parameterList
+    return self.signature.input.parameterList
 	}
 
 	var statements: CodeBlockSyntax? {
@@ -4239,7 +4247,7 @@ extension CodeBlockItemListSyntax: SyntaxList { }
 
 extension CodeBlockItemSyntax: SyntaxElementContainer {
 	var element: Syntax {
-		return self.item
+    return self.item.asSyntax
 	}
 }
 

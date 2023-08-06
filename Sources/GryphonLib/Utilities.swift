@@ -218,9 +218,10 @@ public class OS {
 
 	public static let systemIdentifier: String = osName + "-" + architecture
 
-	static let kotlinCompilerPath = (osType == .linux) ?
-		"/opt/kotlinc/bin/kotlinc" :
-		"/usr/local/bin/kotlinc"
+  static let kotlinCompilerPath = ProcessInfo.processInfo.environment["KOTLINC_PATH"]
+    ?? ((osType == .linux) ?
+      "/opt/kotlinc/bin/kotlinc" :
+      "/usr/local/bin/kotlinc")
 }
 
 // MARK: - Error handling

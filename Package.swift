@@ -1,4 +1,4 @@
-// swift-tools-version:5.2
+// swift-tools-version:5.8
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 //
@@ -29,39 +29,42 @@ import PackageDescription
 //    .revision("release/5.6")) // <- git branch name
 
 // Which SwiftSyntax version to use
-#if swift(>=5.6)
+#if swift(>=5.8)
 let swiftSyntaxPackage = Package.Dependency.package(
-    name: "SwiftSyntax",
-    url: "https://github.com/apple/swift-syntax.git",
-    .exact("0.50600.1"))
+  url: "https://github.com/apple/swift-syntax.git",
+  from: "508.0.0")
+#elseif swift(>=5.7)
+let swiftSyntaxPackage = Package.Dependency.package(
+  url: "https://github.com/apple/swift-syntax.git",
+  from: "0.50700.1")
+#elseif swift(>=5.6)
+let swiftSyntaxPackage = Package.Dependency.package(
+	url: "https://github.com/apple/swift-syntax.git",
+  from: "0.50600.1")
 #elseif swift(>=5.5)
 let swiftSyntaxPackage = Package.Dependency.package(
-    name: "SwiftSyntax",
-    url: "https://github.com/apple/swift-syntax.git",
-    .exact("0.50500.0"))
+	url: "https://github.com/apple/swift-syntax.git",
+  from: "0.50500.0")
 #elseif swift(>=5.4)
 let swiftSyntaxPackage = Package.Dependency.package(
-    name: "SwiftSyntax",
-    url: "https://github.com/apple/swift-syntax.git",
-    .exact("0.50400.0"))
+	url: "https://github.com/apple/swift-syntax.git",
+  from: "0.50400.0")
 #elseif swift(>=5.3)
 let swiftSyntaxPackage = Package.Dependency.package(
-    name: "SwiftSyntax",
-    url: "https://github.com/apple/swift-syntax.git",
-    .exact("0.50300.0"))
+	url: "https://github.com/apple/swift-syntax.git",
+  from: "0.50300.0")
 #else
 let swiftSyntaxPackage = Package.Dependency.package(
-    name: "SwiftSyntax",
-    url: "https://github.com/apple/swift-syntax.git",
-    .exact("0.50200.0"))
+	url: "https://github.com/apple/swift-syntax.git",
+  from: "0.50200.0")
 #endif
 
 // Which modules to import from SwiftSyntax (and SourceKitten)
 #if swift(>=5.6)
 let gryphonLibDependencies: [Target.Dependency] = [
-    .product(name: "SwiftSyntax", package: "SwiftSyntax"),
-    .product(name: "SwiftSyntaxParser", package: "SwiftSyntax"),
-    .product(name: "SourceKittenFramework", package: "SourceKitten")
+	.product(name: "SwiftSyntax", package: "swift-syntax"),
+	.product(name: "SwiftSyntaxParser", package: "swift-syntax"),
+	.product(name: "SourceKittenFramework", package: "SourceKitten")
 ]
 #else
 let gryphonLibDependencies: [Target.Dependency] = [
@@ -71,31 +74,30 @@ let gryphonLibDependencies: [Target.Dependency] = [
 #endif
 
 let package = Package(
-    name: "Gryphon",
-    platforms: [
-        .macOS(.v10_13)
-        /* Linux */
-    ],
-    products: [
-        .executable(name: "gryphon", targets: ["Gryphon"])
-    ],
-    dependencies: [
-        swiftSyntaxPackage,
-        .package(
-            url: "https://github.com/jpsim/SourceKitten",
-                 .exact("0.31.1")
-        )
-    ],
-    targets: [
-        .target(
-            name: "GryphonLib",
-            dependencies: gryphonLibDependencies),
-        .target(
-            name: "Gryphon",
-            dependencies: ["GryphonLib"]),
-        .testTarget(
-            name: "GryphonLibTests",
-            dependencies: ["GryphonLib"])
-    ],
-    swiftLanguageVersions: [.v5]
+	name: "Gryphon",
+	platforms: [
+    .macOS(.v12)
+		/* Linux */
+	],
+	products: [
+		.executable(name: "gryphon", targets: ["Gryphon"])
+	],
+	dependencies: [
+		swiftSyntaxPackage,
+    .package(
+      url: "https://github.com/jpsim/SourceKitten",
+      from: "0.34.1")
+	],
+	targets: [
+		.target(
+			name: "GryphonLib",
+			dependencies: gryphonLibDependencies),
+		.executableTarget(
+			name: "Gryphon",
+			dependencies: ["GryphonLib"]),
+		.testTarget(
+			name: "GryphonLibTests",
+			dependencies: ["GryphonLib"])
+	],
+	swiftLanguageVersions: [.v5]
 )
