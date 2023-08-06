@@ -332,6 +332,10 @@ public struct _ListSlice<Element>: Collection,
 		self.range = 0..<0
 	}
 
+	public func replaceSubrange<C>(_ subrange: Range<Int>, with newElements: C) where C : Collection, Element == C.Element {
+		list.array[range].replaceSubrange(subrange, with: newElements)
+	}
+
 	// Other methods
 	public func filter(_ isIncluded: (Element) throws -> Bool) rethrows -> List<Element> {
 		let array = list.array[range]
@@ -356,11 +360,6 @@ public struct _ListSlice<Element>: Collection,
 		let array = list.array[range]
 		return try List<SegmentOfResult.Element>(array.flatMap(transform))
 	}
-    
-    // RangeReplaceableCollection
-    public func replaceSubrange<C>(_ subrange: Range<Int>, with newElements: C) where C : Collection, Element == C.Element {
-        list.array[range].replaceSubrange(subrange, with: newElements)
-    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -638,6 +637,10 @@ public class MutableList<Element>: List<Element>,
 		super.init(elements)
 	}
 
+	public func replaceSubrange<C>(_ subrange: Range<Index>, with newElements: C) where C : Collection, Element == C.Element {
+		self.array.replaceSubrange(subrange, with: newElements)
+	}
+
 	// Other methods
 	public func append(_ newElement: Element) {
 		array.append(newElement)
@@ -677,11 +680,6 @@ public class MutableList<Element>: List<Element>,
 	override public func drop(while predicate: (Element) throws -> Bool) rethrows -> List<Element> {
 		return try List(array.drop(while: predicate))
 	}
-    
-    // RangeReplaceableCollection
-    public func replaceSubrange<C>(_ subrange: Range<Index>, with newElements: C) where C : Collection, Element == C.Element {
-        self.array.replaceSubrange(subrange, with: newElements)
-    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
